@@ -27,7 +27,7 @@ async def home(request):
 
     # Create the HTML response with the audio player    
     html_content = (
-        f'<h1>Welcome to BableBot 1.0</h1>'
+        f'<h1>Welcome to BabelBot 1.0</h1>'
         f'<h2>{translated_text}</h2>'
         f'<audio controls>'
         f'  <source src="data:audio/mp3;base64,{encoded_audio}" type="audio/mp3">'
