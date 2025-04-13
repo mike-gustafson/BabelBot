@@ -34,5 +34,4 @@ async def home(request):
         f'  Your browser does not support the audio element.'
         f'</audio>'
     )
-    
     return HttpResponse(html_content)
