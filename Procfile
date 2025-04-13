@@ -1,1 +1,1 @@
-web: gunicorn babelbot.wsgi
+web: gunicorn bablebot.wsgi
