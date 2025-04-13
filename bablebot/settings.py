@@ -32,8 +32,6 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'main_app',
-    'translator',
-    'tts',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
