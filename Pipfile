@@ -8,6 +8,11 @@ django = "*"
 googletrans = "==4.0.0-rc1"
 gtts = "*"
 asyncio = "*"
+python-dotenv = "*"
+whitenoise = "*"
+gunicorn = "*"
+dj-database-url = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 
