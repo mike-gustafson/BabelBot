@@ -15,7 +15,7 @@ target_language = "ru"
 
 async def home(request):
     # Translate text to English
-    translated_text = await translate_text(test_text_long, target_language)
+    translated_text = translate_text(test_text_long, target_language)
     
     # Convert the translated text to speech
     loop = asyncio.get_running_loop()
