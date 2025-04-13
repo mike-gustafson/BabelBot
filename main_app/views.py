@@ -1,8 +1,5 @@
-import asyncio
-import base64
+from django.shortcuts import render
 from django.http import HttpResponse
-from translator.services import translate_text
-from tts.services import text_to_speech
 
 test_text_en = "Hello world!"
 test_text_es = "¡Hola mundo!"
