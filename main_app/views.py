@@ -9,16 +9,17 @@ test_text_es = "¡Hola mundo!"
 test_text_fr = "Bonjour le monde!"
 test_text_de = "Hallo Welt!"
 test_text_it = "Ciao mondo!"
+test_text_long = "A long time ago, in a galaxy far, far away. It is a period of civil war. Rebel spaceships, striking from a hidden base, have won their first victory against the evil Galactic Empire. During the battle, Rebel spies managed to steal secret plans to the Empire's ultimate weapon, the DEATH STAR, an armored space station with enough power to destroy an entire planet. Pursued by the Empire's sinister agents, Princess Leia races home aboard her starship, custodian of the stolen plans that can save her people and restore freedom to the galaxy..."
 
-target_language = "en"
+target_language = "ru"
 
 async def home(request):
     # Translate text to English
-    translated_text = await translate_text(test_text_de, target_language)
+    translated_text = await translate_text(test_text_long, target_language)
     
     # Convert the translated text to speech
     loop = asyncio.get_running_loop()
-    audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, 'en')
+    audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, target_language)
     
     # Encode the audio data to base64 for embedding in HTML
     audio_data = audio_buffer.read()
