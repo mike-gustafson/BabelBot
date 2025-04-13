@@ -1,0 +1,46 @@
+:root {
+  --primary: #2F855A;
+  --secondary: #9AE6B4;
+  --accent: #D69E2E;
+  --bg-light: #F0FFF4;
+  --text-dark: #1A202C;
+  --success: #48BB78;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+header {
+  background-color: var(--primary);
+  padding: 1rem;
+  text-align: center;
+}
+
+header h1 a {
+  color: white;
+  text-decoration: none;
+}
+
+nav a {
+  margin: 0 1rem;
+  color: var(--accent);
+  font-weight: bold;
+  text-decoration: none;
+}
+
+main {
+  padding: 2rem;
+}
+
+footer {
+  margin-top: 2rem;
+  text-align: center;
+  padding: 1rem;
+  background-color: var(--secondary);
+  color: var(--text-dark);
+}
