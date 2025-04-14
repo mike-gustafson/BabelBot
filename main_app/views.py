@@ -46,7 +46,7 @@ def translate(request):
 
     return render(request, 'translate.html', context)
 
-def home(request):
+def home_view(request):
     return render(request, 'home.html')
 
 
