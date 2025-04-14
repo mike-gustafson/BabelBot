@@ -25,7 +25,7 @@ def build_LANGUAGES_html(selected_language):
     html_content += '</select>'
     return html_content
 
-async def home(request):
+async def translate(request):
     lang = request.GET.get('target_language', DEFAULT_TARGET_LANGUAGE)
     text_to_translate = request.GET.get('text', DEFAULT_TEXT)
 
@@ -47,3 +47,31 @@ async def home(request):
     }
 
     return render(request, 'translate.html', context)
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        # Perform login logic here
+        return HttpResponse("Login successful")
+    return render(request, 'login.html')
+
+def logout_view(request):
+    # Perform logout logic here
+    return HttpResponse("Logout successful")
+
+def signup(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        # Perform signup logic here
+        return HttpResponse("Signup successful")
+    return render(request, 'signup.html')
+
+def account(request):
+    # Perform account management logic here
+    return HttpResponse("Account management page")
+
+def about(request):
+    # Render the about page
+    return render(request, 'about.html')
