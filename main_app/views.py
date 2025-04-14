@@ -1,4 +1,3 @@
-import asyncio
 import base64
 from django.shortcuts import render
 from translator.services import translate_text
@@ -24,7 +23,7 @@ def build_LANGUAGES_html(selected_language):
     html_content += '</select>'
     return html_content
 
-async def translate(request):
+def translate(request):
     lang = request.GET.get('target_language', DEFAULT_TARGET_LANGUAGE)
     text_to_translate = request.GET.get('text', DEFAULT_TEXT)
 
@@ -32,8 +31,7 @@ async def translate(request):
     translated_text = translate_text(text_to_translate, lang)
 
     # Generate TTS audio
-    loop = asyncio.get_running_loop()
-    audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, lang)
+    audio_buffer = text_to_speech(translated_text, lang)
     audio_data = audio_buffer.read()
     encoded_audio = base64.b64encode(audio_data).decode("utf-8")
 
