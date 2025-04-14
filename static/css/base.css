@@ -78,6 +78,11 @@ header h1 a {
   color: white;
 }
 
+.nav-links a.active {
+  background-color: var(--accent);
+  color: white;
+}
+
 main {
   margin-top: 2rem;
 }
@@ -132,16 +137,30 @@ textarea {
   margin-top: 2rem;
 }
 
+.translated-output {
+  padding: 1rem;
+  border-radius: 10px;
+  background-color: #f7f7f7;
+  box-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
+  font-size: 1rem;
+  min-height: 100px;
+}
+
 @media (max-width: 768px) {
   .nav-links {
     display: none;
     flex-direction: column;
     width: 100%;
     margin-top: 1rem;
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: all 0.3s ease;
   }
 
   .nav-links.active {
     display: flex;
+    transform: translateY(0);
+    opacity: 1;
   }
 
   .menu-toggle {
