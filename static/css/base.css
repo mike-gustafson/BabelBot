@@ -129,23 +129,6 @@ textarea {
   resize: vertical;
 }
 
-.translate-section {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  margin-top: 2rem;
-}
-
-.translated-output {
-  padding: 1rem;
-  border-radius: 10px;
-  background-color: #f7f7f7;
-  box-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
-  font-size: 1rem;
-  min-height: 100px;
-}
-
 @media (max-width: 768px) {
   .nav-links {
     display: none;

@@ -1,110 +1,21 @@
-.nav-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.nav-menu {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.menu-toggle {
-  display: none;
-  background: transparent;
-  border: none;
-  font-size: 1.8rem;
-  cursor: pointer;
-  color: white;
-}
-
-.nav-links {
-  display: flex;
-  gap: 1rem;
-  flex-direction: row;
-}
-
-.nav-links a.active {
-  background-color: var(--accent);
-  color: white;
-}
-
-button[type="submit"] {
-  background-color: var(--primary);
-  color: white;
-  font-size: 1.2rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button[type="submit"]:hover {
-  background-color: var(--accent);
-}
-
-.translate-wrapper h2,
-.translate-wrapper h3 {
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-textarea {
-  width: 100%;
-  height: 150px;
-  font-size: 1rem;
-  padding: 1rem;
-  border-radius: 10px;
-  border: 1px solid var(--secondary);
-  box-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
-  resize: vertical;
-}
-
 .translated-output {
   padding: 1rem;
   border-radius: 10px;
-  background-color: #f7f7f7;
-  box-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
+  background: linear-gradient(135deg, #0e3f12, #081801); /* green gradient */
+  box-shadow: 0 0 12px rgba(46, 204, 113, 0.4), 0 0 20px rgba(46, 204, 113, 0.2);
   font-size: 1rem;
   min-height: 100px;
+  transition: box-shadow 0.3s ease;
 }
 
-@media (max-width: 768px) {
-  .nav-links {
-    display: none;
-    flex-direction: column;
-    width: 100%;
-    margin-top: 1rem;
-    transform: translateY(-20px);
-    opacity: 0;
-    transition: all 0.3s ease;
-  }
-
-  .nav-links.active {
-    display: flex;
-    transform: translateY(0);
-    opacity: 1;
-  }
-
-  .menu-toggle {
-    display: block;
-  }
-
-  .nav-menu {
-    width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-  }
+.translated-output:hover {
+  box-shadow: 0 0 16px rgba(46, 204, 113, 0.5), 0 0 24px rgba(46, 204, 113, 0.3);
 }
 
 .translate-section {
-  background: white;
+  background: linear-gradient(135deg, #e8f5e9, #d0f0c0); /* green gradient */
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
   margin-top: 2rem;
 }
