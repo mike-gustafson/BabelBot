@@ -1,7 +1,7 @@
 :root {
   --primary: #2F855A;
   --secondary: #9AE6B4;
-  --accent: #D69E2E;
+  --accent: #64ff9c;
   --bg-light: #F0FFF4;
   --text-dark: #1A202C;
   --success: #48BB78;
@@ -74,13 +74,15 @@ header h1 a {
 }
 
 .nav-links a:hover {
-  background-color: var(--accent);
-  color: white;
+  background-color: #64ff9c; /* glowing green */
+  color: black;
+  box-shadow: 0 0 8px #64ff9c;
 }
 
 .nav-links a.active {
-  background-color: var(--accent);
-  color: white;
+  background-color: #64ff9c;
+  color: black;
+  box-shadow: 0 0 8px #64ff9c;
 }
 
 main {
