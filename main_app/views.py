@@ -1,5 +1,6 @@
 import base64
 from django.shortcuts import render
+from django.http import HttpResponse
 from translator.services import translate_text
 from tts.services import text_to_speech
 from googletrans import LANGUAGES
@@ -44,6 +45,10 @@ def translate(request):
     }
 
     return render(request, 'translate.html', context)
+
+def home(request):
+    return render(request, 'home.html')
+
 
 def login_view(request):
     if request.method == 'POST':
