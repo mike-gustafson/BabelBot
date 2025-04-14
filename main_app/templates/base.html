@@ -6,6 +6,48 @@
   <title>BabelBot 🌍</title>
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    button[type="submit"] {
+      background-color: var(--primary);
+      color: white;
+      font-size: 1.2rem;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button[type="submit"]:hover {
+      background-color: var(--accent);
+    }
+
+    .translate-wrapper h2,
+    .translate-wrapper h3 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      font-size: 1rem;
+      padding: 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--secondary);
+      box-shadow: 0 0 8px rgba(46, 204, 113, 0.3);
+      resize: vertical;
+    }
+
+    .translate-section {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      margin-top: 2rem;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -16,15 +58,17 @@
             <img src="{% static 'images/logo.png' %}" alt="BabelBot Logo" style="height: 48px; vertical-align: middle;">
           </a>
         </h1>
-        <nav class="nav-links mobile-hidden">
-          <a href="/">Home</a>
-          <a href="/translate/">Translate</a>
-          <a href="/login/">Login</a>
-          <a href="/signup/">Sign Up</a>
-          <a href="/account/">Account</a>
-          <a href="/about/">About</a>
-        </nav>
-        <button id="menu-toggle" class="menu-toggle">☰</button>
+        <div class="nav-menu">
+          <button id="menu-toggle" class="menu-toggle">☰</button>
+          <nav class="nav-links">
+            <a href="/">Home</a>
+            <a href="/translate/">Translate</a>
+            <a href="/login/">Login</a>
+            <a href="/signup/">Sign Up</a>
+            <a href="/account/">Account</a>
+            <a href="/about/">About</a>
+          </nav>
+        </div>
       </div>
     </header>
 
@@ -37,13 +81,6 @@
       <p>Made with 💚 by Team Green — 2025</p>
     </footer>
   </div>
-  <script>
-    const toggleBtn = document.getElementById('menu-toggle');
-    const navLinks = document.querySelector('.nav-links');
-
-    toggleBtn.addEventListener('click', () => {
-      navLinks.classList.toggle('active');
-    });
-  </script>
+  <script src="{% static 'js/nav.js' %}"></script>
 </body>
 </html>
