@@ -1,6 +1,5 @@
 import asyncio
 import base64
-from django.http import HttpResponse
 from django.shortcuts import render
 from translator.services import translate_text
 from tts.services import text_to_speech
