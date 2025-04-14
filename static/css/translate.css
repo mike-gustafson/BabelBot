@@ -25,10 +25,21 @@ button {
   background-color: var(--primary);
   color: white;
   cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 button:hover {
   background-color: var(--success);
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0);
 }
 
 .translated-output {
@@ -40,20 +51,42 @@ button:hover {
   font-size: 1.1rem;
 }
 
+.translate-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 .container {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2rem;
   margin-top: 2rem;
 }
 
 .column {
-  flex: 1;
+  flex: 1 1 45%;
+  min-width: 300px;
 }
 
 .center-column {
+  flex: 1 1 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 1rem;
+}
+
+textarea, select, button {
+  width: 100%;
+}
+
+.translate-section {
+  background: linear-gradient(to right, #e8fdf5, #ccffe0);
+  padding: 4rem 1rem;
+  min-height: 100vh;
 }
