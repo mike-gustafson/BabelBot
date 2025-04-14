@@ -1,6 +1,7 @@
 import asyncio
 import base64
 from django.http import HttpResponse
+from django.shortcuts import render
 from translator.services import translate_text
 from tts.services import text_to_speech
 from googletrans import LANGUAGES
@@ -25,92 +26,24 @@ def build_LANGUAGES_html(selected_language):
     return html_content
 
 async def home(request):
-    
     lang = request.GET.get('target_language', DEFAULT_TARGET_LANGUAGE)
     text_to_translate = request.GET.get('text', DEFAULT_TEXT)
-    
+
     # Translate the text using the specified target language.
     translated_text = translate_text(text_to_translate, lang)
-    
-    # Generate TTS audio (offloading the synchronous TTS function to a worker thread)
+
+    # Generate TTS audio
     loop = asyncio.get_running_loop()
     audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, lang)
     audio_data = audio_buffer.read()
     encoded_audio = base64.b64encode(audio_data).decode("utf-8")
-        
-    # Build HTML.
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>BabelBot 1.0</title>
-        <style>
-            body {{
-                font-family: sans-serif;
-                margin: 20px;
-            }}
-            .container {{
-                display: flex;
-                align-items: flex-start;
-                gap: 20px;
-            }}
-            .column {{
-                flex: 1;
-            }}
-            .center-column {{
-                width: 150px;
-                text-align: center;
-            }}
-            textarea {{
-                width: 100%;
-                height: 300px;
-            }}
-            #translated_text {{
-                border: 1px solid #ccc;
-                padding: 10px;
-                min-height: 300px;
-            }}
-            /* Optional: styling for the language dropdown and button */
-            #language-select {{
-                width: 100%;
-                margin-bottom: 10px;
-            }}
-            button {{
-                width: 100%;
-                padding: 10px;
-                font-size: 1em;
-            }}
-        </style>
-    </head>
-    <body>
-        <h1>Welcome to BabelBot 1.0</h1>
-        <form method="get" id="translate-form">
-            <div class="container">
-                <div class="column">
-                    <h3>Input Text</h3>
-                    <textarea name="text" id="original_text">{text_to_translate}</textarea>
-                </div>
-                <div class="center-column">
-                    {build_LANGUAGES_html(lang)}
-                    <br/>
-                    <button type="submit">Translate</button>
-                </div>
-                <div class="column">
-                    <h3>Translated Text</h3>
-                    <div id="translated_text">{translated_text}</div>
-                    <br/>
-                    <div id="audio_container">
-                        <audio controls>
-                            <source src="data:audio/mp3;base64,{encoded_audio}" type="audio/mp3">
-                            Your browser does not support the audio element.
-                        </audio>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </body>
-    </html>
-    """
-    
-    return HttpResponse(html_content)
+
+    context = {
+        'text_to_translate': text_to_translate,
+        'translated_text': translated_text,
+        'encoded_audio': encoded_audio,
+        'selected_language': lang,
+        'language_dropdown': build_LANGUAGES_html(lang)
+    }
+
+    return render(request, 'translate.html', context)
