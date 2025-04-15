@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BabelBot 🌍</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+  <header>
+    <h1><a href="/">🤖 BabelBot 1.0</a></h1>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/translate/">Translate</a>
+      <a href="/login/">Login</a>
+      <a href="/signup/">Sign Up</a>
+    </nav>
+  </header>
+
+  <main>
+    {% block content %}
+      <h1>Translate</h1>
+      <form id="translation-form" class="translation-form">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="text_to_translate">Text to Translate:</label>
+          <textarea id="text_to_translate" name="text_to_translate" rows="4" required>{{ text_to_translate }}</textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="target_language">Target Language:</label>
+          {{ language_dropdown|safe }}
+        </div>
+
+        <button type="submit" class="translate-button">Translate</button>
+      </form>
+
+      <div id="translation-result" class="translation-result" style="display: none;">
+        <h2>Translation:</h2>
+        <p id="translated-text"></p>
+        <audio id="translation-audio" controls style="display: none;">
+          Your browser does not support the audio element.
+        </audio>
+      </div>
+
+      <div id="error-message" class="error-message" style="display: none;"></div>
+    {% endblock %}
+  </main>
+
+  <footer>
+    <p>Made with 💚 by Team Green — 2025</p>
+  </footer>
+
+  <script>
+    document.getElementById('translation-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const form = e.target;
+      const textToTranslate = form.querySelector('#text_to_translate').value;
+      const targetLanguage = form.querySelector('#language-select').value;
+      const resultDiv = document.getElementById('translation-result');
+      const translatedText = document.getElementById('translated-text');
+      const audioElement = document.getElementById('translation-audio');
+      const errorMessage = document.getElementById('error-message');
+
+      try {
+        const response = await fetch('/translate/ajax/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          },
+          body: JSON.stringify({
+            text_to_translate: textToTranslate,
+            target_language: targetLanguage
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Translation failed');
+        }
+
+        const data = await response.json();
+        
+        // Update the translation result
+        translatedText.textContent = data.translated_text;
+        resultDiv.style.display = 'block';
+        
+        // Update the audio element if available
+        if (data.encoded_audio) {
+          audioElement.src = `data:audio/mp3;base64,${data.encoded_audio}`;
+          audioElement.style.display = 'block';
+        }
+        
+        // Hide any previous error messages
+        errorMessage.style.display = 'none';
+      } catch (error) {
+        errorMessage.textContent = 'Error: ' + error.message;
+        errorMessage.style.display = 'block';
+        resultDiv.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

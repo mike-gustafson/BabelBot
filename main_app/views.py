@@ -29,6 +29,7 @@ def build_LANGUAGES_html(selected_language):
 
 async def translate(request):
     if request.method == 'POST':
+<<<<<<< HEAD
         form = TranslationForm(request.POST)
         if form.is_valid():
             text_to_translate = form.cleaned_data['text_to_translate']
@@ -43,6 +44,13 @@ async def translate(request):
             'text_to_translate': text_to_translate,
             'target_language': lang
         }, selected_language=lang)
+=======
+        lang = request.POST.get('target_language', DEFAULT_TARGET_LANGUAGE)
+        text_to_translate = request.POST.get('text_to_translate', DEFAULT_TEXT)
+    else:
+        lang = request.GET.get('target_language', DEFAULT_TARGET_LANGUAGE)
+        text_to_translate = request.GET.get('text', DEFAULT_TEXT)
+>>>>>>> 558fa1a4eb57f1d2a2493b5a09510aa928e852b2
 
     # Translate the text using the specified target language.
     translated_text = translate_text(text_to_translate, lang)
@@ -65,6 +73,7 @@ async def translate_ajax(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+<<<<<<< HEAD
             form = TranslationForm(data)
             
             if form.is_valid():
@@ -86,6 +95,24 @@ async def translate_ajax(request):
                 })
             else:
                 return JsonResponse({'error': 'Invalid form data', 'errors': form.errors}, status=400)
+=======
+            text_to_translate = data.get('text_to_translate', DEFAULT_TEXT)
+            target_language = data.get('target_language', DEFAULT_TARGET_LANGUAGE)
+            
+            # Translate the text
+            translated_text = translate_text(text_to_translate, target_language)
+            
+            # Generate TTS audio
+            loop = asyncio.get_running_loop()
+            audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, target_language)
+            audio_data = audio_buffer.read()
+            encoded_audio = base64.b64encode(audio_data).decode("utf-8")
+            
+            return JsonResponse({
+                'translated_text': translated_text,
+                'encoded_audio': encoded_audio
+            })
+>>>>>>> 558fa1a4eb57f1d2a2493b5a09510aa928e852b2
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'error': 'Invalid request method'}, status=405)
