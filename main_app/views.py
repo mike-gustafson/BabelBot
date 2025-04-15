@@ -1,14 +1,14 @@
-import asyncio
 import base64
-from django.http import HttpResponse
+import json
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
 from translator.services import translate_text
 from tts.services import text_to_speech
 from googletrans import LANGUAGES
+from .forms import TranslationForm
 
-# Default language if not overridden by a query parameter
 DEFAULT_TARGET_LANGUAGE = "es"
-
-test_text_long = (
+DEFAULT_TEXT = (
     "A long time ago, in a galaxy far, far away. It is a period of civil war. Rebel "
     "spaceships, striking from a hidden base, have won their first victory against the evil "
     "Galactic Empire. During the battle, Rebel spies managed to steal secret plans to the Empire's "
@@ -18,7 +18,7 @@ test_text_long = (
 )
 
 def build_LANGUAGES_html(selected_language):
-    html_content = '<h3>Available Languages</h3><select id="language-select">'
+    html_content = '<select id="language-select" name="target_language">'
     html_content += '<option value="">Select a language</option>'
     for lang_code, lang_name in LANGUAGES.items():
         selected_attr = ' selected' if lang_code == selected_language else ''
@@ -26,39 +26,121 @@ def build_LANGUAGES_html(selected_language):
     html_content += '</select>'
     return html_content
 
-async def home(request):
-    # Read target_language from query parameters; use default if not provided.
-    lang = request.GET.get('target_language', DEFAULT_TARGET_LANGUAGE)
-    
-    # Translate text using the specified target language.
-    translated_text = translate_text(test_text_long, lang)
-    
-    # Convert the translated text to speech using an executor.
-    loop = asyncio.get_running_loop()
-    audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, lang)
-    
-    # Encode the audio data to base64 for embedding in HTML.
+async def translate(request):
+    if request.method == 'POST':
+<<<<<<< HEAD
+        form = TranslationForm(request.POST)
+        if form.is_valid():
+            text_to_translate = form.cleaned_data['text_to_translate']
+            lang = form.cleaned_data['target_language']
+        else:
+            text_to_translate = DEFAULT_TEXT
+            lang = DEFAULT_TARGET_LANGUAGE
+    else:
+        text_to_translate = request.GET.get('text', DEFAULT_TEXT)
+        lang = request.GET.get('target_language', DEFAULT_TARGET_LANGUAGE)
+        form = TranslationForm(initial={
+            'text_to_translate': text_to_translate,
+            'target_language': lang
+        }, selected_language=lang)
+=======
+        lang = request.POST.get('target_language', DEFAULT_TARGET_LANGUAGE)
+        text_to_translate = request.POST.get('text_to_translate', DEFAULT_TEXT)
+    else:
+        lang = request.GET.get('target_language', DEFAULT_TARGET_LANGUAGE)
+        text_to_translate = request.GET.get('text', DEFAULT_TEXT)
+>>>>>>> 558fa1a4eb57f1d2a2493b5a09510aa928e852b2
+
+    # Translate the text using the specified target language.
+    translated_text = translate_text(text_to_translate, lang)
+
+    # Generate TTS audio
+    audio_buffer = text_to_speech(translated_text, lang)
     audio_data = audio_buffer.read()
     encoded_audio = base64.b64encode(audio_data).decode("utf-8")
 
-    # Build the dropdown HTML, pre-selecting the current language.
-    languages_html = build_LANGUAGES_html(lang)
-    
-    # Create the HTML response including the audio player and a simple JavaScript snippet
-    # to update the selected language dynamically.
-    html_content = (
-        f'<h1>Welcome to BabelBot 1.0</h1>'
-        f'{languages_html}'
-        f'<h2>{translated_text}</h2>'
-        f'<audio controls>'
-        f'  <source src="data:audio/mp3;base64,{encoded_audio}" type="audio/mp3">'
-        f'  Your browser does not support the audio element.'
-        f'</audio>'
-        f'<script>'
-        f'  document.getElementById("language-select").addEventListener("change", function() {{'
-        f'    var selectedLang = this.value;'
-        f'    window.location.href = window.location.pathname + "?target_language=" + selectedLang;'
-        f'  }});'
-        f'</script>'
-    )
-    return HttpResponse(html_content)
+    context = {
+        'form': form,
+        'translated_text': translated_text,
+        'encoded_audio': encoded_audio,
+    }
+
+    return render(request, 'translate.html', context)
+
+async def translate_ajax(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+<<<<<<< HEAD
+            form = TranslationForm(data)
+            
+            if form.is_valid():
+                text_to_translate = form.cleaned_data['text_to_translate']
+                target_language = form.cleaned_data['target_language']
+                
+                # Translate the text
+                translated_text = translate_text(text_to_translate, target_language)
+                
+                # Generate TTS audio
+                loop = asyncio.get_running_loop()
+                audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, target_language)
+                audio_data = audio_buffer.read()
+                encoded_audio = base64.b64encode(audio_data).decode("utf-8")
+                
+                return JsonResponse({
+                    'translated_text': translated_text,
+                    'encoded_audio': encoded_audio
+                })
+            else:
+                return JsonResponse({'error': 'Invalid form data', 'errors': form.errors}, status=400)
+=======
+            text_to_translate = data.get('text_to_translate', DEFAULT_TEXT)
+            target_language = data.get('target_language', DEFAULT_TARGET_LANGUAGE)
+            
+            # Translate the text
+            translated_text = translate_text(text_to_translate, target_language)
+            
+            # Generate TTS audio
+            loop = asyncio.get_running_loop()
+            audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, target_language)
+            audio_data = audio_buffer.read()
+            encoded_audio = base64.b64encode(audio_data).decode("utf-8")
+            
+            return JsonResponse({
+                'translated_text': translated_text,
+                'encoded_audio': encoded_audio
+            })
+>>>>>>> 558fa1a4eb57f1d2a2493b5a09510aa928e852b2
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        # Perform login logic here
+        return HttpResponse("Login successful")
+    return render(request, 'login.html')
+
+def logout_view(request):
+    # Perform logout logic here
+    return HttpResponse("Logout successful")
+
+def signup(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        # Perform signup logic here
+        return HttpResponse("Signup successful")
+    return render(request, 'signup.html')
+
+def account(request):
+    # Perform account management logic here
+    return HttpResponse("Account management page")
+
+def about(request):
+    return render(request, 'about.html')
+
+def home(request):
+    return render(request, 'home.html')

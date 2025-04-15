@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/translate.css' %}">
+{% endblock %}
+
+{% block content %}
+  <section class="translate-section">
+    <div class="translate-wrapper">
+      <h2>Translate</h2>
+      <form method="get" id="translate-form">
+        <div class="container">
+          <div class="column">
+            <h3>Input Text</h3>
+            <textarea name="text" id="original_text">{{ text_to_translate }}</textarea>
+          </div>
+          <div class="center-column">
+            {{ language_dropdown|safe }}
+            <br/>
+            <button type="submit">Translate</button>
+          </div>
+          <div class="column">
+            <h3>Translated Text</h3>
+            <div class="translated-output">{{ translated_text }}</div>
+            <br/>
+            <div id="audio_container">
+              <audio controls>
+                <source src="data:audio/mp3;base64,{{ encoded_audio }}" type="audio/mp3">
+                Your browser does not support the audio element.
+              </audio>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+{% endblock %}
