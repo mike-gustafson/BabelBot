@@ -70,7 +70,7 @@ async def translate(request):
             if is_heroku:
                 logger.info("Running on Heroku - using extended timeout and retries")
             
-            translated_text = translate_text(
+            translated_text = await translate_text(
                 text_to_translate, 
                 lang,
                 max_retries=3 if is_heroku else 1

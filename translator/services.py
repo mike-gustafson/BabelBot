@@ -6,7 +6,7 @@ from requests.exceptions import RequestException
 
 logger = logging.getLogger(__name__)
 
-def translate_text(text, dest_lang='en', max_retries=3):
+async def translate_text(text, dest_lang='en', max_retries=3):
     for attempt in range(max_retries):
         try:
             logger.info(f"Attempting translation (attempt {attempt + 1}/{max_retries})")
@@ -17,15 +17,16 @@ def translate_text(text, dest_lang='en', max_retries=3):
             
             translation = translator.translate(text, dest=dest_lang)
             
+            # If it's a coroutine, await it
             if asyncio.iscoroutine(translation):
-                translation = asyncio.run(translation)
+                translation = await translation
             
             return translation.text
             
         except RequestException as e:
             logger.warning(f"Network error during translation (attempt {attempt + 1}): {str(e)}")
             if attempt < max_retries - 1:
-                time.sleep(1)  # Wait before retrying
+                await asyncio.sleep(1)  # Wait before retrying
                 continue
             logger.error("Max retries reached for translation")
             return "Network error during translation. Please try again later."
