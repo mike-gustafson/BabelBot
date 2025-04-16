@@ -105,14 +105,14 @@ DATABASES = {
         default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
         conn_max_age=600,
         conn_health_checks=True,
-        ssl_require=True,
     )
 }
 
-# Database optimization
-DATABASES['default']['OPTIONS'] = {
-    'sslmode': 'require'
-}
+# Add PostgreSQL-specific options only if we're using PostgreSQL
+if 'ON_HEROKU' in os.environ:
+    DATABASES['default']['OPTIONS'] = {
+        'sslmode': 'require'
+    }
 
 
 # Password validation
