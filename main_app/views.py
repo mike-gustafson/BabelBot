@@ -60,18 +60,20 @@ async def translate(request):
         # Translate the text using the specified target language.
         try:
             translated_text = translate_text(text_to_translate, lang)
-            # Save the translation to the database
-            Translation.objects.create(
-                user=request.user if request.user.is_authenticated else None,
-                original_text=text_to_translate,
-                translated_text=translated_text,
-                target_lang=lang
-            )
+            if translated_text.startswith("Translation service is currently unavailable"):
+                # Don't save failed translations to the database
+                logger.warning("Translation service returned error message")
+            else:
+                # Save the translation to the database
+                Translation.objects.create(
+                    user=request.user if request.user.is_authenticated else None,
+                    original_text=text_to_translate,
+                    translated_text=translated_text,
+                    target_lang=lang
+                )
         except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
             logger.error(f"Translation error: {str(e)}", exc_info=True)
-            translated_text = "Translation service is currently unavailable. Please try again later."
+            translated_text = "An unexpected error occurred during translation. Please try again later."
 
         # Check if language is supported for TTS
         tts_message = None

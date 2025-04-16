@@ -16,4 +16,4 @@ def translate_text(text, dest_lang='en'):
         return translation.text
     except Exception as e:
         logger.error(f"Translation error: {str(e)}", exc_info=True)
-        raise Exception("Translation service is currently unavailable. Please try again later.")
+        return "Translation service is currently unavailable. Please try again later."

@@ -111,7 +111,6 @@ DATABASES = {
 
 # Database optimization
 DATABASES['default']['OPTIONS'] = {
-    'connect_timeout': 10,
     'sslmode': 'require'
 }
 
