@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/about.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>About BabelBot</h2>
+  <div class="about-content">
+    <p class="about-description">
+      BabelBot is a modern translation tool designed to make language barriers a thing of the past. 
+      Our mission is to provide fast, accurate translations with natural-sounding voice output.
+    </p>
+    
+    <div class="features-grid">
+      <div class="feature-card">
+        <h3>Real-time Translation</h3>
+        <p>Get instant translations in multiple languages with our advanced translation engine.</p>
+      </div>
+      
+      <div class="feature-card">
+        <h3>Text to Speech</h3>
+        <p>Hear your translations with natural-sounding voice output in various languages.</p>
+      </div>
+      
+      <div class="feature-card">
+        <h3>User-Friendly</h3>
+        <p>Simple, intuitive interface designed for seamless translation experience.</p>
+      </div>
+    </div>
+
+    <div class="developers-section">
+      <h3>Meet the Developers</h3>
+      <div class="developers-grid">
+        <div class="developer-card">
+          <div class="developer-image">
+            <img src="{% static 'images/developer1.jpg' %}" alt="Developer 1">
+          </div>
+          <h4>Developer Name</h4>
+          <p class="role">Frontend Engineer</p>
+          <p class="bio">Specializing in user interface design and frontend development.</p>
+        </div>
+        
+        <div class="developer-card">
+          <div class="developer-image">
+            <img src="{% static 'images/developer2.jpg' %}" alt="Developer 2">
+          </div>
+          <h4>Developer Name</h4>
+          <p class="role">Backend Engineer</p>
+          <p class="bio">Expert in server-side development and API integration.</p>
+        </div>
+
+        <div class="developer-card">
+          <div class="developer-image">
+            <img src="{% static 'images/developer3.jpg' %}" alt="Developer 3">
+          </div>
+          <h4>Developer Name</h4>
+          <p class="role">Frontend Engineer</p>
+          <p class="bio">Focusing on responsive design and user experience.</p>
+        </div>
+
+        <div class="developer-card">
+          <div class="developer-image">
+            <img src="{% static 'images/developer4.jpg' %}" alt="Developer 4">
+          </div>
+          <h4>Developer Name</h4>
+          <p class="role">Backend Engineer</p>
+          <p class="bio">Specializing in database design and system architecture.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 
