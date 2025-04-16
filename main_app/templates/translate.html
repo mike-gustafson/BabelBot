@@ -12,7 +12,7 @@
     <div class="translate-grid">
       <div class="translate-column">
         <h3>Input Text</h3>
-        <textarea name="text" id="original_text" placeholder="Enter text to translate">{% if text_to_translate %}{{ text_to_translate }}{% endif %}</textarea>
+        <textarea name="text_to_translate" id="original_text" placeholder="Enter text to translate">{% if text_to_translate %}{{ text_to_translate }}{% endif %}</textarea>
         <div class="translate-controls">
           {{ language_dropdown|safe }}
           <button type="submit" class="btn-primary">Translate</button>

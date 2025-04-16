@@ -10,20 +10,21 @@ class TranslationForm(forms.Form):
         widget=forms.Textarea(attrs={
             'rows': 4,
             'required': True,
-            'id': 'text_to_translate',
-            'class': 'form-control'
+            'id': 'original_text',
+            'class': 'form-input',
+            'placeholder': 'Enter text to translate'
         }),
-        label='Text to Translate'
+        label=''
     )
     
     target_language = forms.ChoiceField(
         choices=[('', 'Select a language')] + [(code, name.title()) for code, name in LANGUAGES.items()],
         widget=forms.Select(attrs={
             'id': 'language-select',
-            'class': 'form-control',
+            'class': 'form-input',
             'required': True
         }),
-        label='Target Language'
+        label=''
     )
 
     def __init__(self, *args, **kwargs):

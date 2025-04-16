@@ -39,50 +39,62 @@ def build_LANGUAGES_html(selected_language):
     return html_content
 
 async def translate(request):
-    if request.method == 'POST':
-        form = TranslationForm(request.POST)
-        if form.is_valid():
-            text_to_translate = form.cleaned_data['text_to_translate']
-            lang = form.cleaned_data['target_language']
+    try:
+        if request.method == 'POST':
+            form = TranslationForm(request.POST)
+            if form.is_valid():
+                text_to_translate = form.cleaned_data['text_to_translate']
+                lang = form.cleaned_data['target_language']
+            else:
+                text_to_translate = DEFAULT_TEXT
+                lang = DEFAULT_TARGET_LANGUAGE
         else:
-            text_to_translate = DEFAULT_TEXT
-            lang = DEFAULT_TARGET_LANGUAGE
-    else:
-        text_to_translate = request.GET.get('text', DEFAULT_TEXT)
-        lang = request.GET.get('target_language', DEFAULT_TARGET_LANGUAGE)
-        form = TranslationForm(initial={
+            text_to_translate = request.GET.get('text', DEFAULT_TEXT)
+            lang = request.GET.get('target_language', DEFAULT_TARGET_LANGUAGE)
+            form = TranslationForm(initial={
+                'text_to_translate': text_to_translate,
+                'target_language': lang
+            }, selected_language=lang)
+
+        # Translate the text using the specified target language.
+        translated_text = translate_text(text_to_translate, lang)
+
+        # Check if language is supported for TTS
+        from gtts.lang import tts_langs
+        supported_langs = tts_langs()
+        tts_message = None
+        encoded_audio = None
+
+        if lang in supported_langs:
+            # Generate TTS audio only for supported languages
+            loop = asyncio.get_running_loop()
+            audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, lang)
+            audio_data = audio_buffer.read()
+            encoded_audio = base64.b64encode(audio_data).decode("utf-8")
+        else:
+            tts_message = "Text-to-speech is not available for this language."
+
+        context = {
+            'form': form,
             'text_to_translate': text_to_translate,
-            'target_language': lang
-        }, selected_language=lang)
+            'translated_text': translated_text,
+            'encoded_audio': encoded_audio,
+            'tts_message': tts_message,
+            'language_dropdown': build_LANGUAGES_html(lang)
+        }
 
-    # Translate the text using the specified target language.
-    translated_text = translate_text(text_to_translate, lang)
-
-    # Check if language is supported for TTS
-    from gtts.lang import tts_langs
-    supported_langs = tts_langs()
-    tts_message = None
-    encoded_audio = None
-
-    if lang in supported_langs:
-        # Generate TTS audio only for supported languages
-        loop = asyncio.get_running_loop()
-        audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, lang)
-        audio_data = audio_buffer.read()
-        encoded_audio = base64.b64encode(audio_data).decode("utf-8")
-    else:
-        tts_message = "Text-to-speech is not available for this language."
-
-    context = {
-        'form': form,
-        'text_to_translate': text_to_translate,
-        'translated_text': translated_text,
-        'encoded_audio': encoded_audio,
-        'tts_message': tts_message,
-        'language_dropdown': build_LANGUAGES_html(lang)
-    }
-
-    return render(request, 'translate.html', context)
+        return render(request, 'translate.html', context)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in translate view: {str(e)}", exc_info=True)
+        return render(request, 'translate.html', {
+            'form': TranslationForm(),
+            'text_to_translate': DEFAULT_TEXT,
+            'translated_text': "An error occurred. Please try again.",
+            'tts_message': None,
+            'language_dropdown': build_LANGUAGES_html(DEFAULT_TARGET_LANGUAGE)
+        })
 
 async def translate_ajax(request):
     if request.method == 'POST':
