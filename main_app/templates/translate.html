@@ -6,33 +6,35 @@
 {% endblock %}
 
 {% block content %}
-  <section class="translate-section">
-    <div class="translate-wrapper">
-      <h2>Translate</h2>
-      <form method="get" id="translate-form">
-        <div class="container">
-          <div class="column">
-            <h3>Input Text</h3>
-            <textarea name="text" id="original_text">{{ text_to_translate }}</textarea>
-          </div>
-          <div class="center-column">
-            {{ language_dropdown|safe }}
-            <br/>
-            <button type="submit">Translate</button>
-          </div>
-          <div class="column">
-            <h3>Translated Text</h3>
-            <div class="translated-output">{{ translated_text }}</div>
-            <br/>
-            <div id="audio_container">
-              <audio controls>
-                <source src="data:audio/mp3;base64,{{ encoded_audio }}" type="audio/mp3">
-                Your browser does not support the audio element.
-              </audio>
-            </div>
-          </div>
+<div class="translate-section">
+  <form method="post" id="translate-form">
+    {% csrf_token %}
+    <div class="translate-grid">
+      <div class="translate-column">
+        <h3>Input Text</h3>
+        <textarea name="text_to_translate" id="original_text" placeholder="Enter text to translate">{% if text_to_translate %}{{ text_to_translate }}{% endif %}</textarea>
+        <div class="translate-controls">
+          {{ language_dropdown|safe }}
+          <button type="submit" class="btn-primary">Translate</button>
         </div>
-      </form>
+      </div>
+      <div class="translate-column">
+        <h3>Translated Text</h3>
+        <div class="translated-output">{% if translated_text %}{{ translated_text }}{% endif %}</div>
+        {% if encoded_audio %}
+        <div id="audio_container">
+          <audio controls>
+            <source src="data:audio/mp3;base64,{{ encoded_audio }}" type="audio/mp3">
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+        {% elif tts_message %}
+        <div class="tts-message">
+          {{ tts_message }}
+        </div>
+        {% endif %}
+      </div>
     </div>
-  </section>
+  </form>
+</div>
 {% endblock %}

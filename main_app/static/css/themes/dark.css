@@ -1,0 +1,36 @@
+:root[data-theme="dark"] {
+  /* Base Colors */
+  --primary: #64ff9c;
+  --accent: #00ff7f;
+  --error: #fc8181;
+  --success: #68d391;
+  --warning: #f6ad55;
+  --info: #63b3ed;
+
+  /* Background Colors */
+  --bg-primary: #1a202c;
+  --bg-secondary: #2d3748;
+  --bg-tertiary: #4a5568;
+
+  /* Text Colors */
+  --text-primary: #f7fafc;
+  --text-secondary: #e2e8f0;
+  --text-tertiary: #cbd5e0;
+
+  /* Border Colors */
+  --border-primary: #4a5568;
+  --border-secondary: #718096;
+
+  /* Card Colors */
+  --card-bg: rgba(45, 55, 72, 0.9);
+  --card-border: rgba(74, 85, 104, 0.8);
+
+  /* Gradient Colors */
+  --gradient-primary: linear-gradient(135deg, #64ff9c 0%, #00ff7f 100%);
+  --gradient-secondary: linear-gradient(135deg, rgba(100, 255, 156, 0.2) 0%, rgba(0, 255, 127, 0.1) 100%);
+  --gradient-tertiary: linear-gradient(135deg, rgba(45, 55, 72, 0.9) 0%, rgba(45, 55, 72, 0.95) 100%);
+
+  /* Shadow Colors */
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --shadow-color-hover: rgba(0, 0, 0, 0.4);
+} 

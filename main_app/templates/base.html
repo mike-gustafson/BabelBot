@@ -3,42 +3,67 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>BabelBot 🌍</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}BabelBot{% endblock %}</title>
+  <script src="{% static 'js/theme-init.js' %}"></script>
+  <style>
+    /* Prevent transitions during initial load */
+    body {
+      transition: none !important;
+    }
+    * {
+      transition: none !important;
+    }
+  </style>
+  <link rel="stylesheet" href="{% static 'css/themes/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/themes/light.css' %}">
+  <link rel="stylesheet" href="{% static 'css/themes/dark.css' %}">
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  {% if request.path == '/' %}
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+  {% endif %}
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="navbar-container">
-        <h1>
-          <a href="/">
-            <img src="{% static 'images/logo2.png' %}" alt="BabelBot Logo" style="height: 150px; vertical-align: middle;">
-          </a>
-        </h1>
-        <div class="nav-menu">
-          <button id="menu-toggle" class="menu-toggle">☰</button>
-          <nav class="nav-links">
-            <a href="/" class="{% if request.path == '/' %}active{% endif %}">Home</a>
-            <a href="/translate/" class="{% if request.path == '/translate/' %}active{% endif %}">Translate</a>
-            <a href="/login/" class="{% if request.path == '/login/' %}active{% endif %}">Login</a>
-            <a href="/signup/" class="{% if request.path == '/signup/' %}active{% endif %}">Sign Up</a>
-            <a href="/account/" class="{% if request.path == '/account/' %}active{% endif %}">Account</a>
-            <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">About</a>
-          </nav>
-        </div>
+  <header>
+    <div class="navbar-container">
+      <div class="logo-container">
+        <a href="/" class="logo-link">
+          <img src="{% static 'images/logo2.png' %}" alt="BabelBot Logo" class="logo-img" style="height: 150px; vertical-align: middle;">
+          <span class="app-name">BabelBot</span>
+        </a>
       </div>
-    </header>
+      <div class="nav-menu">
+        <nav class="nav-links">
+          <a href="/" class="{% if request.path == '/' %}active{% endif %}">Home</a>
+          <a href="/translate/" class="{% if request.path == '/translate/' %}active{% endif %}">Translate</a>
+          <a href="/login/" class="{% if request.path == '/login/' %}active{% endif %}">Login</a>
+          <a href="/signup/" class="{% if request.path == '/signup/' %}active{% endif %}">Sign Up</a>
+          <a href="/account/" class="{% if request.path == '/account/' %}active{% endif %}">Account</a>
+          <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">About</a>
+        </nav>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+          <span class="theme-icon">🌙</span>
+        </button>
+        <button id="menu-toggle" class="menu-toggle">☰</button>
+      </div>
+    </div>
+  </header>
 
-    <main>
+  <main>
+    <div class="section-container">
       {% block content %}
       {% endblock %}
-    </main>
+    </div>
+  </main>
 
-    <footer>
-      <p>Made with 💚 by Team Green — 2025</p>
-    </footer>
-  </div>
+  <footer>
+    <p>Made with 💚 by Team Green — 2025</p>
+  </footer>
+
   <script src="{% static 'js/nav.js' %}"></script>
+  <script src="{% static 'js/theme.js' %}"></script>
+  {% block extra_js %}{% endblock %}
 </body>
 </html>

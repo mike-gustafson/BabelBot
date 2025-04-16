@@ -31,6 +31,23 @@ SECRET_KEY = "django-insecure-change-this-1234"
 # SECURITY WARNING: don't run with debug turned on in production!
 if not "ON_HEROKU" in os.environ:
     DEBUG = True
+else:
+    DEBUG = False
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'ERROR',
+            },
+        },
+    }
 
 
 ALLOWED_HOSTS = ["*"]
@@ -83,21 +100,18 @@ WSGI_APPLICATION = "babelbot.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-if "ON_HEROKU" in os.environ:
-    DATABASES = {
-        "default": dj_database_url.config(
-            env="DATABASE_URL",
-            conn_max_age=600,
-            conn_health_checks=True,
-            ssl_require=True,
-        ),
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
+DATABASES = {
+    "default": dj_database_url.config(
+        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}
+
+# Add PostgreSQL-specific options only if we're using PostgreSQL
+if 'ON_HEROKU' in os.environ:
+    DATABASES['default']['OPTIONS'] = {
+        'sslmode': 'require'
     }
 
 
