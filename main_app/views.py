@@ -21,6 +21,7 @@ import requests
 from django.conf import settings
 from .models import Translation
 import logging
+from asgiref.sync import sync_to_async
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,9 @@ DEFAULT_TEXT = (
     "planet. Pursued by the Empire's sinister agents, Princess Leia races home aboard her starship, "
     "custodian of the stolen plans that can save her people and restore freedom to the galaxy..."
 )
+
+# Create async versions of database operations
+create_translation = sync_to_async(Translation.objects.create)
 
 def build_LANGUAGES_html(selected_language):
     html_content = '<select id="language-select" name="target_language">'
@@ -81,9 +85,9 @@ async def translate(request):
             elif translated_text.startswith("Network error"):
                 logger.warning("Network error during translation")
             else:
-                # Save the translation to the database
+                # Save the translation to the database using sync_to_async
                 logger.info("Saving translation to database")
-                Translation.objects.create(
+                await create_translation(
                     user=request.user if request.user.is_authenticated else None,
                     original_text=text_to_translate,
                     translated_text=translated_text,
