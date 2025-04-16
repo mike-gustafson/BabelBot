@@ -18,6 +18,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 import requests
 from django.conf import settings
+from .models import Translation
 
 DEFAULT_TARGET_LANGUAGE = "es"
 DEFAULT_TEXT = (
@@ -57,22 +58,40 @@ async def translate(request):
             }, selected_language=lang)
 
         # Translate the text using the specified target language.
-        translated_text = translate_text(text_to_translate, lang)
+        try:
+            translated_text = translate_text(text_to_translate, lang)
+            # Save the translation to the database
+            Translation.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                original_text=text_to_translate,
+                translated_text=translated_text,
+                target_lang=lang
+            )
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Translation error: {str(e)}", exc_info=True)
+            translated_text = "Translation service is currently unavailable. Please try again later."
 
         # Check if language is supported for TTS
-        from gtts.lang import tts_langs
-        supported_langs = tts_langs()
         tts_message = None
         encoded_audio = None
-
-        if lang in supported_langs:
-            # Generate TTS audio only for supported languages
-            loop = asyncio.get_running_loop()
-            audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, lang)
-            audio_data = audio_buffer.read()
-            encoded_audio = base64.b64encode(audio_data).decode("utf-8")
-        else:
-            tts_message = "Text-to-speech is not available for this language."
+        try:
+            from gtts.lang import tts_langs
+            supported_langs = tts_langs()
+            if lang in supported_langs:
+                # Generate TTS audio only for supported languages
+                loop = asyncio.get_running_loop()
+                audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, lang)
+                audio_data = audio_buffer.read()
+                encoded_audio = base64.b64encode(audio_data).decode("utf-8")
+            else:
+                tts_message = "Text-to-speech is not available for this language."
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"TTS error: {str(e)}", exc_info=True)
+            tts_message = "Text-to-speech service is currently unavailable."
 
         context = {
             'form': form,
@@ -87,7 +106,7 @@ async def translate(request):
     except Exception as e:
         import logging
         logger = logging.getLogger(__name__)
-        logger.error(f"Error in translate view: {str(e)}", exc_info=True)
+        logger.error(f"General error in translate view: {str(e)}", exc_info=True)
         return render(request, 'translate.html', {
             'form': TranslationForm(),
             'text_to_translate': DEFAULT_TEXT,
