@@ -1,6 +1,7 @@
 import asyncio
 import base64
 import json
+import os
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from translator.services import translate_text
@@ -19,6 +20,10 @@ from django.views.decorators.csrf import csrf_exempt
 import requests
 from django.conf import settings
 from .models import Translation
+import logging
+from asgiref.sync import sync_to_async
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_TARGET_LANGUAGE = "es"
 DEFAULT_TEXT = (
@@ -29,6 +34,9 @@ DEFAULT_TEXT = (
     "planet. Pursued by the Empire's sinister agents, Princess Leia races home aboard her starship, "
     "custodian of the stolen plans that can save her people and restore freedom to the galaxy..."
 )
+
+# Create async versions of database operations
+create_translation = sync_to_async(Translation.objects.create)
 
 def build_LANGUAGES_html(selected_language):
     html_content = '<select id="language-select" name="target_language">'
@@ -59,19 +67,39 @@ async def translate(request):
 
         # Translate the text using the specified target language.
         try:
-            translated_text = translate_text(text_to_translate, lang)
-            # Save the translation to the database
-            Translation.objects.create(
-                user=request.user if request.user.is_authenticated else None,
-                original_text=text_to_translate,
-                translated_text=translated_text,
-                target_lang=lang
+            logger.info(f"Starting translation for text: {text_to_translate[:50]}...")
+            
+            # Check if we're on Heroku
+            is_heroku = 'ON_HEROKU' in os.environ
+            if is_heroku:
+                logger.info("Running on Heroku - using extended timeout and retries")
+            
+            translated_text = await translate_text(
+                text_to_translate, 
+                lang,
+                max_retries=3 if is_heroku else 1
             )
+            
+            if translated_text.startswith("Translation service is currently unavailable"):
+                logger.warning("Translation service returned error message")
+            elif translated_text.startswith("Network error"):
+                logger.warning("Network error during translation")
+            else:
+                # Save the translation to the database using sync_to_async
+                logger.info("Saving translation to database")
+                await create_translation(
+                    user=request.user if request.user.is_authenticated else None,
+                    original_text=text_to_translate,
+                    translated_text=translated_text,
+                    target_lang=lang
+                )
+                logger.info("Translation saved to database")
+                
         except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Translation error: {str(e)}", exc_info=True)
-            translated_text = "Translation service is currently unavailable. Please try again later."
+            logger.error(f"Translation error in view: {str(e)}", exc_info=True)
+            logger.error(f"Error type: {type(e)}")
+            logger.error(f"Error args: {e.args}")
+            translated_text = "An unexpected error occurred during translation. Please try again later."
 
         # Check if language is supported for TTS
         tts_message = None
@@ -88,8 +116,6 @@ async def translate(request):
             else:
                 tts_message = "Text-to-speech is not available for this language."
         except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
             logger.error(f"TTS error: {str(e)}", exc_info=True)
             tts_message = "Text-to-speech service is currently unavailable."
 
@@ -104,8 +130,6 @@ async def translate(request):
 
         return render(request, 'translate.html', context)
     except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
         logger.error(f"General error in translate view: {str(e)}", exc_info=True)
         return render(request, 'translate.html', {
             'form': TranslationForm(),
