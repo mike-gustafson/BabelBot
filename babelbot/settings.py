@@ -31,6 +31,23 @@ SECRET_KEY = "django-insecure-change-this-1234"
 # SECURITY WARNING: don't run with debug turned on in production!
 if not "ON_HEROKU" in os.environ:
     DEBUG = True
+else:
+    DEBUG = False
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'ERROR',
+            },
+        },
+    }
 
 
 ALLOWED_HOSTS = ["*"]
