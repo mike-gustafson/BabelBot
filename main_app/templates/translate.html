@@ -1,29 +1,40 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>BabelBot 🌍</title>
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
-  <header>
-    <h1><a href="/">🤖 BabelBot 1.0</a></h1>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/translate/">Translate</a>
-      <a href="/login/">Login</a>
-      <a href="/signup/">Sign Up</a>
-    </nav>
-  </header>
 
-  <main>
-    {% block content %}
-    {% endblock %}
-  </main>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/translate.css' %}">
+{% endblock %}
 
-  <footer>
-    <p>Made with 💚 by Team Green — 2025</p>
-  </footer>
-</body>
-</html>
+{% block content %}
+<div class="translate-section">
+  <form method="post" id="translate-form">
+    {% csrf_token %}
+    <div class="translate-grid">
+      <div class="translate-column">
+        <h3>Input Text</h3>
+        <textarea name="text" id="original_text" placeholder="Enter text to translate">{% if text_to_translate %}{{ text_to_translate }}{% endif %}</textarea>
+        <div class="translate-controls">
+          {{ language_dropdown|safe }}
+          <button type="submit" class="btn-primary">Translate</button>
+        </div>
+      </div>
+      <div class="translate-column">
+        <h3>Translated Text</h3>
+        <div class="translated-output">{% if translated_text %}{{ translated_text }}{% endif %}</div>
+        {% if encoded_audio %}
+        <div id="audio_container">
+          <audio controls>
+            <source src="data:audio/mp3;base64,{{ encoded_audio }}" type="audio/mp3">
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+        {% elif tts_message %}
+        <div class="tts-message">
+          {{ tts_message }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

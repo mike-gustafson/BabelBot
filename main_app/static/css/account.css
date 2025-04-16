@@ -1,0 +1,10 @@
+.account-content {
+  padding: var(--spacing-md) 0;
+}
+
+.placeholder-text {
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--text-color);
+  opacity: 0.8;
+} 
