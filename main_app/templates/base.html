@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
     body {
       transition: none !important;
     }
+
     * {
       transition: none !important;
     }
@@ -25,13 +27,15 @@
   {% endif %}
   {% block extra_css %}{% endblock %}
 </head>
+
 <body>
   <header>
     <div class="navbar-container">
       <div class="logo-container">
         <a href="/" class="logo-link">
-          <img src="{% static 'images/logo2.png' %}" alt="BabelBot Logo" class="logo-img" style="height: 150px; vertical-align: middle;">
-          <span class="app-name">BabelBot</span>
+          <img src="{% static 'images/logo2.png' %}" alt="BabelBot Logo" class="logo-img"
+            style="height: 150px; vertical-align: middle;">
+          <span class="app-name"></span>
         </a>
       </div>
       <div class="nav-menu">
@@ -66,4 +70,5 @@
   <script src="{% static 'js/theme.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>
+
 </html>
