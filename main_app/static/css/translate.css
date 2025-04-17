@@ -104,25 +104,7 @@ textarea:focus {
 }
 
 .translate-controls .btn-primary {
-  min-width: 120px;
-  padding: 10px 20px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  border-radius: 8px;
-  transition: all 0.2s ease-in-out;
-  flex-shrink: 0;
-}
-
-.translate-controls .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.translate-controls .btn-primary:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: none;
 }
 
 select {
@@ -211,45 +193,79 @@ audio {
 @media (max-width: 768px) {
   .translate-grid {
     flex-direction: column;
+    gap: var(--spacing-md);
   }
 
   .translate-column {
-    height: auto;
+    padding: var(--spacing-md);
+    min-height: 300px;
+  }
+
+  textarea, .translated-output {
+    min-height: 150px;
+    font-size: 1rem;
   }
 
   .translate-controls {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
+    width: 100%;
     gap: var(--spacing-md);
   }
 
   select {
+    width: 100%;
     max-width: none;
-    width: calc(100% - 140px); /* Leave space for button */
+    font-size: 1rem;
+    padding: 12px var(--spacing-md);
   }
 
-  .translate-controls .btn-primary {
-    width: auto;
+  .translate-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 8px var(--spacing-md);
+  }
+
+  .translate-btn-logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .translate-btn span {
+    font-size: 1rem;
   }
 }
 
 @media (max-width: 480px) {
   .translate-section {
     padding: var(--spacing-md);
-    margin: var(--spacing-md);
+    margin: var(--spacing-sm);
+  }
+
+  .translate-column {
+    padding: var(--spacing-sm);
+    min-height: 250px;
+  }
+
+  textarea, .translated-output {
+    min-height: 120px;
+    padding: var(--spacing-sm);
   }
 
   .translate-controls {
-    flex-direction: column;
+    gap: var(--spacing-sm);
   }
 
   select {
-    width: 100%;
-    max-width: none;
+    padding: 10px var(--spacing-md);
   }
 
-  .translate-controls .btn-primary {
-    width: 100%;
+  .translate-btn {
+    padding: 6px var(--spacing-md);
+  }
+
+  .translate-btn-logo {
+    width: 28px;
+    height: 28px;
   }
 }
 
@@ -303,16 +319,8 @@ audio {
 }
 
 .translate-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: 6px 24px;
-  background: var(--gradient-tertiary);
-  border: 2px solid var(--border-primary);
-  border-radius: var(--border-radius-md);
-  color: var(--text-primary);
-  transition: all 0.2s ease-in-out;
   width: fit-content;
+  padding: 6px 24px;
 }
 
 .translate-btn-logo {
@@ -327,13 +335,7 @@ audio {
   letter-spacing: 0.5px;
 }
 
-.translate-btn:hover {
-  transform: translateY(-1px);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--shadow-color);
-}
-
-.translate-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* Remove generic button styles since they're in base.css */
+button {
+  white-space: nowrap;
 } 

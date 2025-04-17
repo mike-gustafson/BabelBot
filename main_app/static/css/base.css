@@ -354,4 +354,40 @@ footer::before {
     margin-top: 100px;
     margin-bottom: 60px;
   }
+}
+
+/* Common button styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: var(--text-primary);
+  border: none;
+  box-shadow: var(--box-shadow);
+}
+
+.btn-secondary {
+  background: var(--gradient-tertiary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-primary);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow-hover);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: var(--box-shadow);
 } 
