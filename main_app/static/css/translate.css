@@ -97,10 +97,10 @@ textarea:focus {
 
 .translate-controls {
   display: flex;
+  flex-direction: column;
   gap: var(--spacing-md);
   align-items: center;
   margin-top: var(--spacing-md);
-  justify-content: space-between;
 }
 
 .translate-controls .btn-primary {
@@ -126,7 +126,8 @@ textarea:focus {
 }
 
 select {
-  max-width: 200px;
+  width: 100%;
+  max-width: 300px;
   padding: var(--spacing-sm) var(--spacing-md);
   border: 2px solid var(--border-primary);
   border-radius: var(--border-radius-md);
@@ -305,21 +306,23 @@ audio {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: 8px 16px;
+  padding: 6px 24px;
   background: var(--gradient-tertiary);
   border: 2px solid var(--border-primary);
   border-radius: var(--border-radius-md);
   color: var(--text-primary);
   transition: all 0.2s ease-in-out;
+  width: fit-content;
 }
 
 .translate-btn-logo {
-  width: 24px;
-  height: 24px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
 }
 
 .translate-btn span {
+  font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.5px;
 }
