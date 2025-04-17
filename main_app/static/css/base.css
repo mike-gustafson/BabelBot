@@ -126,13 +126,15 @@ body {
 
 /* Main container styles */
 main {
-  padding-top: 60px;
+  padding-top: var(--spacing-sm);
   min-height: calc(100vh - 120px);
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding-left: var(--spacing-lg);
-  padding-right: var(--spacing-lg);
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
+  margin-top: 40px;
+  margin-bottom: 60px;
 }
 
 /* Card styles */
@@ -253,7 +255,7 @@ header {
   width: 100%;
   max-width: 1000px;
   margin: 0 auto;
-  padding: var(--spacing-lg);
+  padding: var(--spacing-sm);
 }
 
 /* Footer styles */
@@ -351,8 +353,15 @@ footer::before {
   }
 
   main {
-    margin-top: 100px;
+    padding-top: var(--spacing-sm);
+    margin-top: 40px;
     margin-bottom: 60px;
+    padding-left: var(--spacing-sm);
+    padding-right: var(--spacing-sm);
+  }
+
+  .section-container {
+    padding: var(--spacing-xs);
   }
 }
 
