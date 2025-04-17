@@ -33,8 +33,7 @@
     <div class="navbar-container">
       <div class="logo-container">
         <a href="/" class="logo-link">
-          <img src="{% static 'images/logo2.png' %}" alt="BabelBot Logo" class="logo-img"
-            style="height: 150px; vertical-align: middle;">
+          <img src="{% static 'images/logo2.png' %}" alt="BabelBot Logo" id="babelbot-logo" class="logo-img">
           <span class="app-name"></span>
         </a>
       </div>
@@ -50,7 +49,11 @@
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
           <span class="theme-icon">🌙</span>
         </button>
-        <button id="menu-toggle" class="menu-toggle">☰</button>
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle navigation menu">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </button>
       </div>
     </div>
   </header>
@@ -68,6 +71,7 @@
 
   <script src="{% static 'js/nav.js' %}"></script>
   <script src="{% static 'js/theme.js' %}"></script>
+  <script src="{% static 'js/logo-animation.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>
 

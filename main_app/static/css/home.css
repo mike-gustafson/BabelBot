@@ -1,7 +1,8 @@
 .home-section {
-  min-height: calc(100vh - 200px);
+  min-height: calc(100vh - 120px); /* Updated to match new header height */
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to allow content to flow */
+  padding: var(--spacing-md) 0; /* Reduced padding */
 }
 
 /* Background logo with overlay */
@@ -24,20 +25,21 @@
 .home-content-wrapper {
   position: relative;
   z-index: 1;
-  background: rgba(255, 255, 255, 0.7);
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
+  background: rgba(255, 255, 255, 0.5); /* More transparent */
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
   border-radius: var(--border-radius-lg);
-  padding: var(--spacing-xl);
-  margin: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-md) auto; /* Reduced margin */
+  max-width: 1000px;
   box-shadow: var(--box-shadow);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .hero-content {
   text-align: center;
-  padding: var(--spacing-lg) 0;
-  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md) 0; /* Reduced padding */
+  margin-bottom: var(--spacing-md); /* Reduced margin */
 }
 
 .hero-content h2 {
