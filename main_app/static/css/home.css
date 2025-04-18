@@ -8,29 +8,33 @@
 /* Background logo with overlay */
 .home-section::before {
   content: '';
-  position: absolute;
+  position: fixed; /* Changed from absolute to fixed */
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background-image: url('../images/logo3.png');
   background-size: cover;
+  background-size: 100vw 100vh; /* Ensure the image covers the entire page */
   background-position: center;
   background-repeat: no-repeat;
   opacity: 0.15;
   z-index: 0;
+  width: 100vw; /* Added to ensure full viewport width */
+  height: 100vh; /* Added to ensure full viewport height */
+
 }
 
 /* Content wrapper to ensure text is above background */
 .home-content-wrapper {
   position: relative;
   z-index: 1;
-  background: rgba(255, 255, 255, 0.5); /* More transparent */
-  -webkit-backdrop-filter: blur(5px);
-  backdrop-filter: blur(5px);
+  background: rgba(255, 255, 255, 0.1); /* More transparent */
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-lg);
-  margin: var(--spacing-md) auto; /* Reduced margin */
+  margin: var(--spacing-md) auto;
   max-width: 1000px;
   box-shadow: var(--box-shadow);
   border: 1px solid rgba(255, 255, 255, 0.2);
