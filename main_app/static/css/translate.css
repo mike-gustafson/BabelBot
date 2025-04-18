@@ -264,8 +264,8 @@ audio {
   }
 
   .translate-btn-logo {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
   }
 }
 
@@ -320,13 +320,15 @@ audio {
 
 .translate-btn {
   width: fit-content;
-  padding: 6px 24px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
 }
 
 .translate-btn-logo {
   width: 40px;
   height: 40px;
-  object-fit: contain;
 }
 
 .translate-btn span {
@@ -335,7 +337,39 @@ audio {
   letter-spacing: 0.5px;
 }
 
-/* Remove generic button styles since they're in base.css */
-button {
-  white-space: nowrap;
-} 
+/* Custom styles for select in translate page */
+.language-select {
+  width: 100%;
+  max-width: 300px;
+}
+
+/* Remove duplicate button styles - using .btn from base.css */
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .translate-grid {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .translate-column {
+    padding: var(--spacing-md);
+  }
+
+  .translate-controls {
+    margin-top: var(--spacing-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .translate-section {
+    padding: var(--spacing-sm);
+  }
+
+  .translate-btn-logo {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* ... rest of the specific translate styles ... */ 
