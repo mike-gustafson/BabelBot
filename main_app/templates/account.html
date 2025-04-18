@@ -6,19 +6,27 @@
 {% endblock %}
 
 {% block content %}
-<h2>Welcome, {{user.username}}</h2>
+<h2>
+  Welcome, 
+  user.username
+</h2>
 <div class="card">
   <h2>User Account</h2>
   <div class="account-content">
     <p class="placeholder-text">User Account Template</p>
     <!--Display Profile Info-->
     <div class="profile-display">
-    <p>Email:{{user.email}}</p>
+    <p>
+      Email:
+      user.email
+    </p>
     <p>Preferred Language
-    {{user.profile.interfaced_language}}</p>
+    user.profile.interfaced_language
+  </p>
     <p>Default Translation:
-    {{user.profile.source_language}}
-    {{user.profile.target_language}}</p>
+    user.profile.source_language
+    user.profile.target_language
+  </p>
  <div>
   <!--Edit Profile Form-->
   <h2>Edit Profile</h2>
