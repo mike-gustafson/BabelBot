@@ -6,10 +6,40 @@
 {% endblock %}
 
 {% block content %}
+<h2>
+  Welcome, 
+  user.username
+</h2>
 <div class="card">
   <h2>User Account</h2>
   <div class="account-content">
     <p class="placeholder-text">User Account Template</p>
-  </div>
+    <!--Display Profile Info-->
+    <div class="profile-display">
+    <p>
+      Email:
+      user.email
+    </p>
+    <p>Preferred Language
+    user.profile.interfaced_language
+  </p>
+    <p>Default Translation:
+    user.profile.source_language
+    user.profile.target_language
+  </p>
+ <div>
+  <!--Edit Profile Form-->
+  <h2>Edit Profile</h2>
+  <form method= "post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{form.as_p}}
+    <button type="submit" class="btn btn-success">Save Changes</button>
+  </form>
+</div>
+<!--Delete Account-->
+<h2>Delete Account</h2>
+<form method="post" onsubmit="return confirm"('Are you sure you want to delete your account?');>
+  {% csrf_token %}
+<button type="submit" class="btn btn-danger">Delete Account</button>
 </div>
 {% endblock %} 
