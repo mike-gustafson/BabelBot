@@ -10,7 +10,7 @@
             {% csrf_token %}
             <div class="form-group">
                 <label for="ocr_import">Import from OCR Test:</label>
-                <select id="ocr_import" name="ocr_import" class="form-control">
+                <select id="ocr_import" name="ocr_import" class="form-input bg-secondary text-primary">
                     <option value="">Select an OCR test...</option>
                     {% for test in ocr_tests %}
                     <option value="{{ test.id }}" data-text="{{ test.text }}">
@@ -21,11 +21,11 @@
             </div>
             <div class="form-group">
                 <label for="source_text">Source Text:</label>
-                <textarea id="source_text" name="source_text" rows="4"></textarea>
+                <textarea id="source_text" name="source_text" rows="4" class="form-input bg-secondary text-primary"></textarea>
             </div>
             <div class="form-group">
                 <label for="target_language">Target Language:</label>
-                <select id="target_language" name="target_language">
+                <select id="target_language" name="target_language" class="form-input bg-secondary text-primary">
                     <option value="">Select a language</option>
                     {% for code, name in languages.items %}
                     <option value="{{ code }}">{{ name }}</option>
@@ -36,7 +36,7 @@
         </form>
         <div id="result-container" style="display: none;">
             <h3>Result:</h3>
-            <div id="result-text"></div>
+            <div id="result-text" class="text-primary"></div>
         </div>
     </div>
     {% endif %}
@@ -44,6 +44,102 @@
     {{ block.super }}
 </div>
 
-<link rel="stylesheet" href="{% static 'translator/css/admin.css' %}">
+<style>
+.module {
+    margin-bottom: 20px;
+    padding: 20px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    box-shadow: var(--shadow-color);
+    border: 2px solid var(--border-primary);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.form-input {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid var(--border-primary);
+    border-radius: 4px;
+    background-color: var(--bg-primary) !important;  /* Force background color */
+    color: var(--text-primary);
+    min-height: 36px;
+}
+
+.form-input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--shadow-color);
+}
+
+.button {
+    background: var(--primary);
+    color: var(--bg-primary);
+    padding: 10px 15px;
+    border: 2px solid var(--border-primary);
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.button:hover {
+    background: var(--accent);
+}
+
+#result-container {
+    margin-top: 20px;
+    padding: 15px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    color: var(--text-primary);
+    border: 2px solid var(--border-primary);
+}
+
+#result-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Fix for select boxes */
+select.form-input {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 32px;
+    background-color: var(--bg-primary) !important;  /* Force background color */
+}
+
+/* Fix for text height in inputs */
+textarea.form-input {
+    min-height: 100px;
+    line-height: 1.5;
+    background-color: var(--bg-primary) !important;  /* Force background color */
+}
+
+/* Add hover state for inputs */
+.form-input:hover {
+    border-color: var(--border-secondary);
+}
+
+/* Fix for option elements in select boxes */
+select.form-input option {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+</style>
+
 <script src="{% static 'translator/js/admin.js' %}"></script>
 {% endblock %} 

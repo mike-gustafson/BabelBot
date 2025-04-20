@@ -44,121 +44,162 @@ def build_LANGUAGES_html(selected_language):
     html_content += '</select>'
     return html_content
 
-async def translate(request):
+async def translate_view(request):
+    """
+    Main view for the translation page
+    """
     try:
         if request.method == 'POST':
-            form = TranslationForm(request.POST)
-            if form.is_valid():
-                text_to_translate = form.cleaned_data['text_to_translate']
-                lang = form.cleaned_data['target_language']
+            text_to_translate = request.POST.get('text_to_translate')
+            lang = request.POST.get('target_language')
+            
+            if not text_to_translate or not lang:
+                return render(request, 'translate.html', {
+                    'form': TranslationForm(),
+                    'text_to_translate': text_to_translate or DEFAULT_TEXT,
+                    'translated_text': "Please provide both text and language",
+                    'language_dropdown': build_LANGUAGES_html(lang or DEFAULT_TARGET_LANGUAGE)
+                })
+            
+            try:
+                result = await translate_text(text_to_translate, lang)
+                translated_text = result['translated_text']
                 
-                # Translate the text using the specified target language.
+                # Get user in async context
+                user = await get_user_async(request)
+                if not user.is_authenticated:
+                    # Use anonymous user if not authenticated
+                    user = await get_anonymous_user()
+                
+                # Save the translation to the database using sync_to_async
+                await create_translation(
+                    user=user,
+                    original_text=text_to_translate,
+                    translated_text=translated_text,
+                    target_lang=lang
+                )
+                
+                # Check if language is supported for TTS
+                tts_message = None
+                encoded_audio = None
                 try:
-                    translated_text = await translate_text(
-                        text_to_translate, 
-                        lang,
-                        max_retries=3 if 'ON_HEROKU' in os.environ else 1
-                    )
-                    
-                    if translated_text.startswith("Translation service is currently unavailable"):
-                        translated_text = "Translation service is currently unavailable. Please try again later."
-                    elif translated_text.startswith("Network error"):
-                        translated_text = "Network error during translation. Please try again later."
+                    from gtts.lang import tts_langs
+                    supported_langs = tts_langs()
+                    if lang in supported_langs:
+                        # Generate TTS audio only for supported languages
+                        loop = asyncio.get_running_loop()
+                        audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, lang)
+                        audio_data = audio_buffer.read()
+                        encoded_audio = base64.b64encode(audio_data).decode("utf-8")
                     else:
-                        # Get user in async context
-                        user = await get_user_async(request)
-                        if not user.is_authenticated:
-                            # Use anonymous user if not authenticated
-                            user = await get_anonymous_user()
-                        
-                        # Save the translation to the database using sync_to_async
-                        await create_translation(
-                            user=user,
-                            original_text=text_to_translate,
-                            translated_text=translated_text,
-                            target_lang=lang
-                        )
-                        
+                        tts_message = "Text-to-speech is not available for this language."
                 except Exception as e:
-                    translated_text = "An unexpected error occurred during translation. Please try again later."
-            else:
-                text_to_translate = DEFAULT_TEXT
-                lang = DEFAULT_TARGET_LANGUAGE
-                translated_text = ""
-        else:
-            text_to_translate = request.GET.get('text', DEFAULT_TEXT)
-            lang = request.GET.get('target_language', DEFAULT_TARGET_LANGUAGE)
-            translated_text = ""
-            form = TranslationForm(initial={
+                    tts_message = "Text-to-speech service is currently unavailable."
+                
+                return render(request, 'translate.html', {
+                    'form': TranslationForm(initial={
+                        'text_to_translate': text_to_translate,
+                        'target_language': lang
+                    }),
+                    'text_to_translate': text_to_translate,
+                    'translated_text': translated_text,
+                    'encoded_audio': encoded_audio,
+                    'tts_message': tts_message,
+                    'language_dropdown': build_LANGUAGES_html(lang)
+                })
+                
+            except Exception as e:
+                return render(request, 'translate.html', {
+                    'form': TranslationForm(initial={
+                        'text_to_translate': text_to_translate,
+                        'target_language': lang
+                    }),
+                    'text_to_translate': text_to_translate,
+                    'translated_text': "An error occurred during translation. Please try again.",
+                    'language_dropdown': build_LANGUAGES_html(lang)
+                })
+        
+        # GET request
+        text_to_translate = request.GET.get('text', DEFAULT_TEXT)
+        lang = request.GET.get('target_language', DEFAULT_TARGET_LANGUAGE)
+        return render(request, 'translate.html', {
+            'form': TranslationForm(initial={
                 'text_to_translate': text_to_translate,
                 'target_language': lang
-            }, selected_language=lang)
-
-        # Check if language is supported for TTS
-        tts_message = None
-        encoded_audio = None
-        if translated_text:  # Only generate TTS if we have a translation
-            try:
-                from gtts.lang import tts_langs
-                supported_langs = tts_langs()
-                if lang in supported_langs:
-                    # Generate TTS audio only for supported languages
-                    loop = asyncio.get_running_loop()
-                    audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, lang)
-                    audio_data = audio_buffer.read()
-                    encoded_audio = base64.b64encode(audio_data).decode("utf-8")
-                else:
-                    tts_message = "Text-to-speech is not available for this language."
-            except Exception as e:
-                tts_message = "Text-to-speech service is currently unavailable."
-
-        context = {
-            'form': form,
+            }),
             'text_to_translate': text_to_translate,
-            'translated_text': translated_text,
-            'encoded_audio': encoded_audio,
-            'tts_message': tts_message,
+            'translated_text': "",
             'language_dropdown': build_LANGUAGES_html(lang)
-        }
-
-        return render(request, 'translate.html', context)
+        })
+        
     except Exception as e:
         return render(request, 'translate.html', {
             'form': TranslationForm(),
             'text_to_translate': DEFAULT_TEXT,
             'translated_text': "An error occurred. Please try again.",
-            'tts_message': None,
             'language_dropdown': build_LANGUAGES_html(DEFAULT_TARGET_LANGUAGE)
         })
 
+@csrf_exempt
+@require_http_methods(["POST"])
 async def translate_ajax(request):
-    if request.method == 'POST':
+    try:
+        data = json.loads(request.body)
+        text_to_translate = data.get('text_to_translate')
+        target_language = data.get('target_language')
+        
+        if not text_to_translate or not target_language:
+            return JsonResponse({
+                'error': 'Text and target language are required'
+            }, status=400)
+        
+        # Translate the text
+        result = await translate_text(text_to_translate, target_language)
+        
+        # Get user in async context
+        user = await get_user_async(request)
+        if not user.is_authenticated:
+            # Use anonymous user if not authenticated
+            user = await get_anonymous_user()
+        
+        # Save the translation to the database
+        await create_translation(
+            user=user,
+            original_text=text_to_translate,
+            translated_text=result['translated_text'],
+            target_lang=target_language
+        )
+        
+        # Generate TTS if the language is supported
+        encoded_audio = None
         try:
-            data = json.loads(request.body)
-            form = TranslationForm(data)
-            
-            if form.is_valid():
-                text_to_translate = form.cleaned_data['text_to_translate']
-                target_language = form.cleaned_data['target_language']
-                
-                # Translate the text
-                translated_text = translate_text(text_to_translate, target_language)
-                
-                # Generate TTS audio
+            from gtts.lang import tts_langs
+            supported_langs = tts_langs()
+            if target_language in supported_langs:
                 loop = asyncio.get_running_loop()
-                audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, target_language)
+                audio_buffer = await loop.run_in_executor(
+                    None, 
+                    text_to_speech, 
+                    result['translated_text'], 
+                    target_language
+                )
                 audio_data = audio_buffer.read()
                 encoded_audio = base64.b64encode(audio_data).decode("utf-8")
-                
-                return JsonResponse({
-                    'translated_text': translated_text,
-                    'encoded_audio': encoded_audio
-                })
-            else:
-                return JsonResponse({'error': 'Invalid form data', 'errors': form.errors}, status=400)
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
+            # TTS failed but translation succeeded, we can continue
+            pass
+        
+        return JsonResponse({
+            'translated_text': result['translated_text'],
+            'source_language': result['src'],
+            'target_language': result['dest'],
+            'encoded_audio': encoded_audio
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
 
 def login_view(request):
     if request.method == 'POST':

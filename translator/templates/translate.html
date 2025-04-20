@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/translate.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="translate-section">
+  <form method="post" id="translate-form">
+    {% csrf_token %}
+    <div class="translate-grid">
+      <div class="translate-column">
+        <h3>Input Text</h3>
+        {{ form.text_to_translate }}
+        <div class="translate-controls">
+          {{ form.target_language }}
+          <button type="submit" class="btn-primary">Translate</button>
+        </div>
+      </div>
+      <div class="translate-column">
+        <h3>Translated Text</h3>
+        <div class="translated-output"></div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('translate-form');
+    const translatedOutput = document.querySelector('.translated-output');
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Translating...';
+        
+        try {
+            const response = await fetch('/translator/api/translate/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    text: form.querySelector('#original_text').value,
+                    target_language: form.querySelector('#language-select').value
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                translatedOutput.textContent = data.translation;
+            } else {
+                translatedOutput.innerHTML = `<p class="error">${data.error}</p>`;
+            }
+        } catch (error) {
+            translatedOutput.innerHTML = `<p class="error">An error occurred during translation.</p>`;
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Translate';
+        }
+    });
+});
+</script>
+{% endblock %} 
