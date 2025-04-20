@@ -3,12 +3,16 @@
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 2rem;
+  --spacing-xl: 4rem;
 }
 
 .translate-section {
   width: 100%;
   max-width: 1200px;
-  padding: var(--spacing-lg);
+  padding-top: 6rem;
+  padding-left: var(--spacing-lg);
+  padding-right: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
   background: var(--gradient-tertiary);
   border-radius: var(--border-radius-md);
   box-shadow: var(--box-shadow);

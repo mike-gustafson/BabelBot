@@ -133,9 +133,8 @@ main {
   margin: 0 auto;
   padding-left: var(--spacing-md);
   padding-right: var(--spacing-md);
-  margin-top: 40px;
+  margin-top: 80px;
   margin-bottom: 60px;
-  
 }
 
 /* Card styles */
@@ -355,7 +354,7 @@ footer::before {
 
   main {
     padding-top: var(--spacing-sm);
-    margin-top: 40px;
+    margin-top: 120px;
     margin-bottom: 60px;
     padding-left: var(--spacing-sm);
     padding-right: var(--spacing-sm);
