@@ -40,8 +40,14 @@
       </div>
       <div class="nav-menu">
         <nav class="nav-links">
-          <a href="/" class="{% if request.path == '/' %}active{% endif %}">Home</a>
-          <a href="/translate/" class="{% if request.path == '/translate/' %}active{% endif %}">Translate</a>
+          <a href="/" class="{% if request.path == '/' %}active{% endif %}">
+            <img src="{% static 'images/logo_home.png' %}" alt="Home" class="nav-icon">
+            Home
+          </a>
+          <a href="/translate/" class="{% if request.path == '/translate/' %}active{% endif %}">
+            <img src="{% static 'images/logo_translate.png' %}" alt="Translate" class="nav-icon">
+            Translate
+          </a>
           <a href="/login/" class="{% if request.path == '/login/' %}active{% endif %}">Login</a>
           <a href="/signup/" class="{% if request.path == '/signup/' %}active{% endif %}">Sign Up</a>
           <a href="/account/" class="{% if request.path == '/account/' %}active{% endif %}">Account</a>
