@@ -5,16 +5,21 @@ name = "pypi"
 
 [packages]
 django = "5.2.0"
-googletrans = "4.0.2"
-gtts = "2.5.4"
-asyncio = "3.4.3"
-python-dotenv = "1.1.0"
-whitenoise = "6.9.0"
-gunicorn = "23.0.0"
+python-dotenv = "1.0.0"
 dj-database-url = "2.3.0"
-psycopg2-binary = "2.9.10"
+whitenoise = "6.6.0"
+gunicorn = "21.2.0"
+googletrans = "3.1.0a0"
+gtts = "2.5.4"
+Pillow = "10.0.0"
+psycopg2-binary = "2.9.9"
+google-cloud-vision = "3.4.0"
 
 [dev-packages]
+black = "23.12.1"
+flake8 = "7.0.0"
+pytest = "8.0.0"
+pytest-django = "4.7.0"
 
 [requires]
 python_version = "3.11"

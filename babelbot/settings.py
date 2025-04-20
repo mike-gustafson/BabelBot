@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "main_app",
     "translator",
     "tts",
+    "ocr",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -153,6 +154,7 @@ STATIC_URL = "/static/"
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
+    BASE_DIR / "main_app" / "static",
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"

@@ -1,0 +1,91 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        {{ block.super }}
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">OCR Test</h5>
+            </div>
+            <div class="card-body">
+                <form id="ocrTestForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Select Image</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Process Image</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Live Logs</h5>
+                <button id="clearLogs" class="btn btn-sm btn-outline-secondary">Clear Logs</button>
+            </div>
+            <div class="card-body">
+                <div id="logContainer" class="bg-dark text-light p-3" style="height: 400px; overflow-y: auto; font-family: monospace;">
+                    <div id="logs"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('ocrTestForm');
+    const logsDiv = document.getElementById('logs');
+    const clearLogsBtn = document.getElementById('clearLogs');
+    
+    // Function to update logs
+    function updateLogs() {
+        fetch('{% url "admin:ocr-logs" %}')
+            .then(response => response.json())
+            .then(data => {
+                logsDiv.innerHTML = data.logs.map(log => `<div>${log}</div>`).join('');
+                logsDiv.scrollTop = logsDiv.scrollHeight;
+            });
+    }
+    
+    // Update logs every 2 seconds
+    setInterval(updateLogs, 2000);
+    
+    // Clear logs button
+    clearLogsBtn.addEventListener('click', function() {
+        logsDiv.innerHTML = '';
+    });
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        
+        fetch('{% url "admin:ocr-test" %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Reload the page to show the new test result
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+    });
+});
+</script>
+{% endblock %} 

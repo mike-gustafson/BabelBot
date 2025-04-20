@@ -1,0 +1,110 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block content %}
+<div class="ocr-test-container">
+    <div class="ocr-test-form">
+        <h2>OCR Test</h2>
+        <form id="ocr-test-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="image">Select Image:</label>
+                <input type="file" id="image" name="image" accept="image/*" required>
+            </div>
+            <button type="submit" class="button">Process Image</button>
+        </form>
+    </div>
+
+    <div id="ocr-result" style="display: none;">
+        <h3>Result</h3>
+        <div id="result-content"></div>
+    </div>
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+.ocr-test-container {
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.ocr-test-form {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+#result-content {
+    margin-top: 10px;
+    padding: 10px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    white-space: pre-wrap;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('ocr-test-form');
+    const resultDiv = document.getElementById('ocr-result');
+    const resultContent = document.getElementById('result-content');
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Disable the submit button
+        submitButton.disabled = true;
+        submitButton.textContent = 'Processing...';
+        
+        const formData = new FormData(form);
+        
+        fetch('test/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                resultContent.textContent = 'Error: ' + data.error;
+                resultDiv.style.display = 'block';
+                submitButton.disabled = false;
+                submitButton.textContent = 'Process Image';
+            } else {
+                // Show success message
+                resultContent.textContent = 'Success! Processing completed.';
+                resultDiv.style.display = 'block';
+                
+                // Force a hard reload of the page
+                window.location.href = window.location.href;
+            }
+        })
+        .catch(error => {
+            resultContent.textContent = 'Error: ' + error.message;
+            resultDiv.style.display = 'block';
+            submitButton.disabled = false;
+            submitButton.textContent = 'Process Image';
+        });
+    });
+});
+</script>
+{% endblock %} 
