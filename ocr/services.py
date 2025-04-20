@@ -2,6 +2,7 @@ from google.cloud import vision
 from google.oauth2 import service_account
 import os
 import json
+import io
 
 def get_vision_client():
     """Initialize and return a Google Cloud Vision client using environment variables."""
@@ -27,12 +28,12 @@ def get_vision_client():
         raise Exception(f"Failed to initialize Vision client: {str(e)}")
 
 def detect_text(image_data):
-    """Detect text in an image using Google Cloud Vision API."""
+    """Detects text in the image using Google Cloud Vision API."""
     try:
         # Initialize the client
-        client = vision.ImageAnnotatorClient()
+        client = get_vision_client()
         
-        # Create an image object
+        # Create the image object
         image = vision.Image(content=image_data)
         
         # Perform text detection
@@ -40,32 +41,30 @@ def detect_text(image_data):
         texts = response.text_annotations
         
         if response.error.message:
-            raise Exception(f'{response.error.message}')
+            raise Exception(f'Error from Vision API: {response.error.message}')
         
         if not texts:
             return {
                 'full_text': '',
                 'language': 'unknown',
-                'confidence': 0
+                'confidence': 0.0
             }
         
-        # Get the full text and language
-        full_text = texts[0].description
-        language = texts[0].locale if hasattr(texts[0], 'locale') else 'unknown'
+        # Get the full text (first annotation contains all text)
+        full_text = texts[0].description if texts else ''
+        
+        # Get language detection
+        language_response = client.document_text_detection(image=image)
+        language = language_response.text_annotations[0].locale if language_response.text_annotations else 'unknown'
         
         return {
             'full_text': full_text,
             'language': language,
-            'confidence': response.text_annotations[0].confidence if response.text_annotations else 0
+            'confidence': 1.0  # Vision API doesn't provide confidence scores for text detection
         }
         
     except Exception as e:
-        return {
-            'error': str(e),
-            'full_text': '',
-            'language': 'unknown',
-            'confidence': 0
-        }
+        raise Exception(f'Error processing image: {str(e)}')
 
 def extract_text_from_image(image_data):
     """

@@ -1,46 +1,35 @@
 {% extends "admin/change_list.html" %}
-{% load static %}
 
 {% block content %}
+{% if show_test_form %}
 <div class="ocr-test-container">
-    <div class="ocr-test-form">
-        <h2>OCR Test</h2>
-        <form id="ocr-test-form" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="image">Select Image:</label>
-                <input type="file" id="image" name="image" accept="image/*" required>
-            </div>
-            <button type="submit" class="button">Process Image</button>
-        </form>
-    </div>
-
-    <div id="ocr-result" style="display: none;">
-        <h3>Result</h3>
-        <div id="result-content"></div>
+    <h2>OCR Test</h2>
+    <form id="ocr-test-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="image">Select Image:</label>
+            <input type="file" id="image" name="image" accept="image/*" required>
+        </div>
+        <button type="submit" class="button">Process Image</button>
+    </form>
+    <div id="result-container" style="display: none;">
+        <h3>Result:</h3>
+        <div id="result-text"></div>
     </div>
 </div>
 
-{{ block.super }}
-{% endblock %}
-
-{% block extrahead %}
-{{ block.super }}
 <style>
 .ocr-test-container {
-    margin-bottom: 20px;
+    max-width: 800px;
+    margin: 20px auto;
     padding: 20px;
-    background: #f8f8f8;
-    border: 1px solid #ddd;
+    background: #fff;
     border-radius: 4px;
-}
-
-.ocr-test-form {
-    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .form-group label {
@@ -49,62 +38,74 @@
     font-weight: bold;
 }
 
-#result-content {
-    margin-top: 10px;
-    padding: 10px;
-    background: white;
-    border: 1px solid #ddd;
+.button {
+    background: #79aec8;
+    color: white;
+    padding: 10px 15px;
+    border: none;
     border-radius: 4px;
+    cursor: pointer;
+}
+
+.button:hover {
+    background: #417690;
+}
+
+#result-container {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f8f8;
+    border-radius: 4px;
+}
+
+#result-text {
     white-space: pre-wrap;
+    word-break: break-word;
 }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('ocr-test-form');
-    const resultDiv = document.getElementById('ocr-result');
-    const resultContent = document.getElementById('result-content');
+document.getElementById('ocr-test-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const form = e.target;
     const submitButton = form.querySelector('button[type="submit"]');
-
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Disable the submit button
-        submitButton.disabled = true;
-        submitButton.textContent = 'Processing...';
-        
-        const formData = new FormData(form);
-        
-        fetch('test/', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                resultContent.textContent = 'Error: ' + data.error;
-                resultDiv.style.display = 'block';
-                submitButton.disabled = false;
-                submitButton.textContent = 'Process Image';
-            } else {
-                // Show success message
-                resultContent.textContent = 'Success! Processing completed.';
-                resultDiv.style.display = 'block';
-                
-                // Force a hard reload of the page
-                window.location.href = window.location.href;
-            }
-        })
-        .catch(error => {
-            resultContent.textContent = 'Error: ' + error.message;
-            resultDiv.style.display = 'block';
-            submitButton.disabled = false;
-            submitButton.textContent = 'Process Image';
-        });
+    const resultContainer = document.getElementById('result-container');
+    const resultText = document.getElementById('result-text');
+    
+    submitButton.disabled = true;
+    submitButton.textContent = 'Processing...';
+    
+    const formData = new FormData(form);
+    
+    fetch('test/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            resultText.textContent = data.result.full_text;
+            resultContainer.style.display = 'block';
+            // Reload the page to show the new record
+            window.location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+    })
+    .finally(() => {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Process Image';
     });
 });
 </script>
+{% endif %}
+
+{{ block.super }}
 {% endblock %} 

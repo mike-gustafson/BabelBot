@@ -54,18 +54,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('ocrForm');
     const resultDiv = document.getElementById('ocrResult');
-    const logsDiv = document.getElementById('logs');
-    const clearLogsBtn = document.getElementById('clearLogs');
-    
-    // Function to update logs
-    function updateLogs() {
-        fetch('/ocr/admin/logs/')
-            .then(response => response.json())
-            .then(data => {
-                logsDiv.innerHTML = data.logs.map(log => `<div>${log}</div>`).join('');
-                logsDiv.scrollTop = logsDiv.scrollHeight;
-            });
-    }
     
     // Update logs every 2 seconds
     setInterval(updateLogs, 2000);

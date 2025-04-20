@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import path
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.template.response import TemplateResponse
 from .models import OCRTest
@@ -19,8 +18,7 @@ class OCRTestAdmin(admin.ModelAdmin):
     
     def result_preview(self, obj):
         if obj.result:
-            return format_html('<pre style="max-height: 100px; overflow: auto;">{}</pre>', 
-                             json.dumps(obj.result, indent=2))
+            return format_html('<pre style="max-height: 100px; overflow: auto;">{}</pre>', json.dumps(obj.result, indent=2))
         return '-'
     result_preview.short_description = 'Result'
     
@@ -28,7 +26,6 @@ class OCRTestAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             path('test/', self.admin_site.admin_view(self.test_view), name='ocr-test'),
-            path('logs/', self.admin_site.admin_view(self.logs_view), name='ocr-logs'),
         ]
         return custom_urls + urls
     
@@ -72,16 +69,3 @@ class OCRTestAdmin(admin.ModelAdmin):
             'has_view_permission': self.has_view_permission(request),
         }
         return TemplateResponse(request, 'admin/ocr/ocrtest/test.html', context)
-    
-    def logs_view(self, request):
-        # Get the last 100 log entries
-        log_file = 'logs/ocr_admin.log'
-        logs = []
-        
-        try:
-            with open(log_file, 'r') as f:
-                logs = f.readlines()[-100:]  # Get last 100 lines
-        except FileNotFoundError:
-            pass
-        
-        return JsonResponse({'logs': logs}) 
