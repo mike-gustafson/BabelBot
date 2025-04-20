@@ -1,49 +1,69 @@
 from googletrans import Translator
 import asyncio
-import logging
-import time
 from requests.exceptions import RequestException
-from googletrans.models import Translated
 
-logger = logging.getLogger(__name__)
+def get_available_languages():
+    """
+    Get a list of available languages from Google Translate.
+    Returns a dictionary of language codes and their names.
+    """
+    try:
+        translator = Translator()
+        languages = translator.get_languages()
+        # Format the languages in a user-friendly way
+        formatted_languages = {code: f"{name} ({code})" for code, name in languages.items()}
+        return formatted_languages
+    except Exception as e:
+        # Return a basic set of languages if the translator fails
+        fallback_languages = {
+            'en': 'English (en)',
+            'es': 'Spanish (es)',
+            'fr': 'French (fr)',
+            'de': 'German (de)',
+            'it': 'Italian (it)',
+            'pt': 'Portuguese (pt)',
+            'ru': 'Russian (ru)',
+            'zh-cn': 'Chinese Simplified (zh-cn)',
+            'ja': 'Japanese (ja)',
+            'ko': 'Korean (ko)'
+        }
+        return fallback_languages
 
 async def translate_text(text, dest_lang='en', max_retries=3):
     for attempt in range(max_retries):
         try:
-            logger.info(f"Attempting translation (attempt {attempt + 1}/{max_retries})")
             translator = Translator()
             
             # Set a longer timeout for Heroku
             translator.timeout = 10
             
             # Translate the text
-            translation = translator.translate(text, dest=dest_lang)
+            result = translator.translate(text, dest=dest_lang)
             
-            # Ensure we have a valid translation
-            if not isinstance(translation, Translated):
-                raise ValueError("Invalid translation response")
+            return {
+                'translated_text': result.text,
+                'src': result.src,
+                'dest': result.dest,
+                'confidence': result.extra_data.get('confidence', 0)
+            }
             
-            if not translation.text:
-                raise ValueError("Empty translation response")
-            
-            return translation.text
-            
-        except RequestException as e:
-            logger.warning(f"Network error during translation (attempt {attempt + 1}): {str(e)}")
+        except RequestException:
             if attempt < max_retries - 1:
-                await asyncio.sleep(1)  # Wait before retrying
+                await asyncio.sleep(1)
                 continue
-            logger.error("Max retries reached for translation")
-            return "Network error during translation. Please check your internet connection and try again later."
-            
-        except ValueError as e:
-            logger.error(f"Invalid translation response: {str(e)}")
-            return "Invalid translation response. Please try again later."
-            
+            return {
+                'translated_text': 'Network error during translation. Please try again later.',
+                'src': 'unknown',
+                'dest': dest_lang,
+                'confidence': 0
+            }
         except Exception as e:
-            logger.error(f"Translation error: {str(e)}", exc_info=True)
-            logger.error(f"Error type: {type(e)}")
-            logger.error(f"Error args: {e.args}")
-            return "Translation service is currently unavailable. Please try again later."
-    
-    return "Translation service is currently unavailable. Please try again later."
+            if attempt < max_retries - 1:
+                await asyncio.sleep(1)
+                continue
+            return {
+                'translated_text': 'Translation service is currently unavailable. Please try again later.',
+                'src': 'unknown',
+                'dest': dest_lang,
+                'confidence': 0
+            }

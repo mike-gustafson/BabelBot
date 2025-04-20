@@ -1,30 +1,24 @@
 import asyncio
+from asgiref.sync import sync_to_async
 import base64
 import json
-import os
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
-from translator.services import translate_text
+from translator.services import translate_text, get_available_languages
 from tts.services import text_to_speech
 from googletrans import LANGUAGES
-from .forms import TranslationForm, LoginForm, SignupForm
+from .forms import TranslationForm, LoginForm, SignupForm, CustomUserCreationForm
 from django.contrib.auth import login, authenticate, get_user
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.urls import reverse_lazy
-from django.contrib import messages
-from .forms import CustomUserCreationForm
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-import requests
 from django.conf import settings
 from .models import Translation
-import logging
-from asgiref.sync import sync_to_async
-from django.contrib.auth.models import User
-
-logger = logging.getLogger(__name__)
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.utils import timezone
+from ocr.services import detect_text
 
 DEFAULT_TARGET_LANGUAGE = "es"
 DEFAULT_TEXT = (
@@ -60,23 +54,16 @@ async def translate(request):
                 
                 # Translate the text using the specified target language.
                 try:
-                    logger.info(f"Starting translation for text: {text_to_translate[:50]}...")
-                    
-                    # Check if we're on Heroku
-                    is_heroku = 'ON_HEROKU' in os.environ
-                    if is_heroku:
-                        logger.info("Running on Heroku - using extended timeout and retries")
-                    
                     translated_text = await translate_text(
                         text_to_translate, 
                         lang,
-                        max_retries=3 if is_heroku else 1
+                        max_retries=3 if 'ON_HEROKU' in os.environ else 1
                     )
                     
                     if translated_text.startswith("Translation service is currently unavailable"):
-                        logger.warning("Translation service returned error message")
+                        translated_text = "Translation service is currently unavailable. Please try again later."
                     elif translated_text.startswith("Network error"):
-                        logger.warning("Network error during translation")
+                        translated_text = "Network error during translation. Please try again later."
                     else:
                         # Get user in async context
                         user = await get_user_async(request)
@@ -85,19 +72,14 @@ async def translate(request):
                             user = await get_anonymous_user()
                         
                         # Save the translation to the database using sync_to_async
-                        logger.info("Saving translation to database")
                         await create_translation(
                             user=user,
                             original_text=text_to_translate,
                             translated_text=translated_text,
                             target_lang=lang
                         )
-                        logger.info("Translation saved to database")
                         
                 except Exception as e:
-                    logger.error(f"Translation error in view: {str(e)}", exc_info=True)
-                    logger.error(f"Error type: {type(e)}")
-                    logger.error(f"Error args: {e.args}")
                     translated_text = "An unexpected error occurred during translation. Please try again later."
             else:
                 text_to_translate = DEFAULT_TEXT
@@ -128,7 +110,6 @@ async def translate(request):
                 else:
                     tts_message = "Text-to-speech is not available for this language."
             except Exception as e:
-                logger.error(f"TTS error: {str(e)}", exc_info=True)
                 tts_message = "Text-to-speech service is currently unavailable."
 
         context = {
@@ -142,7 +123,6 @@ async def translate(request):
 
         return render(request, 'translate.html', context)
     except Exception as e:
-        logger.error(f"General error in translate view: {str(e)}", exc_info=True)
         return render(request, 'translate.html', {
             'form': TranslationForm(),
             'text_to_translate': DEFAULT_TEXT,
@@ -229,3 +209,90 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'password_reset_complete.html'
+
+def index(request):
+    languages = get_available_languages()
+    return render(request, 'index.html', {'languages': languages})
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def translate(request):
+    try:
+        data = json.loads(request.body)
+        text = data.get('text')
+        target_language = data.get('target_language')
+        
+        if not text or not target_language:
+            return JsonResponse({'error': 'Text and target language are required'}, status=400)
+        
+        # Translate the text
+        result = translate_text(text, target_language)
+        
+        # Create a translation record
+        translation = Translation.objects.create(
+            original_text=text,
+            translated_text=result['translated_text'],
+            source_language=result['src'],
+            target_language=target_language
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'translation': result['translated_text'],
+            'source_language': result['src'],
+            'translation_id': translation.id
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def ocr(request):
+    try:
+        if 'image' not in request.FILES:
+            return JsonResponse({'error': 'No image provided'}, status=400)
+        
+        image = request.FILES['image']
+        
+        # Read the image file into memory
+        image_data = image.read()
+        
+        # Process the image
+        result = detect_text(image_data)
+        
+        return JsonResponse({
+            'success': True,
+            'text': result['full_text'],
+            'language': result['language']
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def tts(request):
+    try:
+        data = json.loads(request.body)
+        text = data.get('text')
+        language = data.get('language')
+        
+        if not text or not language:
+            return JsonResponse({'error': 'Text and language are required'}, status=400)
+        
+        # Generate speech
+        audio_data = text_to_speech(text, language)
+        
+        # Save the audio file
+        filename = f"tts_{timezone.now().strftime('%Y%m%d_%H%M%S')}.mp3"
+        file_path = os.path.join('tts', filename)
+        default_storage.save(file_path, ContentFile(audio_data))
+        
+        return JsonResponse({
+            'success': True,
+            'audio_url': f'/media/{file_path}'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

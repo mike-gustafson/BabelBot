@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from .services import extract_text_from_image
 from translator.services import translate_text
@@ -10,6 +10,11 @@ import logging
 from PIL import Image
 import io
 import time
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.utils import timezone
+import os
+from .services import detect_text
 
 logger = logging.getLogger(__name__)
 
@@ -114,3 +119,27 @@ async def process_image(request):
         return JsonResponse({
             'error': 'An unexpected error occurred while processing the image'
         }, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def ocr(request):
+    try:
+        if 'image' not in request.FILES:
+            return JsonResponse({'error': 'No image provided'}, status=400)
+        
+        image = request.FILES['image']
+        
+        # Read the image file into memory
+        image_data = image.read()
+        
+        # Process the image
+        result = detect_text(image_data)
+        
+        return JsonResponse({
+            'success': True,
+            'text': result['full_text'],
+            'language': result['language']
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

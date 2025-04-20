@@ -12,11 +12,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from dotenv import load_dotenv
 import os
+import dj_database_url
+from pathlib import Path
 
 load_dotenv()
-import dj_database_url
-
-from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -33,22 +32,6 @@ if not "ON_HEROKU" in os.environ:
     DEBUG = True
 else:
     DEBUG = False
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'handlers': {
-            'console': {
-                'class': 'logging.StreamHandler',
-            },
-        },
-        'loggers': {
-            'django': {
-                'handlers': ['console'],
-                'level': 'ERROR',
-            },
-        },
-    }
-
 
 ALLOWED_HOSTS = ["*"]
 

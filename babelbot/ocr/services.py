@@ -22,66 +22,46 @@ def get_vision_client():
     credentials = service_account.Credentials.from_service_account_info(credentials_dict)
     return vision.ImageAnnotatorClient(credentials=credentials)
 
-def detect_text(image_path):
-    """
-    Detects text in an image file using Google Cloud Vision API.
-    
-    Args:
-        image_path (str): Path to the image file
-        
-    Returns:
-        dict: Dictionary containing the detected text and confidence scores
-    """
+def detect_text(image_data):
+    """Detect text in an image using Google Cloud Vision API."""
     try:
         # Initialize the client
-        client = get_vision_client()
+        client = vision.ImageAnnotatorClient()
         
-        # Read the image file
-        with open(image_path, 'rb') as image_file:
-            content = image_file.read()
-        
-        # Create the image object
-        image = vision.Image(content=content)
+        # Create an image object
+        image = vision.Image(content=image_data)
         
         # Perform text detection
         response = client.text_detection(image=image)
         texts = response.text_annotations
         
         if response.error.message:
-            raise Exception(
-                '{}\nFor more info on error messages, check: '
-                'https://cloud.google.com/apis/design/errors'.format(
-                    response.error.message))
+            raise Exception(f'{response.error.message}')
         
-        # Process the results
-        if texts:
-            # The first text annotation contains the full text
-            full_text = texts[0].description
-            
-            # Get individual text blocks with their locations
-            text_blocks = []
-            for text in texts[1:]:  # Skip the first one as it's the full text
-                vertices = [(vertex.x, vertex.y) for vertex in text.bounding_poly.vertices]
-                text_blocks.append({
-                    'text': text.description,
-                    'confidence': text.confidence,
-                    'bounding_box': vertices
-                })
-            
-            return {
-                'full_text': full_text,
-                'text_blocks': text_blocks,
-                'language': response.text_annotations[0].locale if response.text_annotations[0].locale else 'en'
-            }
-        else:
+        if not texts:
             return {
                 'full_text': '',
-                'text_blocks': [],
-                'language': 'en'
+                'language': 'unknown',
+                'confidence': 0
             }
-            
+        
+        # Get the full text and language
+        full_text = texts[0].description
+        language = texts[0].locale if hasattr(texts[0], 'locale') else 'unknown'
+        
+        return {
+            'full_text': full_text,
+            'language': language,
+            'confidence': response.text_annotations[0].confidence if response.text_annotations else 0
+        }
+        
     except Exception as e:
-        raise Exception(f"Error processing image: {str(e)}")
+        return {
+            'error': str(e),
+            'full_text': '',
+            'language': 'unknown',
+            'confidence': 0
+        }
 
 def detect_language(text):
     """
