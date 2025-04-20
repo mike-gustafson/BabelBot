@@ -1,3 +1,4 @@
+/* Home Page Styles */
 .home-section {
   min-height: calc(100vh - 120px); /* Updated to match new header height */
   position: relative;
@@ -95,11 +96,6 @@
   z-index: 0;
 }
 
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--box-shadow-hover);
-}
-
 .feature-card h3 {
   color: var(--text-primary);
   margin-bottom: var(--spacing-md);
@@ -119,6 +115,37 @@
   font-size: 1.1rem;
 }
 
+.cta-section {
+  text-align: center;
+  padding: 4rem 2rem;
+  margin: 2rem auto;
+  max-width: 800px;
+}
+
+.cta-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-md);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.cta-description {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+  line-height: 1.6;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  align-items: center;
+}
+
 @media (max-width: 768px) {
   .hero-content h2 {
     font-size: 2rem;
@@ -130,5 +157,39 @@
 
   .features-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    padding: 1rem;
+  }
+
+  .hero-title {
+    font-size: 1.75rem;
+  }
+
+  .hero-image {
+    max-width: 300px;
+  }
+
+  .features-section {
+    padding: 2rem 1rem;
+  }
+
+  .feature-card {
+    padding: 1.5rem;
+  }
+
+  .cta-section {
+    padding: 2rem 1rem;
+  }
+
+  .cta-title {
+    font-size: 1.75rem;
+  }
+
+  .cta-description {
+    font-size: 1.1rem;
   }
 } 

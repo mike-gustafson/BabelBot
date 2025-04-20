@@ -6,16 +6,32 @@
   --spacing-xl: 4rem;
 }
 
+/* Translator Page Styles */
 .translate-section {
   width: 100%;
-  max-width: 1200px;
-  padding: 1rem;
-  background: var(--gradient-tertiary);
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--box-shadow);
-  min-height: calc(100vh - 120px);
-  display: flex;
-  flex-direction: column;
+  max-width: 1400px;
+  padding: 2rem;
+  margin: 0 auto;
+  position: relative;
+  overflow: visible;
+}
+
+/* Background logo with overlay - matching home page style */
+.translate-section::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('../images/logo3.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.15;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
 }
 
 .translate-section h2 {
@@ -30,27 +46,27 @@
 }
 
 .translate-grid {
+  position: relative;
+  z-index: 1;
   display: flex;
-  gap: 1.5rem;
+  gap: 2rem;
   align-items: stretch;
   width: 100%;
   height: 100%;
-  min-height: calc(100vh - 160px);
 }
 
 .translate-column {
   flex: 1;
-  padding: 1.5rem;
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--box-shadow);
-  transition: var(--transition-normal);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  min-width: 0;
-  position: relative;
-  overflow: hidden;
-  background: var(--gradient-tertiary);
+  gap: 1.5rem;
+  background: rgba(255, 255, 255, 0.3);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  padding: 2rem;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .translate-column::before {
@@ -65,212 +81,131 @@
 }
 
 .translate-column h3 {
-  margin-bottom: var(--spacing-sm);
+  font-size: 1.5rem;
   color: var(--text-primary);
-  position: relative;
-  z-index: 1;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.3px;
 }
 
-textarea, .translated-output {
+textarea#original_text, .translated-output {
   width: 100%;
-  flex: 1;
-  min-height: 300px;
-  padding: 1rem;
+  min-height: 500px;
+  padding: 1.5rem;
+  background: var(--gradient-tertiary);
   border: 2px solid var(--border-primary);
   border-radius: var(--border-radius-md);
-  background: transparent;
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: 1.2rem;
+  line-height: 1.8;
   color: var(--text-primary);
-  box-sizing: border-box;
-  overflow: auto;
-  resize: none;
-  position: relative;
-  z-index: 1;
-}
-
-textarea {
   resize: vertical;
+  transition: var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-textarea:focus {
+textarea#original_text {
+  height: 600px;
+}
+
+textarea#original_text::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gradient-secondary);
+  z-index: 0;
+}
+
+textarea#original_text:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--shadow-color);
+  box-shadow: var(--box-shadow-hover);
+  background: var(--gradient-secondary);
+}
+
+.translated-output {
+  background: var(--gradient-tertiary);
+  overflow-y: auto;
 }
 
 .translate-controls {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  align-items: center;
   margin-top: 1rem;
 }
 
-.translate-controls .btn-primary {
-  display: none;
-}
-
-select {
+.language-select {
   width: 100%;
-  max-width: 300px;
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: 1rem;
   border: 2px solid var(--border-primary);
   border-radius: var(--border-radius-md);
   background: var(--gradient-tertiary);
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   cursor: pointer;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364ff9c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  appearance: none;
-  background-repeat: no-repeat;
-  background-position: right var(--spacing-md) center;
-  background-size: 1em;
-  padding-right: calc(var(--spacing-md) * 2 + 1em);
-  text-transform: capitalize;
+  transition: var(--transition-normal);
 }
 
-select:focus {
+.language-select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--shadow-color);
+  box-shadow: var(--box-shadow-hover);
 }
 
-select option {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  text-transform: capitalize;
-}
-
-/* Dark mode specific styles */
-[data-theme="dark"] select {
-  background: var(--gradient-tertiary);
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] select option {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-button {
+.translate-btn {
+  width: 100%;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
   background: var(--gradient-primary);
-  color: var(--text-primary);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--border-radius-md);
-  font-size: 1rem;
+  color: var(--text-primary);
+  font-size: 1.2rem;
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition-normal);
-  white-space: nowrap;
+  box-shadow: var(--box-shadow);
 }
 
-button:hover {
+.translate-btn:hover {
   transform: translateY(-2px);
   box-shadow: var(--box-shadow-hover);
 }
 
+.translate-btn-logo {
+  width: 40px;
+  height: 40px;
+}
+
+.translate-btn span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Audio player styles */
 #audio_container {
-  margin-top: var(--spacing-md);
+  margin-top: 1rem;
+  width: 100%;
+  background: var(--gradient-tertiary);
+  padding: 1rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 audio {
   width: 100%;
-  border-radius: var(--border-radius-md);
-}
-
-.tts-message {
-  margin-top: var(--spacing-md);
-  padding: var(--spacing-md);
-  background-color: var(--error);
-  opacity: 0.1;
-  color: var(--error);
-  border-radius: var(--border-radius-md);
-  text-align: center;
-  font-size: 0.9rem;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .translate-grid {
-    flex-direction: column;
-    gap: var(--spacing-md);
-  }
-
-  .translate-column {
-    padding: var(--spacing-md);
-    min-height: 300px;
-  }
-
-  textarea, .translated-output {
-    min-height: 150px;
-    font-size: 1rem;
-  }
-
-  .translate-controls {
-    flex-direction: column;
-    width: 100%;
-    gap: var(--spacing-md);
-  }
-
-  select {
-    width: 100%;
-    max-width: none;
-    font-size: 1rem;
-    padding: 12px var(--spacing-md);
-  }
-
-  .translate-btn {
-    width: 100%;
-    justify-content: center;
-    padding: 8px var(--spacing-md);
-  }
-
-  .translate-btn-logo {
-    width: 32px;
-    height: 32px;
-  }
-
-  .translate-btn span {
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .translate-section {
-    padding: var(--spacing-md);
-    margin: var(--spacing-sm);
-  }
-
-  .translate-column {
-    padding: var(--spacing-sm);
-    min-height: 250px;
-  }
-
-  textarea, .translated-output {
-    min-height: 120px;
-    padding: var(--spacing-sm);
-  }
-
-  .translate-controls {
-    gap: var(--spacing-sm);
-  }
-
-  select {
-    padding: 10px var(--spacing-md);
-  }
-
-  .translate-btn {
-    padding: 6px var(--spacing-md);
-  }
-
-  .translate-btn-logo {
-    width: 32px;
-    height: 32px;
-  }
+  margin-top: 1rem;
 }
 
 .transcript-section {
@@ -319,55 +254,100 @@ audio {
 .tts-message {
   color: var(--text-secondary);
   font-style: italic;
-  margin-top: var(--spacing-sm);
+  padding: 1rem;
+  background: var(--gradient-tertiary);
+  border-radius: var(--border-radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.translate-btn {
-  width: fit-content;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md);
+/* Dark mode specific styles */
+[data-theme="dark"] .language-select {
+  background: var(--gradient-tertiary);
+  color: var(--text-primary);
 }
 
-.translate-btn-logo {
-  width: 40px;
-  height: 40px;
+[data-theme="dark"] .language-select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
-
-.translate-btn span {
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-/* Custom styles for select in translate page */
-.language-select {
-  width: 100%;
-  max-width: 300px;
-}
-
-/* Remove duplicate button styles - using .btn from base.css */
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .translate-section {
+    padding: 1rem;
+  }
+
   .translate-grid {
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 1.5rem;
   }
 
   .translate-column {
-    padding: var(--spacing-md);
+    padding: 1.5rem;
+  }
+
+  textarea#original_text, .translated-output {
+    min-height: 300px;
+    height: 400px;
+    font-size: 1.1rem;
+    padding: 1rem;
   }
 
   .translate-controls {
-    margin-top: var(--spacing-sm);
+    flex-direction: column;
+    width: 100%;
+    gap: var(--spacing-md);
+  }
+
+  .language-select {
+    width: 100%;
+    max-width: none;
+    font-size: 1rem;
+    padding: 12px var(--spacing-md);
+  }
+
+  .translate-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 8px var(--spacing-md);
+  }
+
+  .translate-btn-logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .translate-btn span {
+    font-size: 1rem;
   }
 }
 
 @media (max-width: 480px) {
   .translate-section {
-    padding: var(--spacing-sm);
+    padding: 0.5rem;
+  }
+
+  .translate-column {
+    padding: 1rem;
+  }
+
+  textarea#original_text, .translated-output {
+    min-height: 250px;
+    height: 350px;
+    font-size: 1rem;
+  }
+
+  .translate-controls {
+    gap: var(--spacing-sm);
+  }
+
+  .language-select {
+    padding: 10px var(--spacing-md);
+  }
+
+  .translate-btn {
+    font-size: 1.1rem;
+    padding: 0.8rem;
   }
 
   .translate-btn-logo {
