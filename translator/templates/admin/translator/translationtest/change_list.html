@@ -1,0 +1,38 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block content %}
+<div id="content-main">
+    {% if show_test_form %}
+    <div class="module">
+        <h2>Translation Test</h2>
+        <form id="translation-test-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="source_text">Source Text:</label>
+                <textarea id="source_text" name="source_text" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="target_language">Target Language:</label>
+                <select id="target_language" name="target_language">
+                    <option value="">Select a language</option>
+                    {% for code, name in languages.items %}
+                    <option value="{{ code }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="button">Translate</button>
+        </form>
+        <div id="result-container" style="display: none;">
+            <h3>Result:</h3>
+            <div id="result-text"></div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {{ block.super }}
+</div>
+
+<link rel="stylesheet" href="{% static 'translator/css/admin.css' %}">
+<script src="{% static 'translator/js/admin.js' %}"></script>
+{% endblock %} 
