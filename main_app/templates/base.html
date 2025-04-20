@@ -48,7 +48,8 @@
           <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">About</a>
         </nav>
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
-          <span class="theme-icon">🌙</span>
+          <img src="{% static 'images/moon.svg' %}" alt="Dark Mode" class="theme-icon theme-icon-moon">
+          <img src="{% static 'images/sun.svg' %}" alt="Light Mode" class="theme-icon theme-icon-sun">
         </button>
         <button id="menu-toggle" class="menu-toggle" aria-label="Toggle navigation menu">
           <span class="bar"></span>

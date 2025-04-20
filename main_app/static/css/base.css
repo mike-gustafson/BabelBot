@@ -21,7 +21,9 @@ body {
   cursor: pointer;
   padding: var(--spacing-sm);
   margin-left: var(--spacing-md);
-  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-primary);
   transition: var(--transition-normal);
 }
@@ -30,8 +32,17 @@ body {
   transform: scale(1.1);
 }
 
-[data-theme="dark"] .theme-icon {
-  content: "☀️";
+.theme-icon {
+  width: 24px;
+  height: 24px;
+}
+
+[data-theme="dark"] .theme-icon-moon {
+  display: none;
+}
+
+[data-theme="light"] .theme-icon-sun {
+  display: none;
 }
 
 /* Logo and App Name Styles */
