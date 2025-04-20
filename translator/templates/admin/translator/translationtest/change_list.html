@@ -9,6 +9,17 @@
         <form id="translation-test-form" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
+                <label for="ocr_import">Import from OCR Test:</label>
+                <select id="ocr_import" name="ocr_import" class="form-control">
+                    <option value="">Select an OCR test...</option>
+                    {% for test in ocr_tests %}
+                    <option value="{{ test.id }}" data-text="{{ test.text }}">
+                        OCR Test #{{ test.id }} ({{ test.created_at }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="source_text">Source Text:</label>
                 <textarea id="source_text" name="source_text" rows="4"></textarea>
             </div>

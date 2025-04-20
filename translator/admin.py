@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from .models import TranslationTest
 from .services import translate_text, get_available_languages
+from ocr.models import OCRTest
 import json
 from asgiref.sync import sync_to_async, async_to_sync
 from django.template.response import TemplateResponse
@@ -38,9 +39,26 @@ class TranslationTestAdmin(admin.ModelAdmin):
     result_preview.short_description = "Result"
     
     def changelist_view(self, request, extra_context=None):
+        # Get recent OCR tests with their results
+        ocr_tests = OCRTest.objects.filter(result__isnull=False).order_by('-created_at')[:10]
+        ocr_options = []
+        
+        for test in ocr_tests:
+            try:
+                result = json.loads(test.result) if isinstance(test.result, str) else test.result
+                if result and 'full_text' in result:
+                    ocr_options.append({
+                        'id': test.id,
+                        'text': result['full_text'][:100] + '...' if len(result['full_text']) > 100 else result['full_text'],
+                        'created_at': test.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                    })
+            except:
+                continue
+
         extra_context = extra_context or {}
         extra_context['show_test_form'] = True
         extra_context['languages'] = get_available_languages()
+        extra_context['ocr_tests'] = ocr_options
         return super().changelist_view(request, extra_context)
     
     def get_urls(self):

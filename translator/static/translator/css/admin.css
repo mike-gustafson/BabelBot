@@ -55,4 +55,17 @@
 #result-text {
     white-space: pre-wrap;
     word-break: break-word;
+}
+
+select#ocr_import {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background-color: white;
+}
+
+select#ocr_import option {
+    padding: 4px;
 } 

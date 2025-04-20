@@ -2,6 +2,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('translation-test-form');
     if (!form) return;
 
+    // Add OCR import handling
+    const ocrSelect = document.getElementById('ocr_import');
+    const sourceText = document.getElementById('source_text');
+
+    if (ocrSelect) {
+        ocrSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                const text = selectedOption.getAttribute('data-text');
+                sourceText.value = text;
+            }
+        });
+    }
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
