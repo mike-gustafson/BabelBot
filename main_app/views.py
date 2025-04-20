@@ -8,7 +8,7 @@ from translator.services import translate_text
 from tts.services import text_to_speech
 from googletrans import LANGUAGES
 from .forms import TranslationForm, LoginForm, SignupForm
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, get_user
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
@@ -22,6 +22,7 @@ from django.conf import settings
 from .models import Translation
 import logging
 from asgiref.sync import sync_to_async
+from django.contrib.auth.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,8 @@ DEFAULT_TEXT = (
 
 # Create async versions of database operations
 create_translation = sync_to_async(Translation.objects.create)
+get_user_async = sync_to_async(get_user)
+get_anonymous_user = sync_to_async(lambda: User.objects.get(username='anonymous_translator'))
 
 def build_LANGUAGES_html(selected_language):
     html_content = '<select id="language-select" name="target_language">'
@@ -54,70 +57,79 @@ async def translate(request):
             if form.is_valid():
                 text_to_translate = form.cleaned_data['text_to_translate']
                 lang = form.cleaned_data['target_language']
+                
+                # Translate the text using the specified target language.
+                try:
+                    logger.info(f"Starting translation for text: {text_to_translate[:50]}...")
+                    
+                    # Check if we're on Heroku
+                    is_heroku = 'ON_HEROKU' in os.environ
+                    if is_heroku:
+                        logger.info("Running on Heroku - using extended timeout and retries")
+                    
+                    translated_text = await translate_text(
+                        text_to_translate, 
+                        lang,
+                        max_retries=3 if is_heroku else 1
+                    )
+                    
+                    if translated_text.startswith("Translation service is currently unavailable"):
+                        logger.warning("Translation service returned error message")
+                    elif translated_text.startswith("Network error"):
+                        logger.warning("Network error during translation")
+                    else:
+                        # Get user in async context
+                        user = await get_user_async(request)
+                        if not user.is_authenticated:
+                            # Use anonymous user if not authenticated
+                            user = await get_anonymous_user()
+                        
+                        # Save the translation to the database using sync_to_async
+                        logger.info("Saving translation to database")
+                        await create_translation(
+                            user=user,
+                            original_text=text_to_translate,
+                            translated_text=translated_text,
+                            target_lang=lang
+                        )
+                        logger.info("Translation saved to database")
+                        
+                except Exception as e:
+                    logger.error(f"Translation error in view: {str(e)}", exc_info=True)
+                    logger.error(f"Error type: {type(e)}")
+                    logger.error(f"Error args: {e.args}")
+                    translated_text = "An unexpected error occurred during translation. Please try again later."
             else:
                 text_to_translate = DEFAULT_TEXT
                 lang = DEFAULT_TARGET_LANGUAGE
+                translated_text = ""
         else:
             text_to_translate = request.GET.get('text', DEFAULT_TEXT)
             lang = request.GET.get('target_language', DEFAULT_TARGET_LANGUAGE)
+            translated_text = ""
             form = TranslationForm(initial={
                 'text_to_translate': text_to_translate,
                 'target_language': lang
             }, selected_language=lang)
 
-        # Translate the text using the specified target language.
-        try:
-            logger.info(f"Starting translation for text: {text_to_translate[:50]}...")
-            
-            # Check if we're on Heroku
-            is_heroku = 'ON_HEROKU' in os.environ
-            if is_heroku:
-                logger.info("Running on Heroku - using extended timeout and retries")
-            
-            translated_text = await translate_text(
-                text_to_translate, 
-                lang,
-                max_retries=3 if is_heroku else 1
-            )
-            
-            if translated_text.startswith("Translation service is currently unavailable"):
-                logger.warning("Translation service returned error message")
-            elif translated_text.startswith("Network error"):
-                logger.warning("Network error during translation")
-            else:
-                # Save the translation to the database using sync_to_async
-                logger.info("Saving translation to database")
-                await create_translation(
-                    user=request.user if request.user.is_authenticated else None,
-                    original_text=text_to_translate,
-                    translated_text=translated_text,
-                    target_lang=lang
-                )
-                logger.info("Translation saved to database")
-                
-        except Exception as e:
-            logger.error(f"Translation error in view: {str(e)}", exc_info=True)
-            logger.error(f"Error type: {type(e)}")
-            logger.error(f"Error args: {e.args}")
-            translated_text = "An unexpected error occurred during translation. Please try again later."
-
         # Check if language is supported for TTS
         tts_message = None
         encoded_audio = None
-        try:
-            from gtts.lang import tts_langs
-            supported_langs = tts_langs()
-            if lang in supported_langs:
-                # Generate TTS audio only for supported languages
-                loop = asyncio.get_running_loop()
-                audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, lang)
-                audio_data = audio_buffer.read()
-                encoded_audio = base64.b64encode(audio_data).decode("utf-8")
-            else:
-                tts_message = "Text-to-speech is not available for this language."
-        except Exception as e:
-            logger.error(f"TTS error: {str(e)}", exc_info=True)
-            tts_message = "Text-to-speech service is currently unavailable."
+        if translated_text:  # Only generate TTS if we have a translation
+            try:
+                from gtts.lang import tts_langs
+                supported_langs = tts_langs()
+                if lang in supported_langs:
+                    # Generate TTS audio only for supported languages
+                    loop = asyncio.get_running_loop()
+                    audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, lang)
+                    audio_data = audio_buffer.read()
+                    encoded_audio = base64.b64encode(audio_data).decode("utf-8")
+                else:
+                    tts_message = "Text-to-speech is not available for this language."
+            except Exception as e:
+                logger.error(f"TTS error: {str(e)}", exc_info=True)
+                tts_message = "Text-to-speech service is currently unavailable."
 
         context = {
             'form': form,

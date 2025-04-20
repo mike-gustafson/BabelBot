@@ -54,9 +54,8 @@ class OCRTestAdmin(admin.ModelAdmin):
                 # Process the image
                 result = detect_text(image_data)
                 
-                # Create a new OCRTest record with the image
+                # Create a new OCRTest record without the image
                 ocr_test = OCRTest.objects.create(
-                    image=image,
                     result=result
                 )
                 

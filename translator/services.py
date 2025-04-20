@@ -3,6 +3,7 @@ import asyncio
 import logging
 import time
 from requests.exceptions import RequestException
+from googletrans.models import Translated
 
 logger = logging.getLogger(__name__)
 
@@ -15,11 +16,15 @@ async def translate_text(text, dest_lang='en', max_retries=3):
             # Set a longer timeout for Heroku
             translator.timeout = 10
             
+            # Translate the text
             translation = translator.translate(text, dest=dest_lang)
             
-            # If it's a coroutine, await it
-            if asyncio.iscoroutine(translation):
-                translation = await translation
+            # Ensure we have a valid translation
+            if not isinstance(translation, Translated):
+                raise ValueError("Invalid translation response")
+            
+            if not translation.text:
+                raise ValueError("Empty translation response")
             
             return translation.text
             
@@ -29,7 +34,11 @@ async def translate_text(text, dest_lang='en', max_retries=3):
                 await asyncio.sleep(1)  # Wait before retrying
                 continue
             logger.error("Max retries reached for translation")
-            return "Network error during translation. Please try again later."
+            return "Network error during translation. Please check your internet connection and try again later."
+            
+        except ValueError as e:
+            logger.error(f"Invalid translation response: {str(e)}")
+            return "Invalid translation response. Please try again later."
             
         except Exception as e:
             logger.error(f"Translation error: {str(e)}", exc_info=True)
