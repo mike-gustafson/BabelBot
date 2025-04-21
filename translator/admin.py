@@ -10,12 +10,14 @@ import json
 from asgiref.sync import sync_to_async, async_to_sync
 from django.template.response import TemplateResponse
 import asyncio
+from main_app.admin import admin_site
 
-@admin.register(TranslationTest)
+@admin.register(TranslationTest, site=admin_site)
 class TranslationTestAdmin(admin.ModelAdmin):
     list_display = ('id', 'created_at', 'result_preview', 'error_message')
     readonly_fields = ('created_at', 'result', 'error_message')
     ordering = ('-created_at',)
+    change_list_template = 'admin/translator/translationtest/change_list.html'
     
     def result_preview(self, obj):
         if obj.result:
