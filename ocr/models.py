@@ -10,3 +10,8 @@ class OCRTest(models.Model):
 
     def __str__(self):
         return f"OCR Test {self.id} ({self.created_at})"
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'OCR Test'
+        verbose_name_plural = 'OCR Tests'

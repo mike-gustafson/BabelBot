@@ -109,7 +109,7 @@
     word-break: break-word;
 }
 
-/* Fix for select boxes */
+/* Fix for select boxes and their dropdowns in dark mode */
 select.form-input {
     appearance: none;
     -webkit-appearance: none;
@@ -119,7 +119,49 @@ select.form-input {
     background-position: right 8px center;
     background-size: 16px;
     padding-right: 32px;
-    background-color: var(--bg-primary) !important;  /* Force background color */
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Style for dropdown options */
+select.form-input option {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Style for option hover */
+select.form-input option:hover,
+select.form-input option:focus,
+select.form-input option:active,
+select.form-input option:checked {
+    background-color: var(--primary) !important;
+    color: var(--bg-primary) !important;
+}
+
+/* Fix for Firefox */
+@-moz-document url-prefix() {
+    select.form-input {
+        color: var(--text-primary) !important;
+        background-color: var(--bg-primary) !important;
+    }
+    
+    select.form-input option {
+        background-color: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
+    }
+}
+
+/* Fix for Webkit browsers (Chrome, Safari) */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    select.form-input {
+        color: var(--text-primary) !important;
+        background-color: var(--bg-primary) !important;
+    }
+    
+    select.form-input option {
+        background-color: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
+    }
 }
 
 /* Fix for text height in inputs */
@@ -132,12 +174,6 @@ textarea.form-input {
 /* Add hover state for inputs */
 .form-input:hover {
     border-color: var(--border-secondary);
-}
-
-/* Fix for option elements in select boxes */
-select.form-input option {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
 }
 </style>
 

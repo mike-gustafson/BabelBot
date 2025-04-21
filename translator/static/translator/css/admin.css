@@ -2,9 +2,9 @@
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
-    background: #fff;
+    background: var(--bg-primary);
     border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px var(--shadow-color);
 }
 
 .form-group {
@@ -20,7 +20,7 @@
 .form-group textarea {
     width: 100%;
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-primary);
     border-radius: 4px;
     resize: vertical;
 }
@@ -28,8 +28,14 @@
 .form-group select {
     width: 100%;
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-primary);
     border-radius: 4px;
+}
+
+.form-group select option {
+    padding: 4px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 .button {
@@ -48,7 +54,7 @@
 #result-container {
     margin-top: 20px;
     padding: 15px;
-    background: #f8f8f8;
+    background: var(--bg-secondary);
     border-radius: 4px;
 }
 
@@ -60,12 +66,14 @@
 select#ocr_import {
     width: 100%;
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-primary);
     border-radius: 4px;
     margin-bottom: 10px;
-    background-color: white;
+    background-color: var(--bg-primary);
 }
 
 select#ocr_import option {
     padding: 4px;
-} 
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
