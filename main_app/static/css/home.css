@@ -1,15 +1,15 @@
 /* Home Page Styles */
 .home-section {
-  min-height: calc(100vh - 120px); /* Updated to match new header height */
+  min-height: calc(100vh - 120px);
   position: relative;
-  overflow: visible; /* Changed from hidden to allow content to flow */
-  padding: var(--spacing-md) 0; /* Reduced padding */
+  overflow: visible; 
+  padding: var(--spacing-md) 0;
 }
 
 /* Background logo with overlay */
 .home-section::before {
   content: '';
-  position: fixed; /* Changed from absolute to fixed */
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -20,11 +20,10 @@
   background-repeat: no-repeat;
   opacity: 0.15;
   z-index: 0;
-  width: 100vw; /* Added to ensure full viewport width */
-  height: 100vh; /* Added to ensure full viewport height */
+  width: 100vw; 
+  height: 100vh;
 }
 
-/* Content wrapper to ensure text is above background */
 .home-content-wrapper {
   position: relative;
   z-index: 1;
@@ -41,8 +40,8 @@
 
 .hero-content {
   text-align: center;
-  padding: var(--spacing-md) 0; /* Reduced padding */
-  margin-bottom: var(--spacing-md); /* Reduced margin */
+  padding: var(--spacing-md) 0; 
+  margin-bottom: var(--spacing-md);
 }
 
 .hero-content h2 {
