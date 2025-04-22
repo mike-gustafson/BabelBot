@@ -61,3 +61,9 @@ textarea, select {
     background: var(--disabled);
     cursor: not-allowed;
 } 
+
+#ocr_import, #target_language {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 5px 0;
+}

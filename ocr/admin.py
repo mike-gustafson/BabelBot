@@ -13,7 +13,7 @@ class OCRTestAdmin(admin.ModelAdmin):
     list_display = ('id', 'created_at', 'result_preview', 'error_message')
     readonly_fields = ('created_at', 'result', 'error_message')
     ordering = ('-created_at',)
-    change_list_template = 'admin/ocr/ocr-test/change_list.html'
+    change_list_template = 'admin/ocr/change_list.html'
     
     def result_preview(self, obj):
         if obj.result:

@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -6,17 +5,10 @@ from .services import extract_text_from_image
 from translator.services import translate_text
 import json
 import base64
-import logging
 from PIL import Image
 import io
 import time
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-from django.utils import timezone
-import os
 from .services import detect_text
-
-logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -61,7 +53,6 @@ def validate_image_data(image_data):
         return True, processed_image
         
     except Exception as e:
-        logger.error(f"Image validation error: {str(e)}")
         return False, "Invalid image file. Please try another image."
 
 @csrf_exempt
@@ -101,7 +92,6 @@ async def process_image(request):
         translated_text = await translate_text(extracted_text, target_language)
         
         processing_time = time.time() - start_time
-        logger.info(f"OCR and translation completed in {processing_time:.2f} seconds")
         
         return JsonResponse({
             'extracted_text': extracted_text,
@@ -110,12 +100,10 @@ async def process_image(request):
         })
         
     except json.JSONDecodeError:
-        logger.error("Invalid JSON data received")
         return JsonResponse({
             'error': 'Invalid request data format'
         }, status=400)
     except Exception as e:
-        logger.error(f"Error processing image: {str(e)}", exc_info=True)
         return JsonResponse({
             'error': 'An unexpected error occurred while processing the image'
         }, status=500)

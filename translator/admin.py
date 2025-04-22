@@ -17,7 +17,7 @@ class TranslationTestAdmin(admin.ModelAdmin):
     list_display = ('id', 'created_at', 'result_preview', 'error_message')
     readonly_fields = ('created_at', 'result', 'error_message')
     ordering = ('-created_at',)
-    change_list_template = 'admin/translator/translationtest/change_list.html'
+    change_list_template = 'admin/translator/change_list.html'
     
     def result_preview(self, obj):
         if obj.result:
@@ -112,7 +112,7 @@ class TranslationTestAdmin(admin.ModelAdmin):
         
         # GET request - show the form
         languages = get_available_languages()
-        return render(request, 'admin/translator/translationtest/change_list.html', {
+        return render(request, 'admin/translator/change_list.html', {
             'languages': languages,
             'title': 'Translation Test',
             'opts': self.model._meta,
