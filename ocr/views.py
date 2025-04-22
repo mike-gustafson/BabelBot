@@ -9,8 +9,10 @@ from PIL import Image
 import io
 import time
 from .services import detect_text
-from .models import OCR, OCRTranslate
+from main_app.models import Translation
 import asyncio
+from django.contrib.auth import get_user, get_user_model
+from asgiref.sync import sync_to_async
 
 # Create your views here.
 
@@ -145,6 +147,19 @@ def perform_ocr(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+# Create async versions of database operations
+get_user_async = sync_to_async(get_user)
+create_user = sync_to_async(get_user_model().objects.create_user)
+
+async def get_or_create_anonymous_user():
+    User = get_user_model()
+    try:
+        return await sync_to_async(User.objects.get)(username='anonymous_translator')
+    except User.DoesNotExist:
+        return await create_user(username='anonymous_translator', password='password123')
+
+create_translation = sync_to_async(Translation.objects.create)
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def perform_ocr_translate(request):
@@ -159,57 +174,67 @@ def perform_ocr_translate(request):
         if not image or not target_language:
             return JsonResponse({'error': 'Image and target language are required'}, status=400)
         
+        # Read image data into memory
+        image_data = image.read()
+        
         # Perform OCR
-        ocr_result = detect_text(image.read())
+        ocr_result = detect_text(image_data)
         if not ocr_result or 'full_text' not in ocr_result:
             return JsonResponse({'error': 'Failed to extract text from image'}, status=400)
         
-        # If target language is 'detect', just return the OCR result
-        if target_language == 'detect':
-            processing_time = time.time() - start_time
-            ocr_translate = OCRTranslate.objects.create(
-                image=image,
-                target_language=target_language,
-                original_text=ocr_result['full_text'],
-                detected_language=ocr_result.get('language', 'unknown'),
-                processing_time=processing_time
-            )
-            
-            return JsonResponse({
-                'id': ocr_translate.id,
-                'original_text': ocr_result['full_text'],
-                'detected_language': ocr_result.get('language', 'unknown'),
-                'processing_time': round(processing_time, 2)
-            })
-        
-        # Otherwise, translate the text
-        # Run the async function in an event loop
+        # Get user in async context
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        translation_result = loop.run_until_complete(translate_text(ocr_result['full_text'], target_language))
-        loop.close()
-        
-        # Calculate processing time
-        processing_time = time.time() - start_time
-        
-        # Save result
-        ocr_translate = OCRTranslate.objects.create(
-            image=image,
-            target_language=target_language,
-            original_text=ocr_result['full_text'],
-            detected_language=ocr_result.get('language', 'unknown'),
-            translated_text=translation_result.get('translated_text', ''),
-            processing_time=processing_time
-        )
-        
-        return JsonResponse({
-            'id': ocr_translate.id,
-            'original_text': ocr_result['full_text'],
-            'detected_language': ocr_result.get('language', 'unknown'),
-            'translated_text': translation_result.get('translated_text', ''),
-            'target_language': target_language,
-            'processing_time': round(processing_time, 2)
-        })
+        try:
+            user = loop.run_until_complete(get_user_async(request))
+            if not user.is_authenticated:
+                user = loop.run_until_complete(get_or_create_anonymous_user())
+            
+            # If target language is 'detect', just return the OCR result
+            if target_language == 'detect':
+                processing_time = time.time() - start_time
+                
+                # Save to Translation model
+                translation = loop.run_until_complete(create_translation(
+                    user=user,
+                    original_text=ocr_result['full_text'],
+                    translated_text=ocr_result['full_text'],  # No translation, so same as original
+                    target_lang=ocr_result.get('language', 'unknown'),
+                    request_type='ocr'
+                ))
+                
+                return JsonResponse({
+                    'id': translation.id,
+                    'original_text': ocr_result['full_text'],
+                    'detected_language': ocr_result.get('language', 'unknown'),
+                    'processing_time': round(processing_time, 2)
+                })
+            
+            # Otherwise, translate the text
+            translation_result = loop.run_until_complete(translate_text(ocr_result['full_text'], target_language))
+            
+            # Calculate processing time
+            processing_time = time.time() - start_time
+            
+            # Save to Translation model
+            translation = loop.run_until_complete(create_translation(
+                user=user,
+                original_text=ocr_result['full_text'],
+                translated_text=translation_result.get('translated_text', ''),
+                target_lang=target_language,
+                request_type='ocr'
+            ))
+            
+            return JsonResponse({
+                'id': translation.id,
+                'original_text': ocr_result['full_text'],
+                'detected_language': ocr_result.get('language', 'unknown'),
+                'translated_text': translation_result.get('translated_text', ''),
+                'target_language': target_language,
+                'processing_time': round(processing_time, 2)
+            })
+        finally:
+            loop.close()
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
