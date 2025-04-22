@@ -15,7 +15,10 @@
         <textarea name="text_to_translate" id="original_text" placeholder="Enter text to translate">{% if text_to_translate %}{{ text_to_translate }}{% endif %}</textarea>
         <div class="translate-controls">
           {{ language_dropdown|safe }}
-          <button type="submit" class="btn-primary">Translate</button>
+          <button type="submit" class="btn btn-secondary translate-btn">
+            <img src="{% static 'images/logo2.png' %}" alt="BabelBot Logo" class="translate-btn-logo">
+            <span>TRANSLATE!</span>
+          </button>
         </div>
       </div>
       <div class="translate-column">

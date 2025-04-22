@@ -1,6 +1,8 @@
 {% load static %}
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +13,7 @@
     body {
       transition: none !important;
     }
+
     * {
       transition: none !important;
     }
@@ -25,28 +28,40 @@
   {% endif %}
   {% block extra_css %}{% endblock %}
 </head>
+
 <body>
   <header>
     <div class="navbar-container">
       <div class="logo-container">
         <a href="/" class="logo-link">
-          <img src="{% static 'images/logo.png' %}" alt="BabelBot Logo" class="logo-img">
-          <span class="app-name">BabelBot</span>
+          <img src="{% static 'images/logo2.png' %}" alt="BabelBot Logo" id="babelbot-logo" class="logo-img">
+          <span class="app-name"></span>
         </a>
       </div>
       <div class="nav-menu">
         <nav class="nav-links">
-          <a href="/" class="{% if request.path == '/' %}active{% endif %}">Home</a>
-          <a href="/translate/" class="{% if request.path == '/translate/' %}active{% endif %}">Translate</a>
+          <a href="/" class="{% if request.path == '/' %}active{% endif %}">
+            <img src="{% static 'images/logo_home.png' %}" alt="Home" class="nav-icon">
+            Home
+          </a>
+          <a href="/translate/" class="{% if request.path == '/translate/' %}active{% endif %}">
+            <img src="{% static 'images/logo_translate.png' %}" alt="Translate" class="nav-icon">
+            Translate
+          </a>
           <a href="/login/" class="{% if request.path == '/login/' %}active{% endif %}">Login</a>
           <a href="/signup/" class="{% if request.path == '/signup/' %}active{% endif %}">Sign Up</a>
           <a href="/account/" class="{% if request.path == '/account/' %}active{% endif %}">Account</a>
           <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">About</a>
         </nav>
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
-          <span class="theme-icon">🌙</span>
+          <img src="{% static 'images/moon.svg' %}" alt="Dark Mode" class="theme-icon theme-icon-moon">
+          <img src="{% static 'images/sun.svg' %}" alt="Light Mode" class="theme-icon theme-icon-sun" style="display: none;">
         </button>
-        <button id="menu-toggle" class="menu-toggle">☰</button>
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle navigation menu">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </button>
       </div>
     </div>
   </header>
@@ -60,10 +75,13 @@
 
   <footer>
     <p>Made with 💚 by Team Green — 2025</p>
+    <img src="{% static 'images/logo2.png' %}" alt="BabelBot" class="footer-bot">
   </footer>
 
   <script src="{% static 'js/nav.js' %}"></script>
   <script src="{% static 'js/theme.js' %}"></script>
+  <script src="{% static 'js/logo-animation.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>
+
 </html>

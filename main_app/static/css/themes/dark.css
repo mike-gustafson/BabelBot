@@ -1,6 +1,7 @@
 :root[data-theme="dark"] {
   /* Base Colors */
   --primary: #64ff9c;
+  --secondary: #00ff7f;
   --accent: #00ff7f;
   --error: #fc8181;
   --success: #68d391;
