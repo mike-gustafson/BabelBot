@@ -25,26 +25,31 @@ class TranslationTestAdmin(admin.ModelAdmin):
     result_preview.short_description = 'Result'
     
     def changelist_view(self, request, extra_context=None):
-        ocr_tests = OCRTest.objects.filter(result__isnull=False).order_by('-created_at')[:10]
-        ocr_options = []
-        
-        for test in ocr_tests:
-            try:
-                result = json.loads(test.result) if isinstance(test.result, str) else test.result
-                if result and 'full_text' in result:
-                    ocr_options.append({
-                        'id': test.id,
-                        'text': result['full_text'][:100] + '...' if len(result['full_text']) > 100 else result['full_text'],
-                        'created_at': test.created_at
-                    })
-            except:
-                continue
+        try:
+            ocr_tests = OCRTest.objects.filter(result__isnull=False).order_by('-created_at')[:10]
+            ocr_options = []
+            
+            for test in ocr_tests:
+                try:
+                    result = json.loads(test.result) if isinstance(test.result, str) else test.result
+                    if result and 'full_text' in result:
+                        ocr_options.append({
+                            'id': test.id,
+                            'text': result['full_text'][:100] + '...' if len(result['full_text']) > 100 else result['full_text'],
+                            'created_at': test.created_at
+                        })
+                except Exception as e:
+                    print(f"Error processing OCR test {test.id}: {str(e)}")
+                    continue
 
-        extra_context = extra_context or {}
-        extra_context['show_test_form'] = True
-        extra_context['languages'] = get_available_languages()
-        extra_context['ocr_tests'] = ocr_options
-        return super().changelist_view(request, extra_context)
+            extra_context = extra_context or {}
+            extra_context['show_test_form'] = True
+            extra_context['languages'] = get_available_languages()
+            extra_context['ocr_tests'] = ocr_options
+            return super().changelist_view(request, extra_context)
+        except Exception as e:
+            print(f"Error in changelist_view: {str(e)}")
+            raise
     
     def get_urls(self):
         urls = super().get_urls()
