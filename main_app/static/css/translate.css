@@ -9,8 +9,11 @@
 /* Translator Page Styles */
 .translate-section {
   width: 100%;
-  max-width: 1400px;
-  padding: 2rem;
+  max-width: 1200px;
+  padding: var(--spacing-lg);
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--box-shadow);
   margin: 0 auto;
   position: relative;
   overflow: visible;
@@ -59,8 +62,12 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  background: rgba(255, 255, 255, 0.3);
+  gap: var(--spacing-md);
+  min-width: 0;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-primary);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   padding: 2rem;
@@ -76,7 +83,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--gradient-secondary);
+  background: var(--bg-secondary);
   z-index: 0;
 }
 
@@ -95,8 +102,9 @@ textarea#original_text, .translated-output {
   background: var(--gradient-tertiary);
   border: 2px solid var(--border-primary);
   border-radius: var(--border-radius-md);
-  font-size: 1.2rem;
-  line-height: 1.8;
+  background: var(--bg-primary);
+  font-size: 0.75rem;
+  line-height: 1.5;
   color: var(--text-primary);
   resize: vertical;
   transition: var(--transition-normal);
@@ -146,7 +154,7 @@ textarea#original_text:focus {
   padding: 1rem;
   border: 2px solid var(--border-primary);
   border-radius: var(--border-radius-md);
-  background: var(--gradient-tertiary);
+  background: var(--bg-primary);
   color: var(--text-primary);
   font-size: 1.1rem;
   cursor: pointer;
@@ -157,6 +165,13 @@ textarea#original_text:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: var(--box-shadow-hover);
+}
+
+button {
+  background: var(--accent);
+  color: var(--text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
 }
 
 .translate-btn {

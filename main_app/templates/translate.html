@@ -41,3 +41,68 @@
   </form>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('translate-form');
+    const translatedOutput = document.querySelector('.translated-output');
+    const audioContainer = document.getElementById('audio_container');
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Translating...';
+        
+        try {
+            const formData = new FormData(form);
+            const response = await fetch('/translate/ajax/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    text_to_translate: form.querySelector('#original_text').value,
+                    target_language: form.querySelector('#language-select').value
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.translated_text) {
+                translatedOutput.textContent = data.translated_text;
+                
+                // Handle audio if available
+                if (data.encoded_audio) {
+                    if (!audioContainer) {
+                        const newAudioContainer = document.createElement('div');
+                        newAudioContainer.id = 'audio_container';
+                        newAudioContainer.innerHTML = `
+                            <audio controls>
+                                <source src="data:audio/mp3;base64,${data.encoded_audio}" type="audio/mp3">
+                                Your browser does not support the audio element.
+                            </audio>
+                        `;
+                        translatedOutput.after(newAudioContainer);
+                    } else {
+                        audioContainer.querySelector('source').src = `data:audio/mp3;base64,${data.encoded_audio}`;
+                        audioContainer.querySelector('audio').load();
+                    }
+                }
+            } else {
+                translatedOutput.innerHTML = `<p class="error">${data.error || 'Translation failed'}</p>`;
+            }
+        } catch (error) {
+            translatedOutput.innerHTML = `<p class="error">An error occurred during translation.</p>`;
+            console.error('Translation error:', error);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Translate';
+        }
+    });
+});
+</script>
+{% endblock %}
