@@ -20,12 +20,18 @@ class Profile(models.Model):
     location = models.CharField(max_length=30, blank=True)
     primary_language = models.CharField(max_length=30, blank=True)
     other_languages = models.CharField(max_length=30, blank=True)
+    is_anonymous = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username}'s profile"
     
 
 class Translation(models.Model):
+    REQUEST_TYPES = [
+        ('typed', 'Typed'),
+        ('ocr', 'OCR'),
+    ]
+    
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -36,10 +42,24 @@ class Translation(models.Model):
     original_text = models.TextField()
     translated_text = models.TextField()
     target_lang = models.CharField(max_length=10)
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    request_type = models.CharField(max_length=10, choices=REQUEST_TYPES, default='typed')
+    created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         user_display = self.user.username if self.user else "Anonymous"
         return f"Translation {self.id} by {user_display}"
+
+class OCRUsage(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='ocr_usage'
+    )
+    month = models.DateField()  # Will store the first day of each month
+    usage_count = models.IntegerField(default=0)
+    
+    class Meta:
+        unique_together = ('user', 'month')
+        
+    def __str__(self):
+        return f"{self.user.username}'s OCR usage for {self.month.strftime('%B %Y')}"

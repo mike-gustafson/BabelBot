@@ -1,9 +1,20 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
+from django.urls import path
+from django.shortcuts import render
 from .models import Translation, Profile
 
-@admin.register(Translation)
+class CustomAdminSite(admin.AdminSite):
+    def get_app_list(self, request):
+        app_list = super().get_app_list(request)
+        return app_list
+
+# Create custom admin site
+admin_site = CustomAdminSite(name='admin')
+
+# Register models with the custom admin site
+@admin.register(Translation, site=admin_site)
 class TranslationAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'target_lang', 'created_at', 'truncated_original_text', 'truncated_translated_text')
     list_filter = ('target_lang', 'created_at', 'user')
@@ -19,7 +30,7 @@ class TranslationAdmin(admin.ModelAdmin):
         return obj.translated_text[:50] + '...' if len(obj.translated_text) > 50 else obj.translated_text
     truncated_translated_text.short_description = 'Translated Text'
 
-@admin.register(Profile)
+@admin.register(Profile, site=admin_site)
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'primary_language', 'other_languages', 'location')
     search_fields = ('user__username', 'primary_language', 'other_languages', 'location')
@@ -44,6 +55,8 @@ class CustomUserAdmin(UserAdmin):
             return list()
         return super(CustomUserAdmin, self).get_inline_instances(request, obj)
 
-# Unregister the default User admin and register our custom admin
-admin.site.unregister(User)
-admin.site.register(User, CustomUserAdmin)
+# Register User model with the custom admin site
+admin_site.register(User, CustomUserAdmin)
+
+# Replace the default admin site with our custom one
+admin.site = admin_site

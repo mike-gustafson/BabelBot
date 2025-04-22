@@ -10,12 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-from dotenv import load_dotenv
 import os
-
-load_dotenv()
 import dj_database_url
-
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,29 +22,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-change-this-1234"
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-this-1234')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if not "ON_HEROKU" in os.environ:
     DEBUG = True
 else:
     DEBUG = False
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'handlers': {
-            'console': {
-                'class': 'logging.StreamHandler',
-            },
-        },
-        'loggers': {
-            'django': {
-                'handlers': ['console'],
-                'level': 'ERROR',
-            },
-        },
-    }
-
 
 ALLOWED_HOSTS = ["*"]
 
@@ -59,6 +39,7 @@ INSTALLED_APPS = [
     "main_app",
     "translator",
     "tts",
+    "ocr",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -152,7 +133,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    BASE_DIR / "main_app" / "static",
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -164,3 +145,16 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Configure Django App for Heroku
+if 'ON_HEROKU' in os.environ:
+    try:
+        import django_heroku
+        django_heroku.settings(locals())
+        
+        # Force HTTPS in production
+        SECURE_SSL_REDIRECT = True
+        SESSION_COOKIE_SECURE = True
+        CSRF_COOKIE_SECURE = True
+    except ImportError:
+        print("Warning: django-heroku not installed. Some Heroku-specific settings may not be applied.")
