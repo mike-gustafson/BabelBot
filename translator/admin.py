@@ -12,6 +12,7 @@ from django.template.response import TemplateResponse
 import asyncio
 from main_app.admin import admin_site
 
+# this is the admin view for the translation test
 @admin.register(TranslationTest, site=admin_site)
 class TranslationTestAdmin(admin.ModelAdmin):
     list_display = ('id', 'created_at', 'source_text', 'target_language', 'error_message')
