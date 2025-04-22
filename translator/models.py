@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from ocr.models import OCRTest
+from ocr.models import OCR
 
 # Create your models here.
 
@@ -10,7 +10,7 @@ class TranslationTest(models.Model):
     result = models.JSONField(null=True, blank=True)
     error_message = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
-    ocr_test = models.ForeignKey(OCRTest, on_delete=models.CASCADE, related_name='translation_tests', null=True, blank=True)
+    ocr = models.ForeignKey(OCR, on_delete=models.CASCADE, related_name='translation_tests', null=True, blank=True)
 
     def __str__(self):
         return f"Translation Test {self.id} ({self.created_at})"

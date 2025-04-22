@@ -9,6 +9,8 @@ from PIL import Image
 import io
 import time
 from .services import detect_text
+from .models import OCR, OCRTranslate
+import asyncio
 
 # Create your views here.
 
@@ -110,23 +112,103 @@ async def process_image(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-def ocr(request):
+def perform_ocr(request):
+    """Handle OCR requests"""
     try:
-        if 'image' not in request.FILES:
+        start_time = time.time()
+        
+        # Get image from request
+        image = request.FILES.get('image')
+        if not image:
             return JsonResponse({'error': 'No image provided'}, status=400)
         
-        image = request.FILES['image']
+        # Perform OCR
+        ocr_result = detect_text(image.read())
+        if not ocr_result or 'full_text' not in ocr_result:
+            return JsonResponse({'error': 'Failed to extract text from image'}, status=400)
         
-        # Read the image file into memory
-        image_data = image.read()
+        # Calculate processing time
+        processing_time = time.time() - start_time
         
-        # Process the image
-        result = detect_text(image_data)
+        # Save result
+        ocr = OCR.objects.create(
+            result=ocr_result
+        )
         
         return JsonResponse({
-            'success': True,
-            'text': result['full_text'],
-            'language': result['language']
+            'id': ocr.id,
+            'text': ocr_result['full_text'],
+            'language': ocr_result.get('language', 'unknown'),
+            'processing_time': round(processing_time, 2)
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def perform_ocr_translate(request):
+    """Handle OCR and translation requests"""
+    try:
+        start_time = time.time()
+        
+        # Get image and target language
+        image = request.FILES.get('image')
+        target_language = request.POST.get('target_language')
+        
+        if not image or not target_language:
+            return JsonResponse({'error': 'Image and target language are required'}, status=400)
+        
+        # Perform OCR
+        ocr_result = detect_text(image.read())
+        if not ocr_result or 'full_text' not in ocr_result:
+            return JsonResponse({'error': 'Failed to extract text from image'}, status=400)
+        
+        # If target language is 'detect', just return the OCR result
+        if target_language == 'detect':
+            processing_time = time.time() - start_time
+            ocr_translate = OCRTranslate.objects.create(
+                image=image,
+                target_language=target_language,
+                original_text=ocr_result['full_text'],
+                detected_language=ocr_result.get('language', 'unknown'),
+                processing_time=processing_time
+            )
+            
+            return JsonResponse({
+                'id': ocr_translate.id,
+                'original_text': ocr_result['full_text'],
+                'detected_language': ocr_result.get('language', 'unknown'),
+                'processing_time': round(processing_time, 2)
+            })
+        
+        # Otherwise, translate the text
+        # Run the async function in an event loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        translation_result = loop.run_until_complete(translate_text(ocr_result['full_text'], target_language))
+        loop.close()
+        
+        # Calculate processing time
+        processing_time = time.time() - start_time
+        
+        # Save result
+        ocr_translate = OCRTranslate.objects.create(
+            image=image,
+            target_language=target_language,
+            original_text=ocr_result['full_text'],
+            detected_language=ocr_result.get('language', 'unknown'),
+            translated_text=translation_result.get('translated_text', ''),
+            processing_time=processing_time
+        )
+        
+        return JsonResponse({
+            'id': ocr_translate.id,
+            'original_text': ocr_result['full_text'],
+            'detected_language': ocr_result.get('language', 'unknown'),
+            'translated_text': translation_result.get('translated_text', ''),
+            'target_language': target_language,
+            'processing_time': round(processing_time, 2)
         })
         
     except Exception as e:
