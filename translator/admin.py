@@ -6,13 +6,11 @@ from django.http import JsonResponse
 from .models import TranslationTest
 from .services import translate_text, get_available_languages
 from ocr.models import OCRTest
-import json
 from asgiref.sync import sync_to_async, async_to_sync
 from django.template.response import TemplateResponse
-import asyncio
 from main_app.admin import admin_site
+import json
 
-# this is the admin view for the translation test
 @admin.register(TranslationTest, site=admin_site)
 class TranslationTestAdmin(admin.ModelAdmin):
     list_display = ('id', 'created_at', 'source_text', 'target_language', 'error_message')
@@ -27,7 +25,6 @@ class TranslationTestAdmin(admin.ModelAdmin):
     result_preview.short_description = 'Result'
     
     def changelist_view(self, request, extra_context=None):
-        # Get recent OCR tests with their results
         ocr_tests = OCRTest.objects.filter(result__isnull=False).order_by('-created_at')[:10]
         ocr_options = []
         
@@ -98,7 +95,7 @@ class TranslationTestAdmin(admin.ModelAdmin):
         
         # GET request - show the form
         languages = get_available_languages()
-        return render(request, 'admin/translator/change_list.html', {
+        return render(request, 'admin/translator/translator-test/change_list.html', {
             'languages': languages,
             'title': 'Translation Test',
             'opts': self.model._meta,
