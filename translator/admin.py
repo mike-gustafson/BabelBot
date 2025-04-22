@@ -95,12 +95,13 @@ class TranslationTestAdmin(admin.ModelAdmin):
         
         # GET request - show the form
         languages = get_available_languages()
-        return render(request, 'admin/translator/translator-test/change_list.html', {
+        context = {
             'languages': languages,
             'title': 'Translation Test',
             'opts': self.model._meta,
             'show_test_form': True
-        })
+        }
+        return await self._render_response(request, 'admin/translator/change_list.html', context)
     
     def test_view_wrapper(self, request):
         """Synchronous wrapper for the async view"""
