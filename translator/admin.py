@@ -12,11 +12,12 @@ from django.template.response import TemplateResponse
 import asyncio
 from main_app.admin import admin_site
 
-@admin.register(TranslationTest)
+@admin.register(TranslationTest, site=admin_site)
 class TranslationTestAdmin(admin.ModelAdmin):
     list_display = ('id', 'created_at', 'source_text', 'target_language', 'error_message')
     readonly_fields = ('created_at', 'result', 'error_message')
     ordering = ('-created_at',)
+    change_list_template = 'admin/translator/change_list.html'
     
     def result_preview(self, obj):
         if obj.result:
@@ -36,7 +37,7 @@ class TranslationTestAdmin(admin.ModelAdmin):
                     ocr_options.append({
                         'id': test.id,
                         'text': result['full_text'][:100] + '...' if len(result['full_text']) > 100 else result['full_text'],
-                        'created_at': test.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                        'created_at': test.created_at
                     })
             except:
                 continue
