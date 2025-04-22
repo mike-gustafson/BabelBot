@@ -12,33 +12,17 @@ from django.template.response import TemplateResponse
 import asyncio
 from main_app.admin import admin_site
 
-@admin.register(TranslationTest, site=admin_site)
+@admin.register(TranslationTest)
 class TranslationTestAdmin(admin.ModelAdmin):
-    list_display = ('id', 'created_at', 'result_preview', 'error_message')
+    list_display = ('id', 'created_at', 'source_text', 'target_language', 'error_message')
     readonly_fields = ('created_at', 'result', 'error_message')
     ordering = ('-created_at',)
-    change_list_template = 'admin/translator/change_list.html'
     
     def result_preview(self, obj):
         if obj.result:
-            try:
-                result_data = obj.result
-                if isinstance(result_data, str):
-                    result_data = json.loads(result_data)
-                return format_html(
-                    '<div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">'
-                    '<strong>Source ({}):</strong> {}<br>'
-                    '<strong>Translated ({}):</strong> {}'
-                    '</div>',
-                    result_data.get('src', 'unknown'),
-                    result_data.get('source_text', '')[:100] + '...' if len(result_data.get('source_text', '')) > 100 else result_data.get('source_text', ''),
-                    result_data.get('dest', 'unknown'),
-                    result_data.get('translated_text', '')[:100] + '...' if len(result_data.get('translated_text', '')) > 100 else result_data.get('translated_text', '')
-                )
-            except:
-                return "Error parsing result"
-        return ""
-    result_preview.short_description = "Result"
+            return format_html('<pre>{}</pre>', json.dumps(obj.result, indent=2))
+        return '-'
+    result_preview.short_description = 'Result'
     
     def changelist_view(self, request, extra_context=None):
         # Get recent OCR tests with their results
