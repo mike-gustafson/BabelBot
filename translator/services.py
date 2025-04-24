@@ -10,25 +10,31 @@ def get_available_languages():
     formatted_languages = {code: name for code, name in LANGUAGES.items()}
     return formatted_languages
 
+def _translate_sync(text, dest_lang='en'):
+    """
+    Synchronous translation function
+    """
+    translator = Translator()
+    translator.timeout = 10
+    result = translator.translate(text, dest=dest_lang)
+    return {
+        'source_text': text,
+        'translated_text': result.text,
+        'src': result.src,
+        'dest': result.dest,
+        'confidence': result.extra_data.get('confidence', 0)
+    }
+
 async def translate_text(text, dest_lang='en', max_retries=3):
     """
     Asynchronously translate text to the target language.
     """
-    translator = Translator()
-    translator.timeout = 10
-    
     for attempt in range(max_retries):
         try:
-            # googletrans.Translator.translate is already async, so we can await it directly
-            result = await translator.translate(text, dest=dest_lang)
-            
-            return {
-                'source_text': text,
-                'translated_text': result.text,
-                'src': result.src,
-                'dest': result.dest,
-                'confidence': result.extra_data.get('confidence', 0)
-            }
+            # Run the synchronous translation in a thread pool
+            loop = asyncio.get_running_loop()
+            result = await loop.run_in_executor(None, _translate_sync, text, dest_lang)
+            return result
             
         except Exception as e:
             if attempt < max_retries - 1:
