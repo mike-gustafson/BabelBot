@@ -36,14 +36,8 @@
         <h3>Translated Text</h3>
         <div class="translated-output" id="translated_text">{% if translated_text %}{{ translated_text }}{% endif %}
         </div>
-        {% if encoded_audio %}
-        <div id="audio_container">
-          <audio controls>
-            <source src="data:audio/mp3;base64,{{ encoded_audio }}" type="audio/mp3">
-            Your browser does not support the audio element.
-          </audio>
-        </div>
-        {% elif tts_message %}
+        <div id="audio_container"></div>
+        {% if tts_message %}
         <div class="tts-message">
           {{ tts_message }}
         </div>
@@ -88,22 +82,18 @@
         if (data.translated_text) {
           translatedOutput.textContent = data.translated_text;
 
+          // Clear existing audio players
+          audioContainer.innerHTML = '';
+
           // Handle audio if available
           if (data.encoded_audio) {
-            if (!audioContainer) {
-              const newAudioContainer = document.createElement('div');
-              newAudioContainer.id = 'audio_container';
-              newAudioContainer.innerHTML = `
-                            <audio controls>
-                                <source src="data:audio/mp3;base64,${data.encoded_audio}" type="audio/mp3">
-                                Your browser does not support the audio element.
-                            </audio>
-                        `;
-              translatedOutput.after(newAudioContainer);
-            } else {
-              audioContainer.querySelector('source').src = `data:audio/mp3;base64,${data.encoded_audio}`;
-              audioContainer.querySelector('audio').load();
-            }
+            const audioElement = document.createElement('audio');
+            audioElement.controls = true;
+            const sourceElement = document.createElement('source');
+            sourceElement.src = `data:audio/mp3;base64,${data.encoded_audio}`;
+            sourceElement.type = 'audio/mp3';
+            audioElement.appendChild(sourceElement);
+            audioContainer.appendChild(audioElement);
           }
         } else {
           translatedOutput.innerHTML = `<p class="error">${data.error || 'Translation failed'}</p>`;
