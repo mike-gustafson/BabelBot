@@ -9,6 +9,7 @@ from tts.services import text_to_speech
 from googletrans import LANGUAGES
 from .forms import TranslationForm, LoginForm, SignupForm, CustomUserCreationForm
 from django.contrib.auth import login, authenticate, get_user
+from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_http_methods
@@ -33,7 +34,6 @@ DEFAULT_TEXT = (
 # Create async versions of database operations
 create_translation = sync_to_async(Translation.objects.create)
 get_user_async = sync_to_async(get_user)
-get_anonymous_user = sync_to_async(lambda: User.objects.get(username='anonymous_translator'))
 
 def build_LANGUAGES_html(selected_language):
     html_content = '<select id="language-select" name="target_language">'
@@ -65,19 +65,19 @@ async def translate_view(request):
                 result = await translate_text(text_to_translate, lang)
                 translated_text = result['translated_text']
                 
-                # Get user in async context
-                user = await get_user_async(request)
-                if not user.is_authenticated:
-                    # Use anonymous user if not authenticated
-                    user = await get_anonymous_user()
+                # Get user in async context if authenticated
+                user = None
+                if request.user.is_authenticated:
+                    user = await get_user_async(request)
                 
-                # Save the translation to the database using sync_to_async
-                await create_translation(
-                    user=user,
-                    original_text=text_to_translate,
-                    translated_text=translated_text,
-                    target_lang=lang
-                )
+                # Save the translation to the database if user is authenticated
+                if user:
+                    await create_translation(
+                        user=user,
+                        original_text=text_to_translate,
+                        translated_text=translated_text,
+                        target_lang=lang
+                    )
                 
                 # Check if language is supported for TTS
                 tts_message = None
@@ -156,19 +156,19 @@ async def translate_ajax(request):
         # Translate the text
         result = await translate_text(text_to_translate, target_language)
         
-        # Get user in async context
-        user = await get_user_async(request)
-        if not user.is_authenticated:
-            # Use anonymous user if not authenticated
-            user = await get_anonymous_user()
+        # Get user in async context if authenticated
+        user = None
+        if request.user.is_authenticated:
+            user = await get_user_async(request)
         
-        # Save the translation to the database
-        await create_translation(
-            user=user,
-            original_text=text_to_translate,
-            translated_text=result['translated_text'],
-            target_lang=target_language
-        )
+        # Save the translation to the database if user is authenticated
+        if user:
+            await create_translation(
+                user=user,
+                original_text=text_to_translate,
+                translated_text=result['translated_text'],
+                target_lang=target_language
+            )
         
         # Generate TTS if the language is supported
         encoded_audio = None
