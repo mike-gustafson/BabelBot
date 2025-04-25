@@ -245,8 +245,8 @@ header {
   backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
-  gap: 12px;
-  height: 40px;
+  gap: 8px;
+  height: 44px;
   position: relative;
   overflow: hidden;
 }
@@ -342,12 +342,13 @@ header {
 
 /* Common nav icon styles */
 .nav-icon {
-  width: 28px;
-  height: 28px;
+  width: 50px;
+  height: 50px;
   object-fit: contain;
   transition: all 0.3s ease;
   z-index: 2;
   position: relative;
+  padding: 2px;
 }
 
 /* Light mode icon styles */
@@ -356,12 +357,13 @@ header {
 }
 
 [data-theme="light"] .nav-links a:hover .nav-icon {
-  transform: scale(1.1);
+  transform: scale(1.15);
   filter: brightness(1.1) drop-shadow(0 0 8px rgba(76, 255, 139, 0.6));
 }
 
 [data-theme="light"] .nav-links a.active .nav-icon {
-  filter: brightness(1.2) drop-shadow(0 0 12px rgba(255, 76, 88, 0.7));
+  transform: scale(1.1);
+  filter: brightness(1.2) drop-shadow(0 0 12px rgba(76, 255, 139, 0.7));
 }
 
 /* Dark mode icon styles */
@@ -370,11 +372,12 @@ header {
 }
 
 [data-theme="dark"] .nav-links a:hover .nav-icon {
-  transform: scale(1.1);
+  transform: scale(1.15);
   filter: drop-shadow(0 0 4px rgba(76, 255, 139, 0.5));
 }
 
 [data-theme="dark"] .nav-links a.active .nav-icon {
+  transform: scale(1.1);
   filter: drop-shadow(0 0 6px rgba(76, 255, 139, 0.6));
 }
 
@@ -566,5 +569,15 @@ select:focus, input:focus, textarea:focus {
     margin-bottom: 60px;
     padding-left: var(--spacing-sm);
     padding-right: var(--spacing-sm);
+  }
+
+  .nav-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .nav-links a {
+    height: 40px;
+    padding: 8px var(--spacing-md);
   }
 } 
