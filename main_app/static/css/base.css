@@ -342,13 +342,13 @@ header {
 
 /* Common nav icon styles */
 .nav-icon {
-  width: 50px;
-  height: 50px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
   transition: all 0.3s ease;
   z-index: 2;
   position: relative;
-  padding: 2px;
+  padding: 0;
 }
 
 /* Light mode icon styles */
@@ -572,8 +572,8 @@ select:focus, input:focus, textarea:focus {
   }
 
   .nav-icon {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
   }
 
   .nav-links a {
