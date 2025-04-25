@@ -4,6 +4,10 @@
   --spacing-md: 1rem;
   --spacing-lg: 2rem;
   --spacing-xl: 4rem;
+  --translate-column-bg-light: rgba(100, 255, 156, 0.3);
+  --translate-column-bg-dark: rgba(30, 41, 59, 0.4);
+  --translate-input-bg-light: rgba(100, 255, 156, 0.15);
+  --translate-input-bg-dark: rgba(15, 23, 42, 0.3);
 }
 
 /* Translator Page Styles */
@@ -16,24 +20,6 @@
   overflow: visible;
   min-height: calc(100vh - 200px);
   z-index: 1;
-}
-
-/* Background logo with overlay - matching home page style */
-.translate-section::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url('../images/logo3.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0.15;
-  z-index: -1;
-  width: 100vw;
-  height: 100vh;
 }
 
 .translate-section h2 {
@@ -55,6 +41,13 @@
   align-items: stretch;
   width: 100%;
   height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  padding: 2rem;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .translate-column {
@@ -65,13 +58,13 @@
   min-width: 0;
   height: 100%;
   position: relative;
-  background: rgba(30, 41, 59, 0.8);
+  background: var(--translate-column-bg-light);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   padding: 2rem;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--box-shadow);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   z-index: 3;
 }
 
@@ -96,12 +89,12 @@
   z-index: 4;
 }
 
-textarea#original_text, .translated-output {
+textarea#original_text, .translated-output, .language-select {
   width: 100%;
   min-height: 400px;
   padding: 1.5rem;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--translate-input-bg-light);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--border-radius-md);
   font-size: 1rem;
   line-height: 1.6;
@@ -110,6 +103,8 @@ textarea#original_text, .translated-output {
   transition: var(--transition-normal);
   position: relative;
   z-index: 4;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 
 textarea#original_text {
@@ -131,11 +126,11 @@ textarea#original_text:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: var(--box-shadow-hover);
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(15, 23, 42, 0.5);
 }
 
 .translated-output {
-  background: rgba(15, 23, 42, 0.7);
+  background: rgba(15, 23, 42, 0.3);
   overflow-y: auto;
   white-space: pre-wrap;
 }
@@ -150,22 +145,18 @@ textarea#original_text:focus {
 }
 
 .language-select {
-  width: 100%;
+  min-height: unset;
   padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--border-radius-md);
-  background: rgba(15, 23, 42, 0.7);
-  color: var(--text-primary);
   font-size: 1.1rem;
   cursor: pointer;
-  transition: var(--transition-normal);
+  resize: none;
 }
 
 .language-select:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: var(--box-shadow-hover);
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(15, 23, 42, 0.5);
 }
 
 .translate-btn {
@@ -189,6 +180,7 @@ textarea#original_text:focus {
 .translate-btn:hover {
   transform: translateY(-2px);
   box-shadow: var(--box-shadow-hover);
+  background: var(--gradient-secondary);
 }
 
 .translate-btn-logo {
@@ -206,12 +198,14 @@ textarea#original_text:focus {
 #audio_container {
   margin-top: 1rem;
   width: 100%;
-  background: rgba(15, 23, 42, 0.7);
+  background: var(--translate-input-bg-light);
   padding: 1rem;
   border-radius: var(--border-radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   position: relative;
   z-index: 4;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 
 audio {
@@ -273,14 +267,26 @@ audio {
 }
 
 /* Dark mode specific styles */
-[data-theme="dark"] .language-select {
-  background: var(--gradient-tertiary);
-  color: var(--text-primary);
+[data-theme="dark"] .translate-column {
+  background: var(--translate-column-bg-dark);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="dark"] .language-select option {
-  background: var(--bg-primary);
+[data-theme="dark"] textarea#original_text,
+[data-theme="dark"] .translated-output {
+  background: var(--translate-input-bg-dark);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .language-select {
+  background: var(--translate-input-bg-dark);
   color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] #audio_container {
+  background: var(--translate-input-bg-dark);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Responsive Design */
@@ -376,4 +382,6 @@ audio {
   margin-top: 1rem;
   position: relative;
   z-index: 4;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
