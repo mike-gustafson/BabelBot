@@ -12,10 +12,21 @@
     <div class="translate-grid">
       <div class="translate-column">
         <h3>Input Text</h3>
-        <textarea name="text_to_translate" id="original_text" placeholder="Enter text to translate">{% if text_to_translate %}{{ text_to_translate }}{% endif %}</textarea>
+        <textarea name="text_to_translate" id="original_text"
+          placeholder="Enter text to translate">{% if text_to_translate %}{{ text_to_translate }}{% endif %}</textarea>
         <div class="translate-controls">
-          {{ language_dropdown|safe }}
-          <button type="submit" class="btn btn-secondary translate-btn">
+          <select name="target_language" id="language-select" class="language-select" aria-label="Select target language">
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="it">Italian</option>
+            <option value="pt">Portuguese</option>
+            <option value="ru">Russian</option>
+            <option value="ja">Japanese</option>
+            <option value="ko">Korean</option>
+            <option value="zh">Chinese</option>
+          </select>
+          <button type="submit" class="translate-btn">
             <img src="{% static 'images/logo2.png' %}" alt="BabelBot Logo" class="translate-btn-logo">
             <span>TRANSLATE!</span>
           </button>
@@ -23,15 +34,10 @@
       </div>
       <div class="translate-column">
         <h3>Translated Text</h3>
-        <div class="translated-output">{% if translated_text %}{{ translated_text }}{% endif %}</div>
-        {% if encoded_audio %}
-        <div id="audio_container">
-          <audio controls>
-            <source src="data:audio/mp3;base64,{{ encoded_audio }}" type="audio/mp3">
-            Your browser does not support the audio element.
-          </audio>
+        <div class="translated-output" id="translated_text">{% if translated_text %}{{ translated_text }}{% endif %}
         </div>
-        {% elif tts_message %}
+        <div id="audio_container"></div>
+        {% if tts_message %}
         <div class="tts-message">
           {{ tts_message }}
         </div>
@@ -44,65 +50,62 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('translate-form');
     const translatedOutput = document.querySelector('.translated-output');
     const audioContainer = document.getElementById('audio_container');
-    
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const submitButton = form.querySelector('button[type="submit"]');
-        submitButton.disabled = true;
-        submitButton.textContent = 'Translating...';
-        
-        try {
-            const formData = new FormData(form);
-            const response = await fetch('/translate/ajax/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
-                body: JSON.stringify({
-                    text_to_translate: form.querySelector('#original_text').value,
-                    target_language: form.querySelector('#language-select').value
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.translated_text) {
-                translatedOutput.textContent = data.translated_text;
-                
-                // Handle audio if available
-                if (data.encoded_audio) {
-                    if (!audioContainer) {
-                        const newAudioContainer = document.createElement('div');
-                        newAudioContainer.id = 'audio_container';
-                        newAudioContainer.innerHTML = `
-                            <audio controls>
-                                <source src="data:audio/mp3;base64,${data.encoded_audio}" type="audio/mp3">
-                                Your browser does not support the audio element.
-                            </audio>
-                        `;
-                        translatedOutput.after(newAudioContainer);
-                    } else {
-                        audioContainer.querySelector('source').src = `data:audio/mp3;base64,${data.encoded_audio}`;
-                        audioContainer.querySelector('audio').load();
-                    }
-                }
-            } else {
-                translatedOutput.innerHTML = `<p class="error">${data.error || 'Translation failed'}</p>`;
-            }
-        } catch (error) {
-            translatedOutput.innerHTML = `<p class="error">An error occurred during translation.</p>`;
-            console.error('Translation error:', error);
-        } finally {
-            submitButton.disabled = false;
-            submitButton.textContent = 'Translate';
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const submitButton = form.querySelector('button[type="submit"]');
+      const originalButtonContent = submitButton.innerHTML;
+      submitButton.disabled = true;
+      submitButton.innerHTML = '<span>Translating...</span>';
+
+      try {
+        const formData = new FormData(form);
+        const response = await fetch('/translate/ajax/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          },
+          body: JSON.stringify({
+            text_to_translate: form.querySelector('#original_text').value,
+            target_language: form.querySelector('#language-select').value
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.translated_text) {
+          translatedOutput.textContent = data.translated_text;
+
+          // Clear existing audio players
+          audioContainer.innerHTML = '';
+
+          // Handle audio if available
+          if (data.encoded_audio) {
+            const audioElement = document.createElement('audio');
+            audioElement.controls = true;
+            const sourceElement = document.createElement('source');
+            sourceElement.src = `data:audio/mp3;base64,${data.encoded_audio}`;
+            sourceElement.type = 'audio/mp3';
+            audioElement.appendChild(sourceElement);
+            audioContainer.appendChild(audioElement);
+          }
+        } else {
+          translatedOutput.innerHTML = `<p class="error">${data.error || 'Translation failed'}</p>`;
         }
+      } catch (error) {
+        translatedOutput.innerHTML = `<p class="error">An error occurred during translation.</p>`;
+        console.error('Translation error:', error);
+      } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonContent;
+      }
     });
-});
+  });
 </script>
 {% endblock %}
