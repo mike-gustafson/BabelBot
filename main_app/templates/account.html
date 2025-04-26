@@ -10,8 +10,7 @@
   <div class="account-content-wrapper">
   <div class="account-content">
 <h2>
-  Welcome, 
-  user.username
+  Welcome, {{ first_name }}
 </h2>
 <div class="card">
   <h2>User Account</h2>
@@ -21,14 +20,14 @@
     <div class="profile-display">
     <p>
       Email:
-      user.email
+      {{user.email}}
     </p>
     <p>Preferred Language
-    user.profile.interfaced_language
+    {{user.profile.interfaced_language}}
   </p>
     <p>Default Translation:
-    user.profile.source_language
-    user.profile.target_language
+    {{user.profile.source_language}}
+    {{user.profile.target_language}}
   </p>
  <div>
   <!--Edit Profile Form-->
