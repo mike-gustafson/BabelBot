@@ -8,7 +8,7 @@ from translator.services import translate_text, get_available_languages
 from tts.services import text_to_speech
 from googletrans import LANGUAGES
 from .forms import TranslationForm, LoginForm, SignupForm, CustomUserCreationForm
-from django.contrib.auth import login, authenticate, get_user
+from django.contrib.auth import login, authenticate, logout, get_user
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_http_methods
@@ -219,17 +219,18 @@ def login_view(request):
     return render(request, 'login.html', {'form': form})
 
 def logout_view(request):
-    # Perform logout logic here
-    return HttpResponse("Logout successful")
+    logout(request)
+    return redirect('home')
 
 def signup(request):
     if request.method == 'POST':
-        form = SignupForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            # TODO: Implement actual user creation
-            return redirect('login')
+            user = form.save()
+            login(request, user)
+            return redirect('home')
     else:
-        form = SignupForm()
+        form = CustomUserCreationForm()
     
     return render(request, 'signup.html', {'form': form})
 

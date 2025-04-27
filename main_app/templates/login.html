@@ -9,7 +9,7 @@
 <div class="form-container">
   <div class="form-header">
     <h2>Welcome Back</h2>
-    <p class="form-subtitle">Login to your BabelBot account</p>
+    <p class="form-subtitle">Sign in to your account</p>
   </div>
   
   <form method="post" class="login-form">
@@ -22,9 +22,9 @@
     {% endif %}
     
     <div class="form-group">
-      <label for="id_username">Email</label>
+      <label for="id_username">Username</label>
       <div class="input-with-icon">
-        <i class="fas fa-envelope"></i>
+        <i class="fas fa-user"></i>
         {{ form.username }}
       </div>
       {% if form.username.errors %}
@@ -48,7 +48,7 @@
         <input type="checkbox" id="remember" name="remember">
         <label for="remember">Remember me</label>
       </div>
-      <a href="{% url 'password_reset' %}" class="forgot-password">Forgot Password?</a>
+      <a href="{% url 'password_reset' %}" class="forgot-password">Forgot password?</a>
     </div>
     
     <button type="submit" class="btn-primary">
