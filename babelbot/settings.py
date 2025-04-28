@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 import dj_database_url
 from pathlib import Path
+import environ
+
+# Initialize environ
+env = environ.Env()
+environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,7 +27,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
+# Use environment variable if set, otherwise use a default for development
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-development-key-only')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if not "ON_HEROKU" in os.environ:
@@ -31,6 +37,11 @@ else:
     DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
+
+# Authentication settings
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
 
 # Application definition

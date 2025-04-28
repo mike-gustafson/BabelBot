@@ -20,6 +20,7 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from ocr.services import detect_text
+from django.contrib.auth.decorators import login_required
 
 DEFAULT_TARGET_LANGUAGE = "es"
 DEFAULT_TEXT = (
@@ -45,99 +46,36 @@ def build_LANGUAGES_html(selected_language):
     return html_content
 
 async def translate_view(request):
-    """
-    Main view for the translation page
-    """
     try:
-        if request.method == 'POST':
-            text_to_translate = request.POST.get('text_to_translate')
-            lang = request.POST.get('target_language')
-            
-            if not text_to_translate or not lang:
-                return render(request, 'translate.html', {
-                    'form': TranslationForm(),
-                    'text_to_translate': text_to_translate or DEFAULT_TEXT,
-                    'translated_text': "Please provide both text and language",
-                    'language_dropdown': build_LANGUAGES_html(lang or DEFAULT_TARGET_LANGUAGE)
-                })
-            
-            try:
-                result = await translate_text(text_to_translate, lang)
-                translated_text = result['translated_text']
-                
-                # Get user in async context if authenticated
-                user = None
-                if request.user.is_authenticated:
-                    user = await get_user_async(request)
-                
-                # Save the translation to the database if user is authenticated
-                if user:
-                    await create_translation(
-                        user=user,
-                        original_text=text_to_translate,
-                        translated_text=translated_text,
-                        target_lang=lang
-                    )
-                
-                # Check if language is supported for TTS
-                tts_message = None
-                encoded_audio = None
-                try:
-                    from gtts.lang import tts_langs
-                    supported_langs = tts_langs()
-                    if lang in supported_langs:
-                        # Generate TTS audio only for supported languages
-                        loop = asyncio.get_running_loop()
-                        audio_buffer = await loop.run_in_executor(None, text_to_speech, translated_text, lang)
-                        audio_data = audio_buffer.read()
-                        encoded_audio = base64.b64encode(audio_data).decode("utf-8")
-                    else:
-                        tts_message = "Text-to-speech is not available for this language."
-                except Exception as e:
-                    tts_message = "Text-to-speech service is currently unavailable."
-                
-                return render(request, 'translate.html', {
-                    'form': TranslationForm(initial={
-                        'text_to_translate': text_to_translate,
-                        'target_language': lang
-                    }),
-                    'text_to_translate': text_to_translate,
-                    'translated_text': translated_text,
-                    'encoded_audio': encoded_audio,
-                    'tts_message': tts_message,
-                    'language_dropdown': build_LANGUAGES_html(lang)
-                })
-                
-            except Exception as e:
-                return render(request, 'translate.html', {
-                    'form': TranslationForm(initial={
-                        'text_to_translate': text_to_translate,
-                        'target_language': lang
-                    }),
-                    'text_to_translate': text_to_translate,
-                    'translated_text': "An error occurred during translation. Please try again.",
-                    'language_dropdown': build_LANGUAGES_html(lang)
-                })
+        # Wrap session access in sync_to_async
+        text_to_translate = await sync_to_async(lambda: request.session.get('text_to_translate', DEFAULT_TEXT))()
+        lang = await sync_to_async(lambda: request.session.get('target_language', DEFAULT_TARGET_LANGUAGE))()
         
-        # GET request
-        text_to_translate = request.GET.get('text', DEFAULT_TEXT)
-        lang = request.GET.get('target_language', DEFAULT_TARGET_LANGUAGE)
-        return render(request, 'translate.html', {
-            'form': TranslationForm(initial={
-                'text_to_translate': text_to_translate,
-                'target_language': lang
-            }),
+        # Create form instance asynchronously
+        form = await sync_to_async(TranslationForm)()
+        
+        # Build language dropdown asynchronously
+        language_dropdown = await sync_to_async(build_LANGUAGES_html)(lang)
+        
+        return await sync_to_async(render)(request, 'translate.html', {
+            'form': form,
             'text_to_translate': text_to_translate,
             'translated_text': "",
-            'language_dropdown': build_LANGUAGES_html(lang)
+            'language_dropdown': language_dropdown
         })
         
     except Exception as e:
-        return render(request, 'translate.html', {
-            'form': TranslationForm(),
+        # Create form instance asynchronously for error case
+        form = await sync_to_async(TranslationForm)()
+        
+        # Build language dropdown asynchronously for error case
+        language_dropdown = await sync_to_async(build_LANGUAGES_html)(DEFAULT_TARGET_LANGUAGE)
+        
+        return await sync_to_async(render)(request, 'translate.html', {
+            'form': form,
             'text_to_translate': DEFAULT_TEXT,
             'translated_text': "An error occurred. Please try again.",
-            'language_dropdown': build_LANGUAGES_html(DEFAULT_TARGET_LANGUAGE)
+            'language_dropdown': language_dropdown
         })
 
 @csrf_exempt
