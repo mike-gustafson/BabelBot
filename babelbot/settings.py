@@ -15,9 +15,12 @@ import dj_database_url
 from pathlib import Path
 import environ
 
-# Initialize environ
+# Load environment variables from .env file
 env = environ.Env()
-environ.Env.read_env()
+env_path = Path(__file__).resolve().parent.parent / '.env'
+if env_path.exists():
+    environ.Env.read_env(str(env_path))
+    print(f"Loaded .env file from: {env_path}")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -169,3 +172,21 @@ if 'ON_HEROKU' in os.environ:
         CSRF_COOKIE_SECURE = True
     except ImportError:
         print("Warning: django-heroku not installed. Some Heroku-specific settings may not be applied.")
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+# Debug: Print the email settings
+print("EMAIL_HOST_USER:", os.environ.get('EMAIL_HOST_USER', ''))
+print("EMAIL_HOST_PASSWORD:", os.environ.get('EMAIL_HOST_PASSWORD', ''))
+
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', '')
+SERVER_EMAIL = os.environ.get('EMAIL_HOST_USER', '')
+
+# Password Reset Settings
+PASSWORD_RESET_TIMEOUT = 3600  # 1 hour
