@@ -47,30 +47,31 @@
             </div>
             Home
           </a>
-          <a href="{% url 'translate' %}" class="{% if request.resolver_match.url_name == 'translate' %}active{% endif %}">
+          <a href="{% url 'translate' %}"
+            class="{% if request.resolver_match.url_name == 'translate' %}active{% endif %}">
             <div class="nav-icon-wrapper">
               <img src="{% static 'images/logo_translate.png' %}" alt="Translate" class="nav-icon">
             </div>
             Translate
           </a>
           {% if user.is_authenticated %}
-            <a href="/account/" class="{% if request.path == '/account/' %}active{% endif %}">
-              <img src="{% static 'images/logo_translate.png' %}" alt="Account" class="nav-icon">
-              Account
-            </a>
-            <a href="{% url 'logout' %}" class="nav-link">
-              <img src="{% static 'images/logo_home.png' %}" alt="Logout" class="nav-icon">
-              Logout
-            </a>
+          <a href="/account/" class="{% if request.path == '/account/' %}active{% endif %}">
+            <img src="{% static 'images/logo_translate.png' %}" alt="Account" class="nav-icon">
+            Account
+          </a>
+          <a href="{% url 'logout' %}" class="nav-link">
+            <img src="{% static 'images/logo_home.png' %}" alt="Logout" class="nav-icon">
+            Logout
+          </a>
           {% else %}
-            <a href="/login/" class="{% if request.path == '/login/' %}active{% endif %}">
-              <img src="{% static 'images/logo_login.png' %}" alt="Login" class="nav-icon">
-              Login
-            </a>
-            <a href="/signup/" class="{% if request.path == '/signup/' %}active{% endif %}">
-              <img src="{% static 'images/logo_translate.png' %}" alt="Sign Up" class="nav-icon">
-              Sign Up
-            </a>
+          <a href="/login/" class="{% if request.path == '/login/' %}active{% endif %}">
+            <img src="{% static 'images/logo_login.png' %}" alt="Login" class="nav-icon">
+            Login
+          </a>
+          <a href="/signup/" class="{% if request.path == '/signup/' %}active{% endif %}">
+            <img src="{% static 'images/logo_translate.png' %}" alt="Sign Up" class="nav-icon">
+            Sign Up
+          </a>
           {% endif %}
           <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">
             <img src="{% static 'images/logo_translate.png' %}" alt="About" class="nav-icon">
@@ -79,7 +80,8 @@
         </nav>
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
           <img src="{% static 'images/moon.svg' %}" alt="Dark Mode" class="theme-icon theme-icon-moon">
-          <img src="{% static 'images/sun.svg' %}" alt="Light Mode" class="theme-icon theme-icon-sun" style="display: none;">
+          <img src="{% static 'images/sun.svg' %}" alt="Light Mode" class="theme-icon theme-icon-sun"
+            style="display: none;">
         </button>
         <button id="menu-toggle" class="menu-toggle" aria-label="Toggle navigation menu">
           <span class="bar"></span>
@@ -91,9 +93,11 @@
   </header>
 
   <main>
-    <div class="section-container">
-      {% block content %}
-      {% endblock %}
+    <div class="page-section">
+      <div class="section-container">
+        {% block content %}
+        {% endblock %}
+      </div>
     </div>
   </main>
 
