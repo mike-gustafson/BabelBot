@@ -8,40 +8,47 @@
 {% block content %}
 <div class="account-section">
   <div class="account-content-wrapper">
-  <div class="account-content">
-<h2>
-  Welcome, {{ user.username}}
-</h2>
-<div class="card">
-  <h2>User Account</h2>
-  <div class="account-content">
-    <p class="placeholder-text">User Account Template</p>
-    <!--Display Profile Info-->
-    <div class="profile-display">
-    <p>
-      Email:
-      {{user.email}}
-    </p>
-    <p>Preferred Language
-    {{user.profile.interfaced_language}}
-  </p>
-    <p>Default Translation:
-    {{user.profile.source_language}}
-    {{user.profile.target_language}}
-  </p>
- <div>
-  <!--Edit Profile Form-->
-  <h2>Edit Profile</h2>
-  <form method= "post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{form.as_p}}
-    <button type="submit" class="btn btn-primary">Edit Account</button>
-  </form>
-</div>
-<!--Delete Account-->
-<h2>Delete Account</h2>
-<form method="post" onsubmit="return confirm"('Are you sure you want to delete your account?');>
-  {% csrf_token %}
-<button type="submit" class="btn btn-primary">Delete Account</button>
+    <div class="account-content">
+      <h2>Welcome, {{ display_name }}</h2>
+      <div class="card">
+        <h2>User Account</h2>
+        <div class="account-content">
+          <!--Display Profile Info-->
+          <div class="profile-display">
+            <h3>User Information</h3>
+            <p>user.id: {{ user.id }}</p>
+            <p>user.username: {{ user.username }}</p>
+            <p>user.email: {{ user.email }}</p>
+            <p>user.first_name: {{ user.first_name }}</p>
+            <p>user.last_name: {{ user.last_name }}</p>
+            <p>user.date_joined: {{ user.date_joined }}</p>
+            <p>user.last_login: {{ user.last_login }}</p>
+
+            <h3>Profile Information</h3>
+            <p>profile.bio: {{ profile.bio }}</p>
+            <p>profile.location: {{ profile.location }}</p>
+            <p>profile.primary_language: {{ profile.primary_language }}</p>
+            <p>profile.other_languages: {{ profile.other_languages }}</p>
+            <p>profile.is_anonymous: {{ profile.is_anonymous }}</p>
+          </div>
+
+          <!--Edit Profile Form-->
+          <h2>Edit Profile</h2>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Edit Account</button>
+          </form>
+        </div>
+      </div>
+
+      <!--Delete Account-->
+      <h2>Delete Account</h2>
+      <form method="post" onsubmit="return confirm('Are you sure you want to delete your account?');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Delete Account</button>
+      </form>
+    </div>
+  </div>
 </div>
 {% endblock %} 

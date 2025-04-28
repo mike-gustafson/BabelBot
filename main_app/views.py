@@ -174,10 +174,33 @@ def signup(request):
 def account(request):
     if not request.user.is_authenticated:
         return redirect('login')
+    
+    # Get the user's profile
+    profile = request.user.profile
+    
     context = {
-        'user': request.user,
-        'first_name': request.user.first_name or request.user.username
+        # User model fields
+        'user': {
+            'id': request.user.id,
+            'username': request.user.username,
+            'email': request.user.email,
+            'first_name': request.user.first_name,
+            'last_name': request.user.last_name,
+            'date_joined': request.user.date_joined,
+            'last_login': request.user.last_login,
+        },
+        # Profile model fields
+        'profile': {
+            'bio': profile.bio,
+            'location': profile.location,
+            'primary_language': profile.primary_language,
+            'other_languages': profile.other_languages,
+            'is_anonymous': profile.is_anonymous,
+        },
+        # Convenience fields
+        'display_name': request.user.first_name or request.user.username,
     }
+    
     return render(request, 'account.html', context)
 
 def about(request):
