@@ -207,17 +207,32 @@ def account(request):
 
 @login_required
 @require_http_methods(["POST"])
-def edit_translation(request):
+async def edit_translation(request):
     try:
         translation_id = request.POST.get('translation_id')
-        translation = Translation.objects.get(id=translation_id, user=request.user)
+        # Wrap database operations in sync_to_async
+        get_translation = sync_to_async(lambda: Translation.objects.get(id=translation_id, user=request.user))
+        translation = await get_translation()
         
-        translation.original_text = request.POST.get('original_text')
-        translation.translated_text = request.POST.get('translated_text')
-        translation.target_lang = request.POST.get('target_lang')
-        translation.save()
+        original_text = request.POST.get('original_text')
+        target_lang = request.POST.get('target_lang')
         
-        return JsonResponse({'status': 'success'})
+        # Translate the new text
+        result = await translate_text(original_text, target_lang)
+        
+        # Update the translation
+        translation.original_text = original_text
+        translation.translated_text = result['translated_text']
+        translation.target_lang = target_lang
+        
+        # Wrap save operation in sync_to_async
+        save_translation = sync_to_async(translation.save)
+        await save_translation()
+        
+        return JsonResponse({
+            'status': 'success',
+            'translated_text': result['translated_text']
+        })
     except Translation.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Translation not found'}, status=404)
     except Exception as e:

@@ -166,8 +166,8 @@
                   <textarea id="editOriginalText" name="original_text" required></textarea>
                 </div>
                 <div class="form-group">
-                  <label for="editTranslatedText">Translated Text</label>
-                  <textarea id="editTranslatedText" name="translated_text" required></textarea>
+                  <label>Current Translation</label>
+                  <div class="current-translation" id="currentTranslation"></div>
                 </div>
                 <div class="form-group">
                   <label for="editTargetLang">Target Language</label>
@@ -225,7 +225,7 @@ editButtons.forEach(button => {
 
     document.getElementById('editTranslationId').value = translationId;
     document.getElementById('editOriginalText').value = originalText;
-    document.getElementById('editTranslatedText').value = translatedText;
+    document.getElementById('currentTranslation').textContent = translatedText;
     document.getElementById('editTargetLang').value = targetLang;
 
     editModal.style.display = 'block';
