@@ -178,6 +178,9 @@ def account(request):
     # Get the user's profile
     profile = request.user.profile
     
+    # Get the user's translations, ordered by most recent first
+    translations = request.user.translation_set.all().order_by('-created_at')
+    
     context = {
         # User model fields
         'user': {
@@ -197,6 +200,8 @@ def account(request):
             'other_languages': profile.other_languages,
             'is_anonymous': profile.is_anonymous,
         },
+        # Translations
+        'translations': translations,
         # Convenience fields
         'display_name': request.user.first_name or request.user.username,
     }

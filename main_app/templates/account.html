@@ -32,6 +32,37 @@
             <p>profile.is_anonymous: {{ profile.is_anonymous }}</p>
           </div>
 
+          <!--Translations History-->
+          <h3>Translation History</h3>
+          <div class="translations-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Original Text</th>
+                  <th>Translated Text</th>
+                  <th>Target Language</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for translation in translations %}
+                <tr>
+                  <td>{{ translation.created_at|date:"Y-m-d H:i" }}</td>
+                  <td>{{ translation.original_text|truncatechars:50 }}</td>
+                  <td>{{ translation.translated_text|truncatechars:50 }}</td>
+                  <td>{{ translation.target_lang }}</td>
+                  <td>{{ translation.request_type }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5">No translations yet</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
           <!--Edit Profile Form-->
           <h2>Edit Profile</h2>
           <form method="post" enctype="multipart/form-data">
