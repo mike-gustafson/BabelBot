@@ -6,6 +6,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BabelBot - {% block title %}{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{% static 'images/logo2.png' %}">
   <script src="{% static 'js/theme-init.js' %}"></script>
   <style>
     /* Prevent transitions during initial load */
@@ -17,6 +18,7 @@
       transition: none !important;
     }
   </style>
+  <link rel="stylesheet" href="{% static 'css/variables.css' %}">
   <link rel="stylesheet" href="{% static 'css/themes/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/themes/light.css' %}">
   <link rel="stylesheet" href="{% static 'css/themes/dark.css' %}">
@@ -25,7 +27,6 @@
   {% if request.path == '/' %}
   <link rel="stylesheet" href="{% static 'css/home.css' %}">
   {% endif %}
-  <link rel="stylesheet" href="{% static 'css/variables.css' %}">
   {% block extra_css %}{% endblock %}
 </head>
 
@@ -41,30 +42,48 @@
       <div class="nav-menu">
         <nav class="nav-links">
           <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-            <img src="{% static 'images/logo2.png' %}" alt="Home" class="nav-icon">
+            <div class="nav-icon-wrapper">
+              <img src="{% static 'images/logo_home.png' %}" alt="Home" class="nav-icon">
+            </div>
             Home
           </a>
           <a href="{% url 'translate' %}" class="{% if request.resolver_match.url_name == 'translate' %}active{% endif %}">
-            <img src="{% static 'images/logo_translate.png' %}" alt="Translate" class="nav-icon">
+            <div class="nav-icon-wrapper">
+              <img src="{% static 'images/logo_translate.png' %}" alt="Translate" class="nav-icon">
+            </div>
             Translate
           </a>
           {% if user.is_authenticated %}
           <a href="{% url 'account' %}" class="{% if request.resolver_match.url_name == 'account' %}active{% endif %}">
-            <img src="{% static 'images/logo2.png' %}" alt="Account" class="nav-icon">
+            <div class="nav-icon-wrapper">
+              <img src="{% static 'images/logo2.png' %}" alt="Account" class="nav-icon">
+            </div>
             Account
+          </a>
+          <a href="{% url 'logout' %}" class="{% if request.resolver_match.url_name == 'logout' %}active{% endif %}">
+            <div class="nav-icon-wrapper">
+              <img src="{% static 'images/logo2.png' %}" alt="Logout" class="nav-icon">
+            </div>
+            Logout
           </a>
           {% else %}
           <a href="{% url 'login' %}" class="{% if request.resolver_match.url_name == 'login' %}active{% endif %}">
-            <img src="{% static 'images/logo_login.png' %}" alt="Login" class="nav-icon">
+            <div class="nav-icon-wrapper">
+              <img src="{% static 'images/logo_login.png' %}" alt="Login" class="nav-icon">
+            </div>
             Login
           </a>
           <a href="{% url 'signup' %}" class="{% if request.resolver_match.url_name == 'signup' %}active{% endif %}">
-            <img src="{% static 'images/logo2.png' %}" alt="Sign Up" class="nav-icon">
+            <div class="nav-icon-wrapper">
+              <img src="{% static 'images/logo_signup.png' %}" alt="Sign Up" class="nav-icon">
+            </div>
             Sign Up
           </a>
           {% endif %}
           <a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">
-            <img src="{% static 'images/logo_about.png' %}" alt="About" class="nav-icon">
+            <div class="nav-icon-wrapper">
+              <img src="{% static 'images/logo_about.png' %}" alt="About" class="nav-icon">
+            </div>
             About
           </a>
         </nav>
