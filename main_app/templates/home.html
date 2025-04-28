@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="home-section">
@@ -9,6 +10,83 @@
         seamless language translation powered by cutting-edge technology.</p>
       <a href="{% url 'translate' %}" class="btn btn-primary">Start Translating Now</a>
     </div>
+
+    {% if not user.is_authenticated %}
+    <div class="auth-section">
+      <div class="auth-content">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Login</button>
+          <button class="auth-tab" data-tab="signup">Sign Up</button>
+        </div>
+
+        <!-- Login Form -->
+        <form method="post" action="{% url 'login' %}" class="login-form" id="login-form">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="username">Username</label>
+            <div class="input-with-icon">
+              <i class="fas fa-user"></i>
+              <input type="text" id="username" name="username" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-with-icon">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="password" name="password" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-sign-in-alt"></i>
+            Login
+          </button>
+        </form>
+
+        <!-- Sign Up Form -->
+        <form method="post" action="{% url 'signup' %}" class="login-form" id="signup-form" style="display: none;">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="signup-username">Username</label>
+            <div class="input-with-icon">
+              <i class="fas fa-user"></i>
+              <input type="text" id="signup-username" name="username" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="signup-email">Email</label>
+            <div class="input-with-icon">
+              <i class="fas fa-envelope"></i>
+              <input type="email" id="signup-email" name="email" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="signup-password1">Password</label>
+            <div class="input-with-icon">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="signup-password1" name="password1" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="signup-password2">Confirm Password</label>
+            <div class="input-with-icon">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="signup-password2" name="password2" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-user-plus"></i>
+            Sign Up
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
 
     <div class="features-grid">
       <div class="feature-card">
@@ -30,4 +108,29 @@
     </div>
   </div>
 </div>
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const loginTab = document.querySelector('[data-tab="login"]');
+    const signupTab = document.querySelector('[data-tab="signup"]');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+
+    loginTab.addEventListener('click', function() {
+      loginTab.classList.add('active');
+      signupTab.classList.remove('active');
+      loginForm.style.display = 'block';
+      signupForm.style.display = 'none';
+    });
+
+    signupTab.addEventListener('click', function() {
+      signupTab.classList.add('active');
+      loginTab.classList.remove('active');
+      signupForm.style.display = 'block';
+      loginForm.style.display = 'none';
+    });
+  });
+</script>
+{% endblock %}
 {% endblock %}
