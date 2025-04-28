@@ -134,3 +134,386 @@
     text-align: left;
   }
 }
+
+.edit-profile-section {
+  margin: 2rem 0;
+  padding: 2rem;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.profile-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.profile-form h4 {
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-transparent);
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.error {
+  color: var(--error);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.form-actions {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--text-on-primary);
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--text-on-secondary);
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 1rem;
+}
+
+.btn-secondary:hover {
+  background-color: var(--secondary-dark);
+  transform: translateY(-1px);
+}
+
+.profile-display {
+  transition: all 0.3s ease;
+}
+
+.form-group h4 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.language-selection {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background-color: var(--input-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.language-columns {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  max-height: 400px;
+  gap: 0.75rem;
+}
+
+.language-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  margin: 0.25rem;
+  border-radius: var(--border-radius);
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.language-checkbox:hover {
+  background-color: var(--hover-bg);
+}
+
+.language-checkbox input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.language-checkbox label {
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .language-checkbox {
+    width: 100%;
+  }
+}
+
+.primary-language-select {
+  width: 100%;
+  max-width: 300px;
+  margin-bottom: 1.5rem;
+}
+
+.primary-language-select select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.primary-language-select select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-transparent);
+}
+
+.delete-confirmation {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
+}
+
+.warning-message {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.warning-message h3 {
+  color: var(--error);
+  margin-bottom: 1.5rem;
+}
+
+.warning-message p {
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.warning-message ul {
+  text-align: left;
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.warning-message li {
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.delete-form {
+  margin-top: 2rem;
+}
+
+.btn-danger {
+  background-color: var(--error);
+  color: var(--text-on-error);
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+  background-color: var(--error-dark);
+  transform: translateY(-1px);
+}
+
+/* Translation Table Styles */
+.translations-section {
+  margin-top: 2rem;
+}
+
+.translations-table-container {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.translations-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.translations-table th,
+.translations-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.translations-table th {
+  background-color: var(--secondary-bg-color);
+  font-weight: 600;
+}
+
+.translations-table tr:hover {
+  background-color: var(--hover-bg-color);
+}
+
+/* Edit and Delete Buttons */
+.edit-translation-btn,
+.delete-translation-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  margin-right: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.edit-translation-btn {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.delete-translation-btn {
+  background-color: var(--error-color);
+  color: white;
+}
+
+.edit-translation-btn:hover {
+  background-color: var(--primary-hover-color);
+}
+
+.delete-translation-btn:hover {
+  background-color: var(--error-hover-color);
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: var(--bg-color);
+  margin: 10% auto;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 600px;
+  position: relative;
+}
+
+.close-modal {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
+.close-modal:hover {
+  color: var(--primary-color);
+}
+
+/* Form Styles in Modal */
+#editTranslationForm .form-group {
+  margin-bottom: 1rem;
+}
+
+#editTranslationForm label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+#editTranslationForm textarea,
+#editTranslationForm select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--input-bg-color);
+  color: var(--text-color);
+}
+
+#editTranslationForm textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+#editTranslationForm button[type="submit"] {
+  margin-top: 1rem;
+  width: 100%;
+}

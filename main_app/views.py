@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect
 from translator.services import translate_text, get_available_languages
 from tts.services import text_to_speech
 from googletrans import LANGUAGES
-from .forms import TranslationForm, LoginForm, SignupForm, CustomUserCreationForm
+from .forms import TranslationForm, LoginForm, SignupForm, CustomUserCreationForm, ProfileForm
 from django.contrib.auth import login, authenticate, logout, get_user
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
@@ -21,6 +21,7 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 from ocr.services import detect_text
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 DEFAULT_TARGET_LANGUAGE = "es"
 DEFAULT_TEXT = (
@@ -171,6 +172,7 @@ def signup(request):
     
     return render(request, 'signup.html', {'form': form})
 
+@login_required
 def account(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -181,32 +183,57 @@ def account(request):
     # Get the user's translations, ordered by most recent first
     translations = request.user.translation_set.all().order_by('-created_at')
     
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=profile, user=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('account')
+    else:
+        form = ProfileForm(instance=profile, user=request.user)
+    
+    # Get available languages for the edit form
+    languages = LANGUAGES.items()
+    
     context = {
-        # User model fields
-        'user': {
-            'id': request.user.id,
-            'username': request.user.username,
-            'email': request.user.email,
-            'first_name': request.user.first_name,
-            'last_name': request.user.last_name,
-            'date_joined': request.user.date_joined,
-            'last_login': request.user.last_login,
-        },
-        # Profile model fields
-        'profile': {
-            'bio': profile.bio,
-            'location': profile.location,
-            'primary_language': profile.primary_language,
-            'other_languages': profile.other_languages,
-            'is_anonymous': profile.is_anonymous,
-        },
-        # Translations
+        'user': request.user,
+        'profile': profile,
         'translations': translations,
-        # Convenience fields
+        'form': form,
         'display_name': request.user.first_name or request.user.username,
+        'languages': languages,
     }
     
     return render(request, 'account.html', context)
+
+@login_required
+@require_http_methods(["POST"])
+def edit_translation(request):
+    try:
+        translation_id = request.POST.get('translation_id')
+        translation = Translation.objects.get(id=translation_id, user=request.user)
+        
+        translation.original_text = request.POST.get('original_text')
+        translation.translated_text = request.POST.get('translated_text')
+        translation.target_lang = request.POST.get('target_lang')
+        translation.save()
+        
+        return JsonResponse({'status': 'success'})
+    except Translation.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Translation not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@login_required
+@require_http_methods(["POST"])
+def delete_translation(request, translation_id):
+    try:
+        translation = Translation.objects.get(id=translation_id, user=request.user)
+        translation.delete()
+        return JsonResponse({'status': 'success'})
+    except Translation.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Translation not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 def about(request):
     return render(request, 'about.html')
@@ -315,4 +342,18 @@ def tts(request):
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def account_delete_confirm(request):
+    if request.method == 'POST':
+        # Delete the user's profile first
+        request.user.profile.delete()
+        # Delete the user
+        request.user.delete()
+        # Logout the user
+        logout(request)
+        messages.success(request, 'Your account has been successfully deleted.')
+        return redirect('home')
+    
+    return render(request, 'account_delete_confirm.html')
 

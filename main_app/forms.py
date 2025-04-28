@@ -4,6 +4,7 @@ from django.core.validators import EmailValidator
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from .models import Profile
 
 class TranslationForm(forms.Form):
     text_to_translate = forms.CharField(
@@ -120,7 +121,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password1', 'password2')
+        fields = ('username', 'email', 'first_name', 'last_name')
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
@@ -140,3 +141,76 @@ class CustomUserCreationForm(UserCreationForm):
         if commit:
             user.save()
         return user 
+
+# Create a list of tuples for language choices
+LANGUAGE_CHOICES = [(code, name.title()) for code, name in LANGUAGES.items()]
+LANGUAGE_CHOICES.sort(key=lambda x: x[1])  # Sort by language name
+
+class ProfileForm(forms.ModelForm):
+    first_name = forms.CharField(
+        max_length=30,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    last_name = forms.CharField(
+        max_length=30,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
+    )
+    primary_language = forms.ChoiceField(
+        choices=[('', 'Select a language')] + LANGUAGE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    other_languages = forms.MultipleChoiceField(
+        choices=LANGUAGE_CHOICES,
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'language-checkbox',
+            'template_name': 'widgets/checkbox_select.html'
+        }),
+        required=False
+    )
+
+    class Meta:
+        model = Profile
+        fields = ['bio', 'location', 'primary_language', 'other_languages']
+        widgets = {
+            'bio': forms.Textarea(attrs={'rows': 4, 'cols': 40, 'class': 'form-control'}),
+            'location': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'bio': 'About Me',
+            'location': 'Location',
+            'primary_language': 'Primary Language',
+            'other_languages': 'Other Languages',
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if self.user:
+            self.fields['first_name'].initial = self.user.first_name
+            self.fields['last_name'].initial = self.user.last_name
+            self.fields['email'].initial = self.user.email
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        
+        # Update user fields
+        if self.user:
+            self.user.first_name = self.cleaned_data.get('first_name', '')
+            self.user.last_name = self.cleaned_data.get('last_name', '')
+            self.user.email = self.cleaned_data.get('email', '')
+            if commit:
+                self.user.save()
+        
+        # Update profile fields
+        if commit:
+            profile.save()
+            # Save many-to-many fields
+            self.save_m2m()
+        
+        return profile 
