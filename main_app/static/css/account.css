@@ -8,3 +8,57 @@
   color: var(--text-color);
   opacity: 0.8;
 } 
+
+.account-section {
+  min-height: calc(100vh - 120px);
+  position: relative;
+  overflow: visible; 
+  padding: var(--spacing-md) 0;
+}
+
+.account-content {
+  text-align: center;
+  padding: var(--spacing-md) 0; 
+  margin-bottom: var(--spacing-md);
+}
+
+.account-content h2 {
+  font-size: 2rem;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+.account-content-wrapper {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.3);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-md) auto;
+  max-width: 1000px;
+  box-shadow: var(--box-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.edit-account button {
+  background: var(--primary);
+  color: white;
+  padding: var(--spacing-md);
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: var(--spacing-md);
+}
+
+.edit-account button:hover {
+  background: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--shadow-color);
+}

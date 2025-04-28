@@ -205,8 +205,14 @@ def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            # TODO: Implement actual authentication
-            return redirect('home')
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('home')
+            else:
+                form.add_error(None, 'Invalid username or password')
     else:
         form = LoginForm()
     
@@ -228,7 +234,13 @@ def signup(request):
     return render(request, 'signup.html', {'form': form})
 
 def account(request):
-    return render(request, 'account.html')
+    if not request.user.is_authenticated:
+        return redirect('login')
+    context = {
+        'user': request.user,
+        'first_name': request.user.first_name or request.user.username
+    }
+    return render(request, 'account.html', context)
 
 def about(request):
     return render(request, 'about.html')
