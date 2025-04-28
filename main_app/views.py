@@ -94,13 +94,12 @@ async def translate_ajax(request):
         # Translate the text
         result = await translate_text(text_to_translate, target_language)
         
-        # Get user in async context if authenticated
-        user = None
-        if request.user.is_authenticated:
-            user = await get_user_async(request)
+        # Check if user is authenticated using sync_to_async
+        is_authenticated = await sync_to_async(lambda: request.user.is_authenticated)()
         
         # Save the translation to the database if user is authenticated
-        if user:
+        if is_authenticated:
+            user = await sync_to_async(lambda: request.user)()
             await create_translation(
                 user=user,
                 original_text=text_to_translate,
