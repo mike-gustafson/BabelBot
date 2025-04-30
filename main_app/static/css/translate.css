@@ -145,7 +145,7 @@
   font-size: 1.1rem;
   white-space: pre-line;
   flex: 1;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 /* OCR Section Styles */
@@ -267,6 +267,7 @@
   min-height: 40px;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 #audio_container audio {
