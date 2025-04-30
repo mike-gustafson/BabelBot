@@ -11,7 +11,7 @@
     {% csrf_token %}
     <div class="translate-grid">
       <div class="translate-column">
-        <div class="translate-box">
+        <div class="feature-card::before">
           <h3>Input Language</h3>
           <textarea name="text_to_translate" id="original_text" class="translate-textarea"
             placeholder="Enter text to translate">{% if text_to_translate %}{{ text_to_translate }}{% endif %}</textarea>
