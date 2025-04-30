@@ -47,6 +47,8 @@
   flex-direction: column;
   min-height: 400px;
   position: relative;
+  background: var(--translate-column-bg-dark);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .translate-box h3, .translate-column h3 {
@@ -156,6 +158,8 @@
   border-radius: var(--border-radius-lg);
   border: var(--container-border);
   box-shadow: var(--box-shadow);
+  -webkit-backdrop-filter: var(--container-backdrop);
+  backdrop-filter: var(--container-backdrop);
 }
 
 .ocr-section h3 {
@@ -336,7 +340,7 @@
 
 /* Dark mode specific styles */
 [data-theme="dark"] .translate-column {
-  background: var(--translate-column-bg-dark);
+  background: transparent;
   border-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -358,6 +362,11 @@
 }
 
 [data-theme="dark"] .ocr-section {
+  background: var(--translate-column-bg-dark);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .translate-box {
   background: var(--translate-column-bg-dark);
   border-color: rgba(255, 255, 255, 0.1);
 }

@@ -60,8 +60,7 @@
 }
 
 
-
-features-grid {
+.features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: var(--spacing-lg);
@@ -81,6 +80,35 @@ features-grid {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gradient-secondary);
+  z-index: 0;
+}
+
+.feature-card h3 {
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  position: relative;
+  z-index: 1;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+.feature-card p {
+  color: var(--text-secondary);
+  opacity: 0.9;
+  line-height: 1.8;
+  position: relative;
+  z-index: 1;
+  font-size: 1.1rem;
+}
 
 .app-description {
   background: var(--gradient-tertiary);
@@ -244,14 +272,28 @@ features-grid {
 }
 
 .developer-card {
-  background: var(--card-bg);
-  padding: var(--spacing-md);
+  background: var(--gradient-tertiary);
+  padding: var(--spacing-lg);
   border-radius: var(--border-radius-md);
   text-align: center;
   transition: var(--transition-normal);
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--border-primary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--box-shadow);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.developer-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gradient-secondary);
+  z-index: 0;
 }
 
 .developer-card:hover {
@@ -262,7 +304,7 @@ features-grid {
 .developer-image {
   width: 100px;
   height: 100px;
-  margin: 0 auto var(--spacing-sm);
+  margin: 0 auto var(--spacing-md);
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid var(--primary);
@@ -279,26 +321,28 @@ features-grid {
 .developer-card h4 {
   color: var(--text-primary);
   margin-bottom: var(--spacing-sm);
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   position: relative;
   z-index: 1;
+  font-weight: 600;
 }
 
 .developer-card .role {
   color: var(--primary);
   font-weight: 600;
   margin-bottom: var(--spacing-sm);
-  font-size: 0.9rem;
+  font-size: 1rem;
   position: relative;
   z-index: 1;
 }
 
 .developer-card .bio {
-  color: var(--text-primary);
-  font-size: 0.8rem;
-  line-height: 1.4;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
   position: relative;
   z-index: 1;
+  opacity: 0.9;
 }
 
 @media (max-width: 1024px) {

@@ -55,28 +55,28 @@ async def translate_view(request):
         # Create form instance asynchronously
         form = await sync_to_async(TranslationForm)()
         
-        # Build language dropdown asynchronously
-        language_dropdown = await sync_to_async(build_LANGUAGES_html)(lang)
+        # Get available languages
+        languages = await sync_to_async(get_available_languages)()
         
         return await sync_to_async(render)(request, 'translate.html', {
             'form': form,
             'text_to_translate': text_to_translate,
             'translated_text': "",
-            'language_dropdown': language_dropdown
+            'languages': languages
         })
         
     except Exception as e:
         # Create form instance asynchronously for error case
         form = await sync_to_async(TranslationForm)()
         
-        # Build language dropdown asynchronously for error case
-        language_dropdown = await sync_to_async(build_LANGUAGES_html)(DEFAULT_TARGET_LANGUAGE)
+        # Get available languages for error case
+        languages = await sync_to_async(get_available_languages)()
         
         return await sync_to_async(render)(request, 'translate.html', {
             'form': form,
             'text_to_translate': DEFAULT_TEXT,
             'translated_text': "An error occurred. Please try again.",
-            'language_dropdown': language_dropdown
+            'languages': languages
         })
 
 @csrf_exempt
