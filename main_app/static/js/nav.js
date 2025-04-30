@@ -1,13 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
   const menuToggle = document.getElementById('menu-toggle');
   const navLinks = document.querySelector('.nav-links');
-  const logoutLink = document.querySelector('.logout-link');
-
-  // If logged in, move logout link into nav-links for mobile
-  if (logoutLink) {
-    const navLinksLogout = logoutLink.cloneNode(true);
-    navLinks.appendChild(navLinksLogout);
-  }
 
   menuToggle.addEventListener('click', function() {
     menuToggle.classList.toggle('active');

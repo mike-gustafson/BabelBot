@@ -67,16 +67,16 @@
             </div>
             About
           </a>
-        </nav>
-        <div class="nav-actions">
           {% if user.is_authenticated %}
-          <a href="{% url 'logout' %}" class="nav-link logout-link">
+          <a href="{% url 'logout' %}" class="{% if request.path == '/logout/' %}active{% endif %}">
             <div class="nav-icon-wrapper">
               <img src="{% static 'images/logo_logout.png' %}" alt="Logout" class="nav-icon">
             </div>
             Logout
           </a>
           {% endif %}
+        </nav>
+        <div class="nav-actions">
           <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
             <img src="{% static 'images/moon.svg' %}" alt="Dark Mode" class="theme-icon theme-icon-moon">
             <img src="{% static 'images/sun.svg' %}" alt="Light Mode" class="theme-icon theme-icon-sun hidden">
