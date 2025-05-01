@@ -6,7 +6,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Profile
 
-class TranslationForm(forms.Form):
+class TranslateFromTextForm(forms.Form):
     text_to_translate = forms.CharField(
         widget=forms.Textarea(attrs={
             'rows': 4,
@@ -14,6 +14,38 @@ class TranslationForm(forms.Form):
             'id': 'original_text',
             'class': 'form-input',
             'placeholder': 'Enter text to translate'
+        }),
+        label=''
+    )
+    
+    target_language = forms.ChoiceField(
+        choices=[('', 'Select a language')],
+        widget=forms.Select(attrs={
+            'id': 'language-select',
+            'class': 'form-input',
+            'required': True
+        }),
+        label=''
+    )
+
+    def __init__(self, *args, **kwargs):
+        selected_language = kwargs.pop('selected_language', None)
+        languages = kwargs.pop('languages', None)
+        super().__init__(*args, **kwargs)
+        
+        if languages:
+            self.fields['target_language'].choices = [('', 'Select a language')] + [(code, name.title()) for code, name in languages.items()]
+        
+        if selected_language:
+            self.fields['target_language'].initial = selected_language
+
+class TranslateFromOCRForm(forms.Form):
+    image = forms.ImageField(
+        widget=forms.FileInput(attrs={
+            'id': 'ocr-image-input',
+            'class': 'form-input',
+            'accept': 'image/*',
+            'required': True
         }),
         label=''
     )

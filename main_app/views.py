@@ -19,7 +19,7 @@ from translator.services import get_available_languages, translate_text
 from googletrans import Translator
 import asyncio
 
-from .forms import TranslationForm, LoginForm, SignupForm, CustomUserCreationForm, ProfileForm
+from .forms import TranslateFromTextForm, TranslateFromOCRForm, LoginForm, SignupForm, CustomUserCreationForm, ProfileForm
 from .models import Translation, Profile
 from .utils import get_or_create_profile, update_preferred_language, get_preferred_language
 
@@ -35,7 +35,7 @@ create_translation = sync_to_async(Translation.objects.create)
 get_languages = sync_to_async(get_available_languages)
 get_user_async = sync_to_async(get_user)
 render_async = sync_to_async(render)
-create_form = sync_to_async(TranslationForm)
+create_form = sync_to_async(TranslateFromTextForm)
 
 def build_languages_html(selected_language, languages):
     """Build HTML for language select dropdown efficiently."""
@@ -76,47 +76,115 @@ async def translate_view(request):
             'languages': LANGUAGES
         })
 
-@login_required
 def translate(request):
     """Handle both GET and POST requests for translation"""
     if request.method == 'GET':
         # Get available languages
         languages = get_available_languages()
         
-        # Create form with languages
-        form = TranslationForm(languages=languages)
+        # Create both forms with languages
+        text_form = TranslateFromTextForm(languages=languages)
+        ocr_form = TranslateFromOCRForm(languages=languages)
         
         return render(request, 'translate.html', {
-            'form': form,
-            'languages': languages
+            'text_form': text_form,
+            'ocr_form': ocr_form,
+            'languages': languages,
         })
     
     elif request.method == 'POST':
-        # Get form data
-        text = request.POST.get('text_to_translate')
-        target_lang = request.POST.get('target_language')
+        form_type = request.POST.get('form_type', 'text')
+        languages = get_available_languages()
         
-        # Print to terminal
-        print(f"Text to translate: {text}")
-        print(f"Target language: {target_lang}")
-        
-        # Perform translation in a separate thread
-        translator = Translator()
-        result = asyncio.run(translator.translate(text, dest=target_lang))
-        
-        # Print translation result to terminal
-        print(f"Translated text: {result.text}")
-        print(f"Source language: {result.src}")
-        print(f"Target language: {result.dest}")
-        
-        # Return to the same page with translation
-        return render(request, 'translate.html', {
-            'form': TranslationForm(languages=get_available_languages()),
-            'languages': get_available_languages(),
-            'translation': result.text,
-            'source_language': result.src,
-            'target_language': result.dest
-        })
+        if form_type == 'text':
+            # Handle text translation
+            text = request.POST.get('text_to_translate')
+            target_lang = request.POST.get('target_language')
+            
+            # Perform translation in a separate thread
+            translator = Translator()
+            result = asyncio.run(translator.translate(text, dest=target_lang))
+            
+            # Create and save translation record only if user is authenticated
+            if request.user.is_authenticated:
+                translation = Translation.objects.create(
+                    user=request.user,
+                    original_text=text,
+                    translated_text=result.text,
+                    target_language=target_lang,
+                    translation_type='typed'
+                )
+            
+            # Create forms with initial data
+            text_form = TranslateFromTextForm(
+                initial={
+                    'text_to_translate': text,
+                    'target_language': target_lang
+                },
+                languages=languages
+            )
+            ocr_form = TranslateFromOCRForm(languages=languages)
+            
+            return render(request, 'translate.html', {
+                'text_form': text_form,
+                'ocr_form': ocr_form,
+                'languages': languages,
+                'active_form': 'text',
+                'translation': result.text,
+                'source_language': result.src,
+                'target_language': result.dest
+            })
+        else:
+            # Handle OCR translation
+            image = request.FILES.get('image')
+            target_lang = request.POST.get('target_language')
+            
+            if image and target_lang:
+                try:
+                    # Perform OCR and get the full_text
+                    ocr_result = detect_text(image.read())
+                    text = ocr_result['full_text']
+                    
+                    # Perform translation
+                    translator = Translator()
+                    result = asyncio.run(translator.translate(text, dest=target_lang))
+                    
+                    # Create and save translation record only if user is authenticated
+                    if request.user.is_authenticated:
+                        translation = Translation.objects.create(
+                            user=request.user,
+                            original_text=text,
+                            translated_text=result.text,
+                            target_language=target_lang,
+                            translation_type='ocr'
+                        )
+                    
+                    # Create forms with initial data
+                    text_form = TranslateFromTextForm(languages=languages)
+                    ocr_form = TranslateFromOCRForm(
+                        initial={'target_language': target_lang},
+                        languages=languages
+                    )
+                    
+                    return render(request, 'translate.html', {
+                        'text_form': text_form,
+                        'ocr_form': ocr_form,
+                        'languages': languages,
+                        'active_form': 'ocr',
+                        'translation': result.text,
+                        'source_language': result.src,
+                        'target_language': result.dest
+                    })
+                except Exception as e:
+                    text_form = TranslateFromTextForm(languages=languages)
+                    ocr_form = TranslateFromOCRForm(languages=languages)
+                    return render(request, 'translate.html', {
+                        'text_form': text_form,
+                        'ocr_form': ocr_form,
+                        'languages': languages,
+                        'active_form': 'ocr',
+                        'error': f'Error processing image: {str(e)}'
+                    })
 
 @login_required
 @require_http_methods(["POST"])
@@ -283,7 +351,6 @@ def delete_translation(request, translation_id):
 def about(request):
     return render(request, 'about.html')
 
-@login_required
 def home(request):
     return render(request, 'home.html')
 

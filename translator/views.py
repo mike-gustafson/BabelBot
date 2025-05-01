@@ -3,7 +3,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.admin.views.decorators import staff_member_required
 from .services import translate_text, get_available_languages, is_language_supported
-from main_app.forms import TranslationForm
+from main_app.forms import TranslateFromTextForm
 from django.http import JsonResponse
 import json
 import asyncio
@@ -11,7 +11,7 @@ import asyncio
 def translate_view(request):
     """View for the main translation page"""
     languages = get_available_languages()
-    form = TranslationForm()
+    form = TranslateFromTextForm()
     return render(request, 'translate.html', {
         'form': form,
         'languages': languages,
