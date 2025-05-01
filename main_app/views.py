@@ -1,11 +1,12 @@
 import asyncio
-import os
 from asgiref.sync import sync_to_async
 import base64
 import json
+import logging
+import requests
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
-from translator.services import translate_text, get_available_languages
+from translator.services import get_available_languages
 from tts.services import text_to_speech, is_language_supported, get_audio_base64
 from googletrans import LANGUAGES
 from .forms import TranslationForm, LoginForm, SignupForm, CustomUserCreationForm, ProfileForm
@@ -24,6 +25,8 @@ from ocr.services import detect_text
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .utils import get_or_create_profile, update_preferred_language, get_preferred_language
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_TARGET_LANGUAGE = "es"
 DEFAULT_TEXT = (
@@ -52,33 +55,33 @@ async def translate_view(request):
         # Create form instance asynchronously
         form = await sync_to_async(TranslationForm)()
         
-        # Get available languages
-        languages = await sync_to_async(get_available_languages)()
+        # Build language dropdown asynchronously
+        language_dropdown = await sync_to_async(build_LANGUAGES_html)(lang)
         
         return await sync_to_async(render)(request, 'translate.html', {
             'form': form,
             'text_to_translate': text_to_translate,
             'translated_text': "",
-            'languages': languages
+            'language_dropdown': language_dropdown
         })
         
     except Exception as e:
         # Create form instance asynchronously for error case
         form = await sync_to_async(TranslationForm)()
         
-        # Get available languages for error case
-        languages = await sync_to_async(get_available_languages)()
+        # Build language dropdown asynchronously for error case
+        language_dropdown = await sync_to_async(build_LANGUAGES_html)(DEFAULT_TARGET_LANGUAGE)
         
         return await sync_to_async(render)(request, 'translate.html', {
             'form': form,
             'text_to_translate': DEFAULT_TEXT,
             'translated_text': "An error occurred. Please try again.",
-            'languages': languages
+            'language_dropdown': language_dropdown
         })
 
 @csrf_exempt
 @require_http_methods(["POST"])
-async def translate_ajax(request):
+def translate_ajax(request):
     try:
         data = json.loads(request.body)
         text_to_translate = data.get('text_to_translate')
@@ -89,42 +92,58 @@ async def translate_ajax(request):
                 'error': 'Text and target language are required'
             }, status=400)
         
-        # Translate the text
-        result = await translate_text(text_to_translate, target_language)
+        # Call the Translator app's endpoint
+        response = requests.post(
+            'http://127.0.0.1:8000/translator/translate/',
+            data={
+                'text': text_to_translate,
+                'target_language': target_language
+            }
+        )
         
-        # Check if user is authenticated using sync_to_async
-        is_authenticated = await sync_to_async(lambda: request.user.is_authenticated)()
+        if response.status_code != 200:
+            return JsonResponse({
+                'error': 'Translation service error',
+                'details': response.json()
+            }, status=response.status_code)
+        
+        result = response.json()
+        
+        # Check if user is authenticated
+        is_authenticated = request.user.is_authenticated
         
         # Save the translation to the database if user is authenticated
         if is_authenticated:
-            user = await sync_to_async(lambda: request.user)()
-            await create_translation(
+            user = request.user
+            translation = Translation.objects.create(
                 user=user,
                 original_text=text_to_translate,
-                translated_text=result['translated_text'],
-                target_language=target_language
+                translated_text=result['translation'],
+                target_language=target_language,
+                translation_type='typed'
             )
-        
-        # Generate TTS if the language is supported
-        encoded_audio = None
-        try:
-            if is_language_supported(target_language):
-                encoded_audio = get_audio_base64(result['translated_text'], target_language)
-        except Exception as e:
-            # TTS failed but translation succeeded, we can continue
-            pass
-        
-        return JsonResponse({
-            'translated_text': result['translated_text'],
-            'source_language': result['src'],
-            'target_language': result['dest'],
-            'encoded_audio': encoded_audio
-        })
-        
+            
+            return JsonResponse({
+                'success': True,
+                'translation': result['translation'],
+                'source_language': result['source_language'],
+                'target_language': result['target_language'],
+                'confidence': result.get('confidence', 1.0),
+                'translation_id': translation.id
+            })
+        else:
+            return JsonResponse({
+                'success': True,
+                'translation': result['translation'],
+                'source_language': result['source_language'],
+                'target_language': result['target_language'],
+                'confidence': result.get('confidence', 1.0)
+            })
+            
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
     except Exception as e:
-        return JsonResponse({
-            'error': str(e)
-        }, status=500)
+        return JsonResponse({'error': str(e)}, status=500)
 
 def login_view(request):
     if request.method == 'POST':
@@ -204,13 +223,28 @@ async def edit_translation(request):
         original_text = request.POST.get('original_text')
         target_lang = request.POST.get('target_lang')
         
-        # Translate the new text
-        result = await translate_text(original_text, target_lang)
+        # Call the Translator app's endpoint
+        response = requests.post(
+            'http://127.0.0.1:8000/translator/translate/',
+            data={
+                'text': original_text,
+                'target_language': target_lang
+            }
+        )
+        
+        if response.status_code != 200:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Translation service error',
+                'details': response.json()
+            }, status=response.status_code)
+        
+        result = response.json()
         
         # Update the translation
         translation.original_text = original_text
-        translation.translated_text = result['translated_text']
-        translation.target_lang = target_lang
+        translation.translated_text = result['translation']
+        translation.target_language = target_lang
         
         # Wrap save operation in sync_to_async
         save_translation = sync_to_async(translation.save)
@@ -218,7 +252,7 @@ async def edit_translation(request):
         
         return JsonResponse({
             'status': 'success',
-            'translated_text': result['translated_text']
+            'translated_text': result['translation']
         })
     except Translation.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Translation not found'}, status=404)
