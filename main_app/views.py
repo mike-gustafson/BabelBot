@@ -22,7 +22,7 @@ from django.utils import timezone
 from ocr.services import detect_text
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .utils import get_or_create_profile, update_preferred_languages, get_preferred_languages
+from .utils import get_or_create_profile, update_preferred_language, get_preferred_language
 
 DEFAULT_TARGET_LANGUAGE = "es"
 DEFAULT_TEXT = (
@@ -163,8 +163,8 @@ def account(request):
     if not request.user.is_authenticated:
         return redirect('login')
     
-    # Get the user's profile
-    profile = request.user.profile
+    # Get or create the user's profile
+    profile = get_or_create_profile(request.user)
     
     # Get the user's translations, ordered by most recent first
     translations = request.user.translation_set.all().order_by('-created_at')
@@ -293,8 +293,8 @@ def history(request):
 def settings(request):
     """User settings view"""
     if request.method == 'POST':
-        languages = request.POST.getlist('preferred_languages')
-        update_preferred_languages(request.user, languages)
+        language = request.POST.get('preferred_language')
+        update_preferred_language(request.user, language)
         messages.success(request, 'Settings updated successfully!')
         return redirect('settings')
     
