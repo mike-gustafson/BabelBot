@@ -38,7 +38,7 @@ class Translation(models.Model):
     original_text = models.TextField()
     translated_text = models.TextField()
     target_language = models.CharField(max_length=10)
-    translation_type = models.CharField(max_length=10, choices=TRANSLATION_TYPES, default='typed')
+    translation_type = models.CharField(max_length=10, choices=TRANSLATION_TYPES, default='typed', null=False, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
