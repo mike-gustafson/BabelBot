@@ -98,9 +98,7 @@ async def translate_and_validate(text, target_language):
         result = await translate_text(text, target_language)
         return {
             'text': result['translated_text'],
-            'source_language': result['src'],
-            'target_language': result['dest'],
-            'confidence': result['confidence']
+            'source_language': result.get('source_language', 'auto')
         }
     except Exception as e:
         return {'error': str(e)}
@@ -108,19 +106,47 @@ async def translate_and_validate(text, target_language):
 
 ### Best Practices
 
-1. Always handle translation errors gracefully
-2. Use async/await for better performance
-3. Cache frequently translated content
-4. Consider rate limiting for production use
-5. Handle language detection when source language is not specified
-6. Use the tech demo for testing and debugging
+1. **Language Support**
+   - Always check if a language is supported before attempting translation
+   - Use the `get_available_languages()` function to get a list of supported languages
+   - Consider caching language lists to reduce API calls
 
-## Limitations
+2. **Error Handling**
+   - Handle exceptions when translating text
+   - Check for network connectivity issues
+   - Validate input text length and format
+   - Implement retry logic for transient failures
 
-- Requires an internet connection (uses Google Translate)
-- Subject to Google Translate's terms of service
-- May have rate limits in production
-- Tech demo requires staff/admin privileges
+3. **Performance**
+   - Use async operations for better performance
+   - Consider caching frequently translated texts
+   - Monitor API rate limits
+   - Batch translations when possible
+
+### Limitations
+
+1. **Internet Dependency**
+   - Requires an active internet connection
+   - Subject to Google's service availability
+   - May be affected by network latency
+
+2. **Text Length**
+   - Has a maximum text length limit
+   - Long texts may need to be split into smaller chunks
+   - Complex formatting may not be preserved
+
+3. **Language Support**
+   - Not all language pairs are supported equally
+   - Translation quality varies by language pair
+   - Some languages may have limited support
+
+### Attribution
+
+This module uses the `googletrans` library, which is licensed under the MIT License. For more information, visit the [googletrans GitHub repository](https://github.com/ssut/py-googletrans).
+
+### License
+
+This module is licensed under the MIT License. See the LICENSE file for details.
 
 ---
 

@@ -1,73 +1,67 @@
-from google.cloud import vision
-from google.oauth2 import service_account
-from typing import Dict, Union
 import os
+import logging
+from google.cloud import vision
+from google.cloud.vision_v1 import types
+from functools import wraps
 
-def get_vision_client() -> vision.ImageAnnotatorClient:
-    """Initialize Google Cloud Vision client using environment variables."""
+logger = logging.getLogger(__name__)
+
+def standard_error_handler(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ValueError as e:
+            logger.error(f"Validation error in {func.__name__}: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in {func.__name__}: {str(e)}")
+            raise
+    return wrapper
+
+@standard_error_handler
+def get_vision_client():
+    """Initialize and return a Google Cloud Vision client."""
     try:
-        credentials_dict = {
-            "type": os.getenv("GOOGLE_TYPE"),
-            "project_id": os.getenv("GOOGLE_PROJECT_ID"),
-            "private_key_id": os.getenv("GOOGLE_PRIVATE_KEY_ID"),
-            "private_key": os.getenv("GOOGLE_PRIVATE_KEY", "").replace("\\n", "\n"),
-            "client_email": os.getenv("GOOGLE_CLIENT_EMAIL"),
-            "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-            "auth_uri": os.getenv("GOOGLE_AUTH_URI"),
-            "token_uri": os.getenv("GOOGLE_TOKEN_URI"),
-            "auth_provider_x509_cert_url": os.getenv("GOOGLE_AUTH_PROVIDER_X509_CERT_URL"),
-            "client_x509_cert_url": os.getenv("GOOGLE_CLIENT_X509_CERT_URL")
-        }
+        credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+        if not credentials_path:
+            raise ValueError("GOOGLE_APPLICATION_CREDENTIALS environment variable not set")
         
-        # Validate required credentials
-        missing_credentials = [key for key, value in credentials_dict.items() if not value]
-        if missing_credentials:
-            raise ValueError(f"Missing required credentials: {', '.join(missing_credentials)}")
+        if not os.path.exists(credentials_path):
+            raise ValueError(f"Credentials file not found at {credentials_path}")
         
-        credentials = service_account.Credentials.from_service_account_info(credentials_dict)
-        return vision.ImageAnnotatorClient(credentials=credentials)
+        return vision.ImageAnnotatorClient()
     except Exception as e:
-        raise Exception(f"Failed to initialize Vision client: {str(e)}")
+        logger.error(f"Failed to initialize Vision client: {str(e)}")
+        raise
 
-def detect_text(image_data: bytes) -> Dict[str, Union[str, float]]:
+@standard_error_handler
+def detect_text(image_content):
     """Detect text in an image using Google Cloud Vision API."""
     try:
         client = get_vision_client()
-        image = vision.Image(content=image_data)
-        
-        # Perform text detection
+        image = types.Image(content=image_content)
         response = client.text_detection(image=image)
         
         if response.error.message:
-            raise Exception(f'Error from Vision API: {response.error.message}')
+            logger.error(f"API Error: {response.error.message}")
+            raise Exception(f"API Error: {response.error.message}")
         
         texts = response.text_annotations
         if not texts:
-            return {
-                'full_text': '',
-                'language': 'unknown',
-                'confidence': 0.0
-            }
+            return None
         
-        # Get the full text (first annotation contains all text)
         full_text = texts[0].description
-        
-        # Get language detection
-        language_response = client.document_text_detection(image=image)
-        language = (
-            language_response.text_annotations[0].locale 
-            if language_response.text_annotations 
-            else 'unknown'
-        )
+        language = texts[0].locale if hasattr(texts[0], 'locale') else 'unknown'
         
         return {
             'full_text': full_text,
             'language': language,
-            'confidence': 1.0  # Vision API doesn't provide confidence scores for text detection
+            'confidence': response.text_annotations[0].confidence if hasattr(response.text_annotations[0], 'confidence') else None
         }
-        
     except Exception as e:
-        raise Exception(f'Error processing image: {str(e)}')
+        logger.error(f"Error detecting text: {str(e)}")
+        raise
 
 def extract_text_from_image(image_data: bytes) -> str:
     """Extract text from an image using Google Cloud Vision API."""

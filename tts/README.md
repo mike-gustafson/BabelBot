@@ -20,7 +20,6 @@ pip install gTTS
 INSTALLED_APPS = [
     ...
     'tts',
-    ...
 ]
 ```
 
@@ -29,7 +28,6 @@ INSTALLED_APPS = [
 urlpatterns = [
     ...
     path('tts/', include('tts.urls')),
-    ...
 ]
 ```
 
@@ -75,6 +73,7 @@ POST /tts/generate/
 2. **Views (`views.py`)**
    - `get_languages()`: API endpoint to get supported languages
    - `generate_speech()`: API endpoint to generate speech and return base64 audio
+   - `tech_demo()`: Staff-only tech demo page for testing
 
 3. **URLs (`urls.py`)**
    - Maps the API endpoints to URLs
@@ -102,16 +101,41 @@ def translate_and_speak(text, target_language):
 
 ### Best Practices
 
-1. Always check if a language is supported before trying to generate speech
-2. Handle exceptions gracefully - TTS might fail for various reasons
-3. Consider caching frequently used audio to improve performance
+1. **Language Support**
+   - Always check if a language is supported before attempting to generate speech
+   - Use the `get_supported_languages()` function to get a list of available languages
 
-## Limitations
+2. **Error Handling**
+   - Handle exceptions when generating speech
+   - Check for network connectivity issues
+   - Validate input text length and format
 
-- Requires an internet connection (uses Google's TTS service)
-- Has a limit on the length of text that can be converted at once
-- Some languages might not be supported
-- Audio quality depends on the language and text content
+3. **Performance**
+   - Cache frequently used audio files
+   - Consider using async operations for better performance
+   - Monitor API rate limits
+
+### Limitations
+
+1. **Internet Dependency**
+   - Requires an active internet connection
+   - Subject to Google's service availability
+
+2. **Text Length**
+   - Has a maximum text length limit
+   - Long texts may need to be split into smaller chunks
+
+3. **Language Support**
+   - Not all languages are supported
+   - Voice quality varies by language
+
+### Attribution
+
+This module uses the `gTTS` library, which is licensed under the MIT License. For more information, visit the [gTTS GitHub repository](https://github.com/pndurette/gTTS).
+
+### License
+
+This module is licensed under the MIT License. See the LICENSE file for details.
 
 ---
 

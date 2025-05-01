@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .tech-demo {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--box-shadow);
+    }
+
+    .demo-section {
+        margin-bottom: 2rem;
+    }
+
+    .demo-section h2 {
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+    .demo-input {
+        margin-bottom: 1rem;
+    }
+
+    .image-upload {
+        width: 100%;
+        min-height: 150px;
+        max-height: 250px;
+        border: 2px dashed var(--input-border);
+        border-radius: var(--border-radius-md);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: var(--input-bg);
+        cursor: pointer;
+        transition: var(--transition-normal);
+        overflow: hidden;
+    }
+
+    .image-upload:hover {
+        border-color: var(--accent);
+    }
+
+    .image-upload img {
+        max-width: 100%;
+        max-height: 200px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: var(--border-radius-md);
+    }
+
+    .image-upload p {
+        margin: 0.5rem 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .demo-controls {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .language-select {
+        flex: 1;
+        padding: 0.75rem;
+        border: var(--input-border);
+        border-radius: var(--border-radius-md);
+        background: var(--input-bg);
+        color: var(--text-primary);
+    }
+
+    .demo-button {
+        padding: 0.75rem 1.5rem;
+        background: var(--gradient-primary);
+        color: var(--text-primary);
+        border: none;
+        border-radius: var(--border-radius-md);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition-normal);
+    }
+
+    .demo-button:hover {
+        background: var(--gradient-secondary);
+        transform: var(--btn-hover-transform);
+    }
+
+    .demo-button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .output-section {
+        margin-top: 1rem;
+    }
+
+    .output-text {
+        padding: 1rem;
+        background: var(--input-bg);
+        border-radius: var(--border-radius-md);
+        min-height: 100px;
+        white-space: pre-wrap;
+    }
+
+    .status-message {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        border-radius: var(--border-radius-md);
+    }
+
+    .status-message.success {
+        background: rgba(76, 175, 80, 0.1);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+        color: #4CAF50;
+    }
+
+    .status-message.error {
+        background: rgba(244, 67, 54, 0.1);
+        border: 1px solid rgba(244, 67, 54, 0.2);
+        color: #F44336;
+    }
+
+    .loading {
+        opacity: 0.7;
+        cursor: wait;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tech-demo">
+    {% csrf_token %}
+    <h1>OCR Tech Demo</h1>
+    <p>This page demonstrates the OCR functionality. Upload an image to extract text, then optionally translate it using the translator module.</p>
+
+    <div class="demo-section">
+        <h2>Image Upload</h2>
+        <div class="demo-input" id="image-upload">
+            <input type="file" id="image-input" accept="image/*" style="display: none;">
+            <img id="preview" style="display: none;">
+            <p>Click to upload an image or drag and drop (max 5MB)</p>
+        </div>
+        <div class="demo-controls">
+            <button id="extract-btn" class="demo-button" disabled>Extract Text</button>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Extracted Text</h2>
+        <div class="output-section">
+            <div id="extracted-text" class="output-text"></div>
+            <div id="ocr-status" class="status-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Translation</h2>
+        <div class="demo-controls">
+            <select id="target-language" class="language-select">
+                <option value="">Select target language...</option>
+            </select>
+            <button id="translate-btn" class="demo-button" disabled>Translate</button>
+        </div>
+        <div class="output-section">
+            <div id="translated-text" class="output-text"></div>
+            <div id="translation-status" class="status-message" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Standard error handling
+    function handleError(error) {
+        console.error('Error:', error);
+        showError(error.message || 'An error occurred');
+    }
+
+    // Standard success handling
+    function handleSuccess(data) {
+        updateUI(data);
+        showSuccess('Operation completed successfully');
+    }
+
+    // Standard API call pattern
+    async function callAPI(endpoint, data) {
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+            return result.data;
+        } catch (error) {
+            handleError(error);
+            throw error;
+        }
+    }
+
+    // Load available languages
+    async function loadLanguages() {
+        try {
+            const response = await fetch('/translator/languages/');
+            const data = await response.json();
+            if (data.success) {
+                const languageSelect = document.getElementById('target-language');
+                Object.entries(data.languages).forEach(([code, name]) => {
+                    const option = document.createElement('option');
+                    option.value = code;
+                    option.textContent = name;
+                    languageSelect.appendChild(option);
+                });
+            }
+        } catch (error) {
+            handleError(error);
+        }
+    }
+
+    // Handle image upload
+    async function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const response = await fetch('/ocr/process/', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+
+            // Update UI with OCR results
+            document.getElementById('extracted-text').textContent = result.data.text;
+            document.getElementById('ocr-status').textContent = 'Text extracted successfully';
+            document.getElementById('ocr-status').className = 'status success';
+            
+            // Enable translation section
+            document.getElementById('translation-status').style.display = 'block';
+        } catch (error) {
+            handleError(error);
+        }
+    }
+
+    // Handle translation
+    async function handleTranslation() {
+        const text = document.getElementById('extracted-text').textContent;
+        const targetLanguage = document.getElementById('target-language').value;
+
+        try {
+            const result = await callAPI('/translator/translate/', {
+                text: text,
+                target_language: targetLanguage
+            });
+
+            // Update UI with translation results
+            document.getElementById('translated-text').textContent = result.translation;
+            document.getElementById('translation-status').textContent = 'Translation successful';
+            document.getElementById('translation-status').className = 'status success';
+        } catch (error) {
+            handleError(error);
+        }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        loadLanguages();
+        document.getElementById('image-upload').addEventListener('change', handleImageUpload);
+        document.getElementById('translate-btn').addEventListener('click', handleTranslation);
+    });
+</script>
+{% endblock %} 
