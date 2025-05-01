@@ -314,13 +314,22 @@
 
     // Load available languages
     fetch('/translator/languages/')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             const select = document.getElementById('target-language');
             select.innerHTML = '<option value="">Select target language...</option>' +
-                Object.entries(data).map(([code, name]) => 
+                Object.entries(data.languages).map(([code, name]) => 
                     `<option value="${code}">${name}</option>`
                 ).join('');
+        })
+        .catch(error => {
+            console.error('Error loading languages:', error);
+            showError('Error loading languages: ' + error.message);
         });
 
     // Handle translation
