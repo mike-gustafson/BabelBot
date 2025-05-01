@@ -19,7 +19,7 @@ class TranslationForm(forms.Form):
     )
     
     target_language = forms.ChoiceField(
-        choices=[('', 'Select a language')] + [(code, name.title()) for code, name in LANGUAGES.items()],
+        choices=[('', 'Select a language')],
         widget=forms.Select(attrs={
             'id': 'language-select',
             'class': 'form-input',
@@ -30,7 +30,12 @@ class TranslationForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         selected_language = kwargs.pop('selected_language', None)
+        languages = kwargs.pop('languages', None)
         super().__init__(*args, **kwargs)
+        
+        if languages:
+            self.fields['target_language'].choices = [('', 'Select a language')] + [(code, name.title()) for code, name in languages.items()]
+        
         if selected_language:
             self.fields['target_language'].initial = selected_language
 

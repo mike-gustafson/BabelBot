@@ -1,8 +1,6 @@
-import os
 import logging
+import os
 from google.cloud import vision
-from google.cloud.vision_v1 import types
-from functools import wraps
 from django.conf import settings
 from google.oauth2 import service_account
 from google.api_core.exceptions import GoogleAPIError
@@ -10,16 +8,13 @@ from google.api_core.exceptions import GoogleAPIError
 logger = logging.getLogger(__name__)
 
 def handle_errors(func):
-    @wraps(func)
+    """Decorator to handle errors in OCR functions."""
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except ValueError as e:
-            logger.error(f"Validation error in {func.__name__}: {str(e)}")
-            raise ValueError(f"Validation error in {func.__name__}: {str(e)}")
         except Exception as e:
-            logger.error(f"Unexpected error in {func.__name__}: {str(e)}")
-            raise Exception(f"Unexpected error in {func.__name__}: {str(e)}")
+            logger.error(f"Error in {func.__name__}: {str(e)}")
+            raise
     return wrapper
 
 @handle_errors

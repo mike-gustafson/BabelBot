@@ -13,15 +13,9 @@
       <div class="translate-column">
         <div class="translate-box">
           <h3>Input Language</h3>
-          <textarea name="text_to_translate" id="original_text" class="translate-textarea"
-            placeholder="Enter text to translate">{% if text_to_translate %}{{ text_to_translate }}{% endif %}</textarea>
+          {{ form.text_to_translate }}
           <div class="translate-controls">
-            <select name="target_language" id="language-select" class="language-select" aria-label="Select target language">
-              <option value="">Select a language</option>
-              {% for code, name in languages.items %}
-              <option value="{{ code }}">{{ name|title }}</option>
-              {% endfor %}
-            </select>
+            {{ form.target_language }}
             <button type="submit" class="translate-btn">
               <img src="{% static 'images/logo2.png' %}" alt="BabelBot Logo" class="translate-btn-logo">
               <span>TRANSLATE!</span>
@@ -32,7 +26,7 @@
       <div class="translate-column">
         <div class="translate-box">
           <h3>Translated Text</h3>
-          <div class="translated-output" id="translated_text">{% if translated_text %}{{ translated_text }}{% endif %}</div>
+          <div class="translated-output" id="translated_text">{% if translation %}{{ translation }}{% endif %}</div>
           <div id="audio_container"></div>
           {% if tts_message %}
           <div class="tts-message">
@@ -63,10 +57,10 @@
           </button>
         </div>
       </div>
-        <div id="ocr-preview" class="ocr-preview" style="display: none;">
-          <img id="preview-image" src="" alt="Preview">
-          <button id="process-ocr" class="ocr-process-btn">Process Image</button>
-        </div>
+      <div id="ocr-preview" class="ocr-preview" style="display: none;">
+        <img id="preview-image" src="" alt="Preview">
+        <button id="process-ocr" class="ocr-process-btn">Process Image</button>
+      </div>
       <div id="ocr-status" class="ocr-status"></div>
     </div>
   </div>
@@ -169,59 +163,6 @@
       } finally {
         processOcrBtn.disabled = false;
         processOcrBtn.textContent = 'Process Image';
-      }
-    });
-
-    // Original translation form handling
-    form.addEventListener('submit', async function (e) {
-      e.preventDefault();
-
-      const submitButton = form.querySelector('button[type="submit"]');
-      const originalButtonContent = submitButton.innerHTML;
-      submitButton.disabled = true;
-      submitButton.innerHTML = '<span>Translating...</span>';
-
-      try {
-        const formData = new FormData(form);
-        const response = await fetch('/translate/ajax/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-          },
-          body: JSON.stringify({
-            text_to_translate: form.querySelector('#original_text').value,
-            target_language: form.querySelector('#language-select').value
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.translated_text) {
-          translatedOutput.textContent = data.translated_text;
-
-          // Clear existing audio players
-          audioContainer.innerHTML = '';
-
-          // Handle audio if available
-          if (data.encoded_audio) {
-            const audioElement = document.createElement('audio');
-            audioElement.controls = true;
-            const sourceElement = document.createElement('source');
-            sourceElement.src = `data:audio/mp3;base64,${data.encoded_audio}`;
-            sourceElement.type = 'audio/mp3';
-            audioElement.appendChild(sourceElement);
-            audioContainer.appendChild(audioElement);
-          }
-        } else {
-          translatedOutput.innerHTML = `<p class="error">${data.error || 'Translation failed'}</p>`;
-        }
-      } catch (error) {
-        translatedOutput.innerHTML = `<p class="error">An error occurred during translation.</p>`;
-        console.error('Translation error:', error);
-      } finally {
-        submitButton.disabled = false;
-        submitButton.innerHTML = originalButtonContent;
       }
     });
   });

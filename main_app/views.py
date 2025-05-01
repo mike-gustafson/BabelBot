@@ -1,29 +1,26 @@
-import asyncio
-from asgiref.sync import sync_to_async
-import base64
 import json
 import logging
-import requests
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
-from translator.services import get_available_languages
-from tts.services import text_to_speech, is_language_supported, get_audio_base64
-from googletrans import LANGUAGES
-from .forms import TranslationForm, LoginForm, SignupForm, CustomUserCreationForm, ProfileForm
+from asgiref.sync import sync_to_async
+from django import forms
+from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout, get_user
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from django.conf import settings
-from .models import Translation, Profile
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-from django.utils import timezone
+from googletrans import LANGUAGES
 from ocr.services import detect_text
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
+from tts.services import text_to_speech, is_language_supported, get_audio_base64
+from translator.services import get_available_languages, translate_text
+from googletrans import Translator
+import asyncio
+
+from .forms import TranslationForm, LoginForm, SignupForm, CustomUserCreationForm, ProfileForm
+from .models import Translation, Profile
 from .utils import get_or_create_profile, update_preferred_language, get_preferred_language
 
 logger = logging.getLogger(__name__)
@@ -35,16 +32,18 @@ DEFAULT_TEXT = (
 
 # Create async versions of database operations
 create_translation = sync_to_async(Translation.objects.create)
+get_languages = sync_to_async(get_available_languages)
 get_user_async = sync_to_async(get_user)
+render_async = sync_to_async(render)
+create_form = sync_to_async(TranslationForm)
 
-def build_LANGUAGES_html(selected_language):
-    html_content = '<select id="language-select" name="target_language">'
-    html_content += '<option value="">Select a language</option>'
-    for lang_code, lang_name in LANGUAGES.items():
-        selected_attr = ' selected' if lang_code == selected_language else ''
-        html_content += f'<option value="{lang_code}"{selected_attr}>{lang_name}</option>'
-    html_content += '</select>'
-    return html_content
+def build_languages_html(selected_language, languages):
+    """Build HTML for language select dropdown efficiently."""
+    options = [
+        f'<option value="{code}"{" selected" if code == selected_language else ""}>{name}</option>'
+        for code, name in languages.items()
+    ]
+    return f'<select id="language-select" name="target_language"><option value="">Select a language</option>{"".join(options)}</select>'
 
 async def translate_view(request):
     try:
@@ -52,94 +51,110 @@ async def translate_view(request):
         text_to_translate = await sync_to_async(lambda: request.session.get('text_to_translate', DEFAULT_TEXT))()
         lang = await sync_to_async(lambda: request.session.get('target_language', DEFAULT_TARGET_LANGUAGE))()
         
-        # Create form instance asynchronously
-        form = await sync_to_async(TranslationForm)()
+        # Get languages directly from the translator service
+        languages = await get_languages()
         
-        # Build language dropdown asynchronously
-        language_dropdown = await sync_to_async(build_LANGUAGES_html)(lang)
+        # Create form instance with languages
+        form = await sync_to_async(TranslationForm)(languages=languages, selected_language=lang)
         
         return await sync_to_async(render)(request, 'translate.html', {
             'form': form,
             'text_to_translate': text_to_translate,
             'translated_text': "",
-            'language_dropdown': language_dropdown
+            'languages': languages
         })
         
     except Exception as e:
-        # Create form instance asynchronously for error case
-        form = await sync_to_async(TranslationForm)()
-        
-        # Build language dropdown asynchronously for error case
-        language_dropdown = await sync_to_async(build_LANGUAGES_html)(DEFAULT_TARGET_LANGUAGE)
+        logger.error(f"Error in translate_view: {str(e)}")
+        # Create form instance with fallback languages
+        form = await sync_to_async(TranslationForm)(languages=LANGUAGES, selected_language=DEFAULT_TARGET_LANGUAGE)
         
         return await sync_to_async(render)(request, 'translate.html', {
             'form': form,
             'text_to_translate': DEFAULT_TEXT,
             'translated_text': "An error occurred. Please try again.",
-            'language_dropdown': language_dropdown
+            'languages': LANGUAGES
         })
 
-@csrf_exempt
-@require_http_methods(["POST"])
-def translate_ajax(request):
-    try:
-        data = json.loads(request.body)
-        text_to_translate = data.get('text_to_translate')
-        target_language = data.get('target_language')
+@login_required
+def translate(request):
+    """Handle both GET and POST requests for translation"""
+    if request.method == 'GET':
+        # Get available languages
+        languages = get_available_languages()
         
-        if not text_to_translate or not target_language:
+        # Create form with languages
+        form = TranslationForm(languages=languages)
+        
+        return render(request, 'translate.html', {
+            'form': form,
+            'languages': languages
+        })
+    
+    elif request.method == 'POST':
+        # Get form data
+        text = request.POST.get('text_to_translate')
+        target_lang = request.POST.get('target_language')
+        
+        # Print to terminal
+        print(f"Text to translate: {text}")
+        print(f"Target language: {target_lang}")
+        
+        # Perform translation in a separate thread
+        translator = Translator()
+        result = asyncio.run(translator.translate(text, dest=target_lang))
+        
+        # Print translation result to terminal
+        print(f"Translated text: {result.text}")
+        print(f"Source language: {result.src}")
+        print(f"Target language: {result.dest}")
+        
+        # Return to the same page with translation
+        return render(request, 'translate.html', {
+            'form': TranslationForm(languages=get_available_languages()),
+            'languages': get_available_languages(),
+            'translation': result.text,
+            'source_language': result.src,
+            'target_language': result.dest
+        })
+
+@login_required
+@require_http_methods(["POST"])
+async def perform_translation(request):
+    """Handle POST requests - perform the translation"""
+    try:
+        # Get data from request
+        data = json.loads(request.body)
+        text = data.get('text_to_translate')
+        target_lang = data.get('target_language')
+        
+        # Validate input
+        if not text or not target_lang:
             return JsonResponse({
                 'error': 'Text and target language are required'
             }, status=400)
         
-        # Call the Translator app's endpoint
-        response = requests.post(
-            'http://127.0.0.1:8000/translator/translate/',
-            data={
-                'text': text_to_translate,
-                'target_language': target_language
-            }
-        )
+        # Get translation - use sync_to_async since translate_text is synchronous
+        result = await sync_to_async(translate_text)(text, target_lang)
         
-        if response.status_code != 200:
-            return JsonResponse({
-                'error': 'Translation service error',
-                'details': response.json()
-            }, status=response.status_code)
-        
-        result = response.json()
-        
-        # Check if user is authenticated
-        is_authenticated = request.user.is_authenticated
-        
-        # Save the translation to the database if user is authenticated
-        if is_authenticated:
-            user = request.user
-            translation = Translation.objects.create(
-                user=user,
-                original_text=text_to_translate,
-                translated_text=result['translation'],
-                target_language=target_language,
+        # Save translation if user is authenticated - use sync_to_async
+        if request.user.is_authenticated:
+            await create_translation(
+                user=request.user,
+                original_text=text,
+                translated_text=result['translated_text'],
+                target_language=target_lang,
                 translation_type='typed'
             )
-            
-            return JsonResponse({
-                'success': True,
-                'translation': result['translation'],
-                'source_language': result['source_language'],
-                'target_language': result['target_language'],
-                'confidence': result.get('confidence', 1.0),
-                'translation_id': translation.id
-            })
-        else:
-            return JsonResponse({
-                'success': True,
-                'translation': result['translation'],
-                'source_language': result['source_language'],
-                'target_language': result['target_language'],
-                'confidence': result.get('confidence', 1.0)
-            })
-            
+        
+        # Return translation result
+        return JsonResponse({
+            'success': True,
+            'translation': result['translated_text'],
+            'source_language': result['src'],
+            'target_language': result['dest']
+        })
+        
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
     except Exception as e:
@@ -220,44 +235,29 @@ async def edit_translation(request):
         get_translation = sync_to_async(lambda: Translation.objects.get(id=translation_id, user=request.user))
         translation = await get_translation()
         
-        original_text = request.POST.get('original_text')
-        target_lang = request.POST.get('target_lang')
+        # Update translation
+        translation.original_text = request.POST.get('original_text', translation.original_text)
+        translation.translated_text = request.POST.get('translated_text', translation.translated_text)
+        translation.target_language = request.POST.get('target_language', translation.target_language)
         
-        # Call the Translator app's endpoint
-        response = requests.post(
-            'http://127.0.0.1:8000/translator/translate/',
-            data={
-                'text': original_text,
-                'target_language': target_lang
-            }
-        )
-        
-        if response.status_code != 200:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Translation service error',
-                'details': response.json()
-            }, status=response.status_code)
-        
-        result = response.json()
-        
-        # Update the translation
-        translation.original_text = original_text
-        translation.translated_text = result['translation']
-        translation.target_language = target_lang
-        
-        # Wrap save operation in sync_to_async
-        save_translation = sync_to_async(translation.save)
+        # Save the updated translation
+        save_translation = sync_to_async(lambda: translation.save())
         await save_translation()
         
         return JsonResponse({
-            'status': 'success',
-            'translated_text': result['translation']
+            'success': True,
+            'message': 'Translation updated successfully'
         })
     except Translation.DoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Translation not found'}, status=404)
+        return JsonResponse({
+            'success': False,
+            'error': 'Translation not found'
+        }, status=404)
     except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 @login_required
 @require_http_methods(["POST"])
@@ -265,88 +265,52 @@ def delete_translation(request, translation_id):
     try:
         translation = Translation.objects.get(id=translation_id, user=request.user)
         translation.delete()
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({
+            'success': True,
+            'message': 'Translation deleted successfully'
+        })
     except Translation.DoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Translation not found'}, status=404)
+        return JsonResponse({
+            'success': False,
+            'error': 'Translation not found'
+        }, status=404)
     except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 def about(request):
     return render(request, 'about.html')
 
 @login_required
 def home(request):
-    """Home page view"""
     return render(request, 'home.html')
 
 @login_required
-def translate(request):
-    """Translation view"""
-    if request.method == 'POST':
-        form = TranslationForm(request.POST)
-        if form.is_valid():
-            text = form.cleaned_data['text']
-            target_language = form.cleaned_data['target_language']
-            
-            try:
-                # Perform translation
-                result = translate_text(text, target_language)
-                
-                if result.get('success'):
-                    # Save translation
-                    Translation.objects.create(
-                        user=request.user,
-                        original_text=text,
-                        translated_text=result['translation'],
-                        target_language=target_language
-                    )
-                    
-                    messages.success(request, 'Translation successful!')
-                    return render(request, 'translate.html', {
-                        'form': form,
-                        'translation': result['translation']
-                    })
-                else:
-                    messages.error(request, result.get('error', 'Translation failed'))
-            except Exception as e:
-                messages.error(request, f'Error during translation: {str(e)}')
-    else:
-        form = TranslationForm()
-    
-    return render(request, 'translate.html', {
-        'form': form,
-        'languages': get_available_languages()
-    })
-
-@login_required
 def history(request):
-    """Translation history view"""
     translations = Translation.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'history.html', {'translations': translations})
 
 @login_required
 def settings(request):
-    """User settings view"""
-    if request.method == 'POST':
-        language = request.POST.get('preferred_language')
-        update_preferred_language(request.user, language)
-        messages.success(request, 'Settings updated successfully!')
-        return redirect('settings')
-    
     profile = get_or_create_profile(request.user)
-    return render(request, 'settings.html', {
-        'profile': profile,
-        'languages': get_available_languages()
-    })
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=profile, user=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('settings')
+    else:
+        form = ProfileForm(instance=profile, user=request.user)
+    
+    return render(request, 'settings.html', {'form': form})
 
 def register(request):
-    """User registration view"""
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, 'Registration successful!')
             return redirect('home')
     else:
         form = CustomUserCreationForm()
@@ -364,83 +328,66 @@ class CustomPasswordResetDoneView(PasswordResetDoneView):
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'password_reset_confirm.html'
     success_url = reverse_lazy('password_reset_complete')
-
+    
     def form_valid(self, form):
         # Save the new password
         form.save()
-        # Get the user
-        user = form.user
-        # Log the user in
-        login(self.request, user)
         return super().form_valid(form)
 
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'password_reset_complete.html'
 
 def index(request):
-    languages = get_available_languages()
-    return render(request, 'index.html', {'languages': languages})
+    return render(request, 'index.html')
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def ocr(request):
     try:
-        if 'image' not in request.FILES:
-            return JsonResponse({'error': 'No image provided'}, status=400)
-        
-        image = request.FILES['image']
-        
-        # Read the image file into memory
-        image_data = image.read()
-        
-        # Process the image
-        result = detect_text(image_data)
-        
+        image_data = request.FILES['image'].read()
+        text = detect_text(image_data)
         return JsonResponse({
             'success': True,
-            'text': result['full_text'],
-            'language': result['language']
+            'text': text
         })
-        
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def tts(request):
     try:
-        data = json.loads(request.body)
-        text = data.get('text')
-        language = data.get('language')
+        text = request.POST.get('text')
+        language = request.POST.get('language', 'en')
         
-        if not text or not language:
-            return JsonResponse({'error': 'Text and language are required'}, status=400)
-        
+        if not text:
+            return JsonResponse({
+                'success': False,
+                'error': 'Text is required'
+            }, status=400)
+            
         if not is_language_supported(language):
-            return JsonResponse({'error': f'Language {language} is not supported'}, status=400)
-        
-        # Generate speech
-        encoded_audio = get_audio_base64(text, language)
+            return JsonResponse({
+                'success': False,
+                'error': f'Language {language} is not supported'
+            }, status=400)
+            
+        audio_base64 = get_audio_base64(text, language)
         
         return JsonResponse({
             'success': True,
-            'encoded_audio': encoded_audio
+            'audio': audio_base64
         })
-        
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 @login_required
 def account_delete_confirm(request):
-    if request.method == 'POST':
-        # Delete the user's profile first
-        request.user.profile.delete()
-        # Delete the user
-        request.user.delete()
-        # Logout the user
-        logout(request)
-        messages.success(request, 'Your account has been successfully deleted.')
-        return redirect('home')
-    
     return render(request, 'account_delete_confirm.html')
 
