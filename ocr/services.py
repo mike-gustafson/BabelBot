@@ -3,6 +3,8 @@ import logging
 from google.cloud import vision
 from google.cloud.vision_v1 import types
 from functools import wraps
+from django.conf import settings
+from google.oauth2 import service_account
 
 logger = logging.getLogger(__name__)
 
@@ -23,14 +25,30 @@ def standard_error_handler(func):
 def get_vision_client():
     """Initialize and return a Google Cloud Vision client."""
     try:
-        credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-        if not credentials_path:
-            raise ValueError("GOOGLE_APPLICATION_CREDENTIALS environment variable not set")
+        # Create credentials dictionary from environment variables
+        credentials_dict = {
+            "type": settings.GOOGLE_TYPE,
+            "project_id": settings.GOOGLE_PROJECT_ID,
+            "private_key_id": settings.GOOGLE_PRIVATE_KEY_ID,
+            "private_key": settings.GOOGLE_PRIVATE_KEY,
+            "client_email": settings.GOOGLE_CLIENT_EMAIL,
+            "client_id": settings.GOOGLE_CLIENT_ID,
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{settings.GOOGLE_CLIENT_EMAIL}"
+        }
+
+        # Check if all required fields are present
+        required_fields = ['type', 'project_id', 'private_key_id', 'private_key', 'client_email', 'client_id']
+        missing_fields = [field for field in required_fields if not credentials_dict.get(field)]
+        if missing_fields:
+            raise ValueError(f"Missing required Google Cloud credentials: {', '.join(missing_fields)}")
+
+        # Create credentials object directly from the dictionary
+        credentials = service_account.Credentials.from_service_account_info(credentials_dict)
         
-        if not os.path.exists(credentials_path):
-            raise ValueError(f"Credentials file not found at {credentials_path}")
-        
-        return vision.ImageAnnotatorClient()
+        return vision.ImageAnnotatorClient(credentials=credentials)
     except Exception as e:
         logger.error(f"Failed to initialize Vision client: {str(e)}")
         raise
