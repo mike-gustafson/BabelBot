@@ -15,22 +15,18 @@ from django.urls import reverse_lazy
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-from .models import Translation
+from .models import Translation, Profile
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from ocr.services import detect_text
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from .utils import get_or_create_profile, update_preferred_languages, get_preferred_languages
 
 DEFAULT_TARGET_LANGUAGE = "es"
 DEFAULT_TEXT = (
-    "A long time ago, in a galaxy far, far away. It is a period of civil war. Rebel "
-    "spaceships, striking from a hidden base, have won their first victory against the evil "
-    "Galactic Empire. During the battle, Rebel spies managed to steal secret plans to the Empire's "
-    "ultimate weapon, the DEATH STAR, an armored space station with enough power to destroy an entire "
-    "planet. Pursued by the Empire's sinister agents, Princess Leia races home aboard her starship, "
-    "custodian of the stolen plans that can save her people and restore freedom to the galaxy..."
+    "A long time ago, in a galaxy far, far away..."
 )
 
 # Create async versions of database operations
@@ -105,7 +101,7 @@ async def translate_ajax(request):
                 user=user,
                 original_text=text_to_translate,
                 translated_text=result['translated_text'],
-                target_lang=target_language
+                target_language=target_language
             )
         
         # Generate TTS if the language is supported
@@ -243,8 +239,84 @@ def delete_translation(request, translation_id):
 def about(request):
     return render(request, 'about.html')
 
+@login_required
 def home(request):
+    """Home page view"""
     return render(request, 'home.html')
+
+@login_required
+def translate(request):
+    """Translation view"""
+    if request.method == 'POST':
+        form = TranslationForm(request.POST)
+        if form.is_valid():
+            text = form.cleaned_data['text']
+            target_language = form.cleaned_data['target_language']
+            
+            try:
+                # Perform translation
+                result = translate_text(text, target_language)
+                
+                if result.get('success'):
+                    # Save translation
+                    Translation.objects.create(
+                        user=request.user,
+                        original_text=text,
+                        translated_text=result['translation'],
+                        target_language=target_language
+                    )
+                    
+                    messages.success(request, 'Translation successful!')
+                    return render(request, 'translate.html', {
+                        'form': form,
+                        'translation': result['translation']
+                    })
+                else:
+                    messages.error(request, result.get('error', 'Translation failed'))
+            except Exception as e:
+                messages.error(request, f'Error during translation: {str(e)}')
+    else:
+        form = TranslationForm()
+    
+    return render(request, 'translate.html', {
+        'form': form,
+        'languages': get_available_languages()
+    })
+
+@login_required
+def history(request):
+    """Translation history view"""
+    translations = Translation.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'history.html', {'translations': translations})
+
+@login_required
+def settings(request):
+    """User settings view"""
+    if request.method == 'POST':
+        languages = request.POST.getlist('preferred_languages')
+        update_preferred_languages(request.user, languages)
+        messages.success(request, 'Settings updated successfully!')
+        return redirect('settings')
+    
+    profile = get_or_create_profile(request.user)
+    return render(request, 'settings.html', {
+        'profile': profile,
+        'languages': get_available_languages()
+    })
+
+def register(request):
+    """User registration view"""
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, 'Registration successful!')
+            return redirect('home')
+    else:
+        form = CustomUserCreationForm()
+    
+    return render(request, 'register.html', {'form': form})
 
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'password_reset.html'
@@ -273,38 +345,6 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
 def index(request):
     languages = get_available_languages()
     return render(request, 'index.html', {'languages': languages})
-
-@csrf_exempt
-@require_http_methods(["POST"])
-def translate(request):
-    try:
-        data = json.loads(request.body)
-        text = data.get('text')
-        target_language = data.get('target_language')
-        
-        if not text or not target_language:
-            return JsonResponse({'error': 'Text and target language are required'}, status=400)
-        
-        # Translate the text
-        result = translate_text(text, target_language)
-        
-        # Create a translation record
-        translation = Translation.objects.create(
-            original_text=text,
-            translated_text=result['translated_text'],
-            source_language=result['src'],
-            target_language=target_language
-        )
-        
-        return JsonResponse({
-            'success': True,
-            'translation': result['translated_text'],
-            'source_language': result['src'],
-            'translation_id': translation.id
-        })
-        
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
 
 @csrf_exempt
 @require_http_methods(["POST"])

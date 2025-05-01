@@ -16,8 +16,8 @@ admin_site = CustomAdminSite(name='admin')
 # Register models with the custom admin site
 @admin.register(Translation, site=admin_site)
 class TranslationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'target_lang', 'created_at', 'truncated_original_text', 'truncated_translated_text')
-    list_filter = ('target_lang', 'created_at', 'user')
+    list_display = ('id', 'user', 'target_language', 'created_at', 'truncated_original_text', 'truncated_translated_text')
+    list_filter = ('target_language', 'created_at', 'user')
     search_fields = ('original_text', 'translated_text', 'user__username')
     readonly_fields = ('created_at',)
     ordering = ('-created_at',)
