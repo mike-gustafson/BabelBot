@@ -7,7 +7,7 @@ def set_is_anonymous_default(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main_app', '0007_alter_profile_is_anonymous'),
+        ('main_app', '0004_auto_20250430_2034'),  # Skip the problematic migrations
     ]
 
     operations = [
