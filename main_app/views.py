@@ -5,7 +5,7 @@ import json
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from translator.services import translate_text, get_available_languages
-from tts.services import text_to_speech
+from tts.services import text_to_speech, is_language_supported, get_audio_base64
 from googletrans import LANGUAGES
 from .forms import TranslationForm, LoginForm, SignupForm, CustomUserCreationForm, ProfileForm
 from django.contrib.auth import login, authenticate, logout, get_user
@@ -111,18 +111,8 @@ async def translate_ajax(request):
         # Generate TTS if the language is supported
         encoded_audio = None
         try:
-            from gtts.lang import tts_langs
-            supported_langs = tts_langs()
-            if target_language in supported_langs:
-                loop = asyncio.get_running_loop()
-                audio_buffer = await loop.run_in_executor(
-                    None, 
-                    text_to_speech, 
-                    result['translated_text'], 
-                    target_language
-                )
-                audio_data = audio_buffer.read()
-                encoded_audio = base64.b64encode(audio_data).decode("utf-8")
+            if is_language_supported(target_language):
+                encoded_audio = get_audio_base64(result['translated_text'], target_language)
         except Exception as e:
             # TTS failed but translation succeeded, we can continue
             pass
@@ -351,17 +341,15 @@ def tts(request):
         if not text or not language:
             return JsonResponse({'error': 'Text and language are required'}, status=400)
         
-        # Generate speech
-        audio_data = text_to_speech(text, language)
+        if not is_language_supported(language):
+            return JsonResponse({'error': f'Language {language} is not supported'}, status=400)
         
-        # Save the audio file
-        filename = f"tts_{timezone.now().strftime('%Y%m%d_%H%M%S')}.mp3"
-        file_path = os.path.join('tts', filename)
-        default_storage.save(file_path, ContentFile(audio_data))
+        # Generate speech
+        encoded_audio = get_audio_base64(text, language)
         
         return JsonResponse({
             'success': True,
-            'audio_url': f'/media/{file_path}'
+            'encoded_audio': encoded_audio
         })
         
     except Exception as e:
