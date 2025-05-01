@@ -6,37 +6,60 @@
 {% endblock %}
 
 {% block content %}
-<div class="translate-section">
-    <div class="translate-grid">
-        <!-- Input Column -->
-        <div class="translate-column">
-            <h3>Input</h3>
+<section class="section">
+  <div id="translate-content">
+    <div class="translate-column">
+      <h3>Input</h3>
             <div class="translation-form-section">
                 <div class="form-toggle">
-                    <h2>
-                        <span id="text-toggle" class="toggle-option active">Text</span>
-                        <span class="toggle-separator">|</span>
-                        <span id="ocr-toggle" class="toggle-option">OCR</span>
-                    </h2>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="input-type" value="text" {% if active_form != 'ocr' %}checked{% endif %}>
+                            <span class="radio-label">Text</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="input-type" value="ocr" {% if active_form == 'ocr' %}checked{% endif %}>
+                            <span class="radio-label">OCR</span>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Text Input Form -->
-                <div id="text-form" class="translation-form active">
-                    <form method="post" enctype="multipart/form-data">
+                <div id="text-form" class="translation-form" {% if active_form == 'ocr' %}style="display: none;"{% endif %}>
+                    <form id="text-translation-form" onsubmit="return false;">
                         {% csrf_token %}
-                        {{ form.text_to_translate }}
-                        {{ form.target_language }}
-                        <button type="submit" class="translate-button">Translate</button>
+                        <input type="hidden" name="form_type" value="text">
+                        {{ text_form.text_to_translate }}
+                        {{ text_form.target_language }}
+                        <button type="button" class="translate-button" onclick="submitTextForm()">Translate</button>
                     </form>
                 </div>
 
                 <!-- OCR Form -->
-                <div id="ocr-form" class="translation-form">
-                    <form method="post" enctype="multipart/form-data">
+                <div id="ocr-form" class="translation-form" {% if active_form != 'ocr' %}style="display: none;"{% endif %}>
+                    <form id="ocr-translation-form" onsubmit="return false;">
                         {% csrf_token %}
-                        <input type="file" id="ocr-image-input" name="image" accept="image/*" class="form-input">
-                        <img id="image-preview" style="display: none; max-width: 100%; margin-top: 10px;">
-                        <button type="button" id="process-button" class="translate-button" disabled>Process Image</button>
+                        <input type="hidden" name="form_type" value="ocr">
+                        <div class="ocr-container">
+                            <div class="image-upload">
+                                <label for="ocr-image-input" class="upload-label">
+                                    <span class="upload-icon">📷</span>
+                                    <span class="upload-text">Click to upload image</span>
+                                </label>
+                                {{ ocr_form.image }}
+                                <img id="image-preview" style="display: none; max-width: 100%; margin-top: 10px;">
+                            </div>
+                            <div id="ocr-result" style="display: none;">
+                                <div class="extracted-text">
+                                    <label>Extracted Text:</label>
+                                    <textarea name="extracted_text" readonly></textarea>
+                                </div>
+                                <div class="ocr-actions">
+                                    {{ ocr_form.target_language }}
+                                    <button type="button" class="translate-button" onclick="submitOCRForm()">Translate</button>
+                                </div>
+                            </div>
+                        </div>
                         <div id="ocr-status"></div>
                     </form>
                 </div>
@@ -47,18 +70,19 @@
         <div class="translate-column">
             <h3>Translation</h3>
             <div class="translation-result-section">
-                {% if translation %}
-                    <div class="translation-result">{{ translation.translated_text }}</div>
-                    <div class="language-info">
-                        Translated from {{ translation.source_language }} to {{ translation.target_language }}
+                <div class="translation-result">
+                    <div id="audio_container" style="display: none;">
+                        <audio id="audio_player" controls>
+                            Your browser does not support the audio element.
+                        </audio>
                     </div>
-                {% else %}
-                    <div class="translation-result">Your translation will appear here...</div>
-                {% endif %}
+                    <div class="translated-output"></div>
+                    <div class="language-info"></div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}
 
 {% block extra_js %}

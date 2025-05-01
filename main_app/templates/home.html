@@ -7,44 +7,44 @@
 
 {% block content %}
 <section class="section">
-    <div id="hero-content">
-        <h2>Welcome to BabelBot 🌍</h2>
-        <p class="hero-description">
-            Your AI-powered language companion. Translate text, images, and more with ease.
-            Experience seamless communication across languages with our advanced translation technology.
-        </p>
-        <a href="{% url 'translate' %}" class="btn btn-primary">
-            <i class="fas fa-language"></i> Start Translating Now
-        </a>
-    </div>
+  <div id="hero-content">
+    <h2>Welcome to BabelBot 🌍</h2>
+    <p class="hero-description">
+      Your AI-powered language companion. Translate text, images, and more with ease.
+      Experience seamless communication across languages with our advanced translation technology.
+    </p>
+    <a href="{% url 'translate' %}" class="btn btn-primary">
+      <i class="fas fa-language"></i> Start Translating Now
+    </a>
+  </div>
 
-    {% if not user.is_authenticated %}
-    <div id="auth-section">
-        <div id="auth-content">
-            <div id="auth-tabs">
-                <button class="auth-tab active" data-tab="login">Login</button>
-                <button class="auth-tab" data-tab="signup">Sign Up</button>
-            </div>
-            {% include 'forms/login_form.html' %}
-            {% include 'forms/signup_form.html' %}
-        </div>
+  {% if not user.is_authenticated %}
+  <div id="auth-section">
+    <div id="auth-content">
+      <div id="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Login</button>
+        <button class="auth-tab" data-tab="signup">Sign Up</button>
+      </div>
+      {% include 'forms/login_form.html' %}
+      {% include 'forms/signup_form.html' %}
     </div>
-    {% endif %}
+  </div>
+  {% endif %}
 
-    <div id="features-grid">
-        <div class="feature-card">
-            <h3>Text Translation</h3>
-            <p>Translate any text between multiple languages instantly with our advanced AI technology.</p>
-        </div>
-        <div class="feature-card">
-            <h3>Image Translation</h3>
-            <p>Upload images containing text and get accurate translations while preserving the original layout.</p>
-        </div>
-        <div class="feature-card">
-            <h3>Real-time Chat</h3>
-            <p>Communicate with others in different languages with our real-time translation chat feature.</p>
-        </div>
+  <div id="features-grid">
+    <div class="feature-card">
+      <h3>Text Translation</h3>
+      <p>Translate any text between multiple languages instantly with our advanced AI technology.</p>
     </div>
+    <div class="feature-card">
+      <h3>Image Translation</h3>
+      <p>Upload images containing text and get accurate translations while preserving the original layout.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Real-time Chat</h3>
+      <p>Communicate with others in different languages with our real-time translation chat feature.</p>
+    </div>
+  </div>
 </section>
 {% endblock %}
 

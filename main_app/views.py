@@ -93,98 +93,87 @@ def translate(request):
         })
     
     elif request.method == 'POST':
-        form_type = request.POST.get('form_type', 'text')
-        languages = get_available_languages()
-        
-        if form_type == 'text':
-            # Handle text translation
-            text = request.POST.get('text_to_translate')
-            target_lang = request.POST.get('target_language')
+        # Check if it's an AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            form_type = request.POST.get('form_type', 'text')
+            languages = get_available_languages()
             
-            # Perform translation in a separate thread
-            translator = Translator()
-            result = asyncio.run(translator.translate(text, dest=target_lang))
-            
-            # Create and save translation record only if user is authenticated
-            if request.user.is_authenticated:
-                translation = Translation.objects.create(
-                    user=request.user,
-                    original_text=text,
-                    translated_text=result.text,
-                    target_language=target_lang,
-                    translation_type='typed'
-                )
-            
-            # Create forms with initial data
-            text_form = TranslateFromTextForm(
-                initial={
-                    'text_to_translate': text,
-                    'target_language': target_lang
-                },
-                languages=languages
-            )
-            ocr_form = TranslateFromOCRForm(languages=languages)
-            
-            return render(request, 'translate.html', {
-                'text_form': text_form,
-                'ocr_form': ocr_form,
-                'languages': languages,
-                'active_form': 'text',
-                'translation': result.text,
-                'source_language': result.src,
-                'target_language': result.dest
-            })
-        else:
-            # Handle OCR translation
-            image = request.FILES.get('image')
-            target_lang = request.POST.get('target_language')
-            
-            if image and target_lang:
+            if form_type == 'text':
+                # Handle text translation
+                text = request.POST.get('text')
+                target_lang = request.POST.get('target_language')
+                
+                if not text or not target_lang:
+                    return JsonResponse({
+                        'error': 'Please provide both text and target language'
+                    }, status=400)
+                
                 try:
-                    # Perform OCR and get the full_text
-                    ocr_result = detect_text(image.read())
-                    text = ocr_result['full_text']
-                    
-                    # Perform translation
-                    translator = Translator()
-                    result = asyncio.run(translator.translate(text, dest=target_lang))
+                    # Perform translation using the translation service
+                    result = asyncio.run(translate_text(text, target_lang))
                     
                     # Create and save translation record only if user is authenticated
                     if request.user.is_authenticated:
                         translation = Translation.objects.create(
                             user=request.user,
                             original_text=text,
-                            translated_text=result.text,
+                            translated_text=result['text'],
+                            target_language=target_lang,
+                            translation_type='typed'
+                        )
+                    
+                    return JsonResponse({
+                        'success': True,
+                        'translated_text': result['text'],
+                        'source_language': result['src'],
+                        'target_language': result['dest']
+                    })
+                except Exception as e:
+                    return JsonResponse({
+                        'error': f'Translation error: {str(e)}'
+                    }, status=500)
+            else:
+                # Handle OCR translation
+                image = request.FILES.get('image')
+                target_lang = request.POST.get('target_language')
+                
+                if not image or not target_lang:
+                    return JsonResponse({
+                        'error': 'Please provide both image and target language'
+                    }, status=400)
+                
+                try:
+                    # Perform OCR and get the full_text
+                    ocr_result = detect_text(image.read())
+                    text = ocr_result['full_text']
+                    
+                    # Perform translation using the translation service
+                    result = asyncio.run(translate_text(text, target_lang))
+                    
+                    # Create and save translation record only if user is authenticated
+                    if request.user.is_authenticated:
+                        translation = Translation.objects.create(
+                            user=request.user,
+                            original_text=text,
+                            translated_text=result['text'],
                             target_language=target_lang,
                             translation_type='ocr'
                         )
                     
-                    # Create forms with initial data
-                    text_form = TranslateFromTextForm(languages=languages)
-                    ocr_form = TranslateFromOCRForm(
-                        initial={'target_language': target_lang},
-                        languages=languages
-                    )
-                    
-                    return render(request, 'translate.html', {
-                        'text_form': text_form,
-                        'ocr_form': ocr_form,
-                        'languages': languages,
-                        'active_form': 'ocr',
-                        'translation': result.text,
-                        'source_language': result.src,
-                        'target_language': result.dest
+                    return JsonResponse({
+                        'success': True,
+                        'translated_text': result['text'],
+                        'source_language': result['src'],
+                        'target_language': result['dest']
                     })
                 except Exception as e:
-                    text_form = TranslateFromTextForm(languages=languages)
-                    ocr_form = TranslateFromOCRForm(languages=languages)
-                    return render(request, 'translate.html', {
-                        'text_form': text_form,
-                        'ocr_form': ocr_form,
-                        'languages': languages,
-                        'active_form': 'ocr',
+                    return JsonResponse({
                         'error': f'Error processing image: {str(e)}'
-                    })
+                    }, status=500)
+        else:
+            # Handle non-AJAX requests (fallback)
+            messages.error(request, 'Please enable JavaScript for this feature')
+            return redirect('translate')
 
 @login_required
 @require_http_methods(["POST"])

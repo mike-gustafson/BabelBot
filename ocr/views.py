@@ -4,7 +4,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render
 from .services import extract_text_from_image
-import time
 from functools import wraps
 import logging
 
