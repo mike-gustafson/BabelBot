@@ -25,7 +25,7 @@ def standard_error_handler(func):
 def get_vision_client():
     """Initialize and return a Google Cloud Vision client."""
     try:
-        # Create credentials dictionary from environment variables
+        # Create credentials dictionary from settings
         credentials_dict = {
             "type": settings.GOOGLE_TYPE,
             "project_id": settings.GOOGLE_PROJECT_ID,
