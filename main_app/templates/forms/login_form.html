@@ -1,0 +1,25 @@
+{% load static %}
+
+<form method="post" action="{% url 'login' %}" class="login-form" id="login-form">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="username">Username</label>
+        <div class="input-with-icon">
+            <i class="fas fa-user"></i>
+            <input type="text" id="username" name="username" required>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-with-icon">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password" name="password" required>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        <i class="fas fa-sign-in-alt"></i>
+        Login
+    </button>
+</form> 

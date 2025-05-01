@@ -146,4 +146,31 @@ select:focus, input:focus, textarea:focus {
 .p-2 { padding: 0.5rem; }
 .p-3 { padding: 1rem; }
 .p-4 { padding: 1.5rem; }
-.p-5 { padding: 2rem; } 
+.p-5 { padding: 2rem; }
+
+/* Main content section - reusable across all pages */
+.section {
+  min-height: calc(100vh - 120px);
+  position: relative;
+  overflow: visible;
+  padding: var(--spacing-lg);
+  margin: var(--spacing-md) auto;
+  max-width: 1200px;
+  background: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  border: var(--card-border);
+  box-shadow: var(--box-shadow);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+}
+
+/* Responsive adjustments for section */
+@media (max-width: 768px) {
+  .section {
+    padding: var(--spacing-md);
+    margin: var(--spacing-sm) auto;
+  }
+} 

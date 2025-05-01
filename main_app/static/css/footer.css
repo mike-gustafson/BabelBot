@@ -1,65 +1,69 @@
 /* Footer styles */
 footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--bg-primary);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  padding: var(--spacing-sm);
-  text-align: center;
-  border-top: 1px solid var(--border-primary);
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-  z-index: 1000;
-  height: var(--footer-height);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.3s ease;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    background: rgba(var(--bg-primary-rgb), 0.6);
+    border-top: 1px solid var(--border-primary);
+    z-index: 1000;
+    height: var(--footer-height);
+    width: 100%;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    margin: auto 0;
+    padding: none;
+    text-align: center;
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
 }
 
 .footer-bot {
-  position: absolute;
-  bottom: 0;
-  left: -50px;
-  width: 40px;
-  height: var(--footer-height);
-  animation: moveBot 15s linear infinite;
-  transform: translateY(25%);
-  z-index: 2;
-  will-change: transform;
+    position: absolute;
+    bottom: 5px;
+    left: -50px;
+    height: 30px;
+    width: 30px;
+    animation: moveBot 15s linear infinite;
+    transform: translateY(0);
+    z-index: 2;
+    will-change: transform;
+    background: url('../images/logo2.png') no-repeat center center;
+    background-size: contain;
 }
 
+/* Bot animation */
 @keyframes moveBot {
-  0% {
-    left: -50px;
-    transform: translateY(25%) scaleX(1);
-  }
-  45% {
-    transform: translateY(25%) scaleX(1);
-  }
-  50% {
-    transform: translateY(25%) scaleX(-1);
-  }
-  95% {
-    transform: translateY(25%) scaleX(-1);
-  }
-  100% {
-    left: calc(100% + 50px);
-    transform: translateY(25%) scaleX(-1);
-  }
+    0% {
+        left: -50px;
+        transform: translateY(0) scaleX(1);
+    }
+    45% {
+        transform: translateY(0) scaleX(1);
+    }
+    50% {
+        transform: translateY(0) scaleX(-1);
+    }
+    95% {
+        transform: translateY(0) scaleX(-1);
+    }
+    100% {
+        left: calc(100% + 50px);
+        transform: translateY(0) scaleX(-1);
+    }
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  footer {
-    padding: var(--spacing-xs);
-  }
+    footer {
+        padding: var(--spacing-xs);
+    }
 
-  .footer-bot {
-    width: 30px;
-    height: 30px;
-  }
+    .footer-bot {
+        width: 30px;
+        height: 30px;
+    }
 } 

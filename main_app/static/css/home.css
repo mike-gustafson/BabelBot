@@ -1,39 +1,27 @@
 /* Home Page Styles */
 .section {
-  min-height: calc(100vh - 120px);
-  position: relative;
-  overflow: visible; 
-  padding: var(--spacing-md) 0;
-  background: var(--card-bg);
-  border-radius: var(--border-radius-lg);
-  border: var(--card-border);
-}
-
-.home-content-wrapper {
-  position: relative;
-  z-index: 1;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  padding: var(--spacing-lg);
-  margin: var(--spacing-md) auto;
-  max-width: 1200px;
-  box-shadow: var(--box-shadow);
-  display: grid;
   grid-template-columns: 1.5fr 1fr;
   grid-template-rows: auto auto;
   grid-template-areas: 
     "hero auth"
     "features features";
-  gap: var(--spacing-lg);
 }
 
-.hero-content {
+/* When auth section is not present, hero spans full width */
+.section:not(:has(#auth-section)) {
+  grid-template-columns: 1fr;
+  grid-template-areas: 
+    "hero"
+    "features";
+}
+
+#hero-content {
   grid-area: hero;
   text-align: left;
   padding: var(--spacing-md) 0;
 }
 
-.hero-content h2 {
+#hero-content h2 {
   font-size: 3rem;
   margin-bottom: var(--spacing-md);
   color: var(--text-primary);
@@ -51,7 +39,7 @@
 }
 
 /* Auth Section Styles */
-.auth-section {
+#auth-section {
   grid-area: auth;
   background: var(--gradient-tertiary);
   padding: var(--spacing-lg);
@@ -61,7 +49,7 @@
   overflow: hidden;
 }
 
-.auth-section::before {
+#auth-section::before {
   content: '';
   position: absolute;
   top: 0;
@@ -72,12 +60,12 @@
   z-index: 0;
 }
 
-.auth-content {
+#auth-content {
   position: relative;
   z-index: 1;
 }
 
-.auth-tabs {
+#auth-tabs {
   display: flex;
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
@@ -100,7 +88,7 @@
   border-bottom-color: var(--primary);
 }
 
-.features-grid {
+#features-grid {
   grid-area: features;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -183,8 +171,9 @@
   align-items: center;
 }
 
+/* Responsive Styles */
 @media (max-width: 768px) {
-  .home-content-wrapper {
+  .section {
     grid-template-columns: 1fr;
     grid-template-areas: 
       "hero"
@@ -192,11 +181,11 @@
       "features";
   }
 
-  .hero-content {
+  #hero-content {
     text-align: center;
   }
 
-  .hero-content h2 {
+  #hero-content h2 {
     font-size: 2rem;
   }
 
@@ -204,30 +193,18 @@
     font-size: 1rem;
   }
 
-  .features-grid {
+  #features-grid {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 480px) {
-  .hero-section {
-    padding: 1rem;
-  }
-
-  .hero-title {
+  #hero-content h2 {
     font-size: 1.75rem;
   }
 
-  .hero-image {
-    max-width: 300px;
-  }
-
-  .features-section {
-    padding: 2rem 1rem;
-  }
-
   .feature-card {
-    padding: 1.5rem;
+    padding: var(--spacing-md);
   }
 
   .cta-section {
@@ -241,10 +218,6 @@
   .cta-description {
     font-size: 1.1rem;
   }
-}
-
-.hidden {
-  display: none;
 }
 
 /* Home page styles */
