@@ -14,11 +14,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url('../images/logo3.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0.15;
+
   z-index: 0;
   width: 100vw; 
   height: 100vh;
@@ -33,15 +29,22 @@
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-lg);
   margin: var(--spacing-md) auto;
-  max-width: 1000px;
+  max-width: 1200px;
   box-shadow: var(--box-shadow);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  grid-template-rows: auto auto;
+  grid-template-areas: 
+    "hero auth"
+    "features features";
+  gap: var(--spacing-lg);
 }
 
 .hero-content {
-  text-align: center;
-  padding: var(--spacing-md) 0; 
-  margin-bottom: var(--spacing-md);
+  grid-area: hero;
+  text-align: left;
+  padding: var(--spacing-md) 0;
 }
 
 .hero-content h2 {
@@ -57,18 +60,67 @@
   font-size: 1.4rem;
   color: var(--text-secondary);
   margin-bottom: var(--spacing-lg);
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
   line-height: 1.6;
   font-weight: 400;
 }
 
+/* Auth Section Styles */
+.auth-section {
+  grid-area: auth;
+  background: var(--gradient-tertiary);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--box-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gradient-secondary);
+  z-index: 0;
+}
+
+.auth-content {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.auth-tab {
+  flex: 1;
+  padding: var(--spacing-md);
+  text-align: center;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition-normal);
+}
+
+.auth-tab.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--primary);
+}
+
 .features-grid {
+  grid-area: features;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-lg);
-  margin-top: var(--spacing-lg);
+  margin-top: 0;
+  width: 100%;
 }
 
 .feature-card {
@@ -146,6 +198,18 @@
 }
 
 @media (max-width: 768px) {
+  .home-content-wrapper {
+    grid-template-columns: 1fr;
+    grid-template-areas: 
+      "hero"
+      "auth"
+      "features";
+  }
+
+  .hero-content {
+    text-align: center;
+  }
+
   .hero-content h2 {
     font-size: 2rem;
   }
@@ -191,4 +255,8 @@
   .cta-description {
     font-size: 1.1rem;
   }
+}
+
+.hidden {
+  display: none;
 } 

@@ -58,42 +58,49 @@
             About
           </a>
           {% if user.is_authenticated %}
-            <a href="{% url 'account' %}" class="{% if request.path == '/account/' %}active{% endif %}">
-              <img src="{% static 'images/logo_translate.png' %}" alt="Account" class="nav-icon">
-              Account
-            </a>
-            <a href="{% url 'logout' %}" class="nav-link">
-              <img src="{% static 'images/logo_home.png' %}" alt="Logout" class="nav-icon">
-              Logout
-            </a>
-          {% else %}
-            <a href="{% url 'login' %}" class="{% if request.path == '/login/' %}active{% endif %}">
-              <img src="{% static 'images/logo_home.png' %}" alt="Login" class="nav-icon">
-              Login
-            </a>
-            <a href="{% url 'signup' %}" class="{% if request.path == '/signup/' %}active{% endif %}">
-              <img src="{% static 'images/logo_translate.png' %}" alt="Sign Up" class="nav-icon">
-              Sign Up
-            </a>
+          <a href="/account/" class="{% if request.path == '/account/' %}active{% endif %}">
+            <div class="nav-icon-wrapper">
+              <img src="{% static 'images/logo_account.png' %}" alt="Account" class="nav-icon">
+            </div>
+            Account
+          </a>
+          {% endif %}
+          <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">
+            <div class="nav-icon-wrapper">
+              <img src="{% static 'images/logo_about.png' %}" alt="About" class="nav-icon">
+            </div>
+            About
+          </a>
+          {% if user.is_authenticated %}
+          <a href="{% url 'logout' %}" class="{% if request.path == '/logout/' %}active{% endif %}">
+            <div class="nav-icon-wrapper">
+              <img src="{% static 'images/logo_logout.png' %}" alt="Logout" class="nav-icon">
+            </div>
+            Logout
+          </a>
           {% endif %}
         </nav>
-        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
-          <img src="{% static 'images/moon.svg' %}" alt="Dark Mode" class="theme-icon theme-icon-moon">
-          <img src="{% static 'images/sun.svg' %}" alt="Light Mode" class="theme-icon theme-icon-sun" style="display: none;">
-        </button>
-        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle navigation menu">
-          <span class="bar"></span>
-          <span class="bar"></span>
-          <span class="bar"></span>
-        </button>
+        <div class="nav-actions">
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+            <img src="{% static 'images/moon.svg' %}" alt="Dark Mode" class="theme-icon theme-icon-moon">
+            <img src="{% static 'images/sun.svg' %}" alt="Light Mode" class="theme-icon theme-icon-sun hidden">
+          </button>
+          <button id="menu-toggle" class="menu-toggle" aria-label="Toggle navigation menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+          </button>
+        </div>
       </div>
     </div>
   </header>
 
   <main>
-    <div class="section-container">
-      {% block content %}
-      {% endblock %}
+    <div class="page-section">
+      <div class="section-container">
+        {% block content %}
+        {% endblock %}
+      </div>
     </div>
   </main>
 

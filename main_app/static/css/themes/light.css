@@ -9,31 +9,31 @@
   --info: #4299e1;
 
   /* Background Colors */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f7fafc;
-  --bg-tertiary: #edf2f7;
-  --bg-light: #ffffff;
+  --bg-primary: #d7fbe8; /* softer mint background */
+  --bg-secondary: #e6fff2;
+  --bg-tertiary: #f0fff8;
+  --bg-light: #d7fbe8;
 
   /* Text Colors */
-  --text-primary: #2d3748;
-  --text-secondary: #4a5568;
+  --text-primary: #3a4a5a; /* softer dark */
+  --text-secondary: #556677;
   --text-tertiary: #718096;
 
   /* Border Colors */
-  --border-primary: #e2e8f0;
+  --border-primary: #b7d5c3;
   --border-secondary: #cbd5e0;
 
   /* Card Colors */
-  --card-bg: rgba(255, 255, 255, 0.9);
-  --card-border: rgba(226, 232, 240, 0.8);
+  --card-bg: rgba(240, 255, 248, 0.9); /* pastel green card */
+  --card-border: rgba(200, 240, 220, 0.8);
 
   /* Gradient Colors */
-  --gradient-primary: linear-gradient(135deg, rgba(100, 255, 156, 0.8) 0%, rgba(0, 255, 127, 0.6) 100%);
-  --gradient-secondary: linear-gradient(135deg, rgba(100, 255, 156, 0.05) 0%, rgba(0, 255, 127, 0.02) 100%);
-  --gradient-tertiary: linear-gradient(135deg, #ffffff 0%, rgba(0, 255, 127, 0.3) 100%);
-  --gradient-quaternary: linear-gradient(-135deg, #ffffff 0%, rgba(0, 255, 127, 0.3) 100%);
+  --gradient-primary: linear-gradient(135deg, rgba(100, 255, 156, 0.4) 0%, rgba(0, 255, 127, 0.3) 100%);
+  --gradient-secondary: linear-gradient(135deg, rgba(100, 255, 156, 0.1) 0%, rgba(0, 255, 127, 0.05) 100%);
+  --gradient-tertiary: linear-gradient(135deg, #d7fbe8 0%, rgba(0, 255, 127, 0.2) 100%);
+  --gradient-quaternary: linear-gradient(-135deg, #e6fff2 0%, rgba(0, 255, 127, 0.2) 100%);
 
   /* Shadow Colors */
-  --shadow-color: rgba(0, 0, 0, 0.1);
-  --shadow-color-hover: rgba(0, 0, 0, 0.15);
-} 
+  --shadow-color: rgba(0, 0, 0, 0.08);
+  --shadow-color-hover: rgba(0, 0, 0, 0.12);
+}

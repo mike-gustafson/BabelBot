@@ -4,22 +4,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
   menuToggle.addEventListener('click', function() {
     menuToggle.classList.toggle('active');
-      navLinks.classList.toggle('active');
-    });
+    navLinks.classList.toggle('nav-visible');
+  });
 
   // Close menu when clicking outside
   document.addEventListener('click', function(event) {
-    if (!menuToggle.contains(event.target) && !navLinks.contains(event.target)) {
+    const isClickInside = navLinks.contains(event.target) || menuToggle.contains(event.target);
+    
+    if (!isClickInside && navLinks.classList.contains('nav-visible')) {
       menuToggle.classList.remove('active');
-      navLinks.classList.remove('active');
+      navLinks.classList.remove('nav-visible');
     }
   });
 
-  // Close menu when window is resized above mobile breakpoint
+  // Close menu when window is resized to desktop size
   window.addEventListener('resize', function() {
     if (window.innerWidth > 768) {
       menuToggle.classList.remove('active');
-      navLinks.classList.remove('active');
+      navLinks.classList.remove('nav-visible');
     }
   });
 });
