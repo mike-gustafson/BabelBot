@@ -15,7 +15,10 @@
         <div class="account-content">
           <!--Display Profile Info-->
           <div class="profile-display">
+            <div class="info-row">
+              <div class="user-info-column">
             <h3>User Information</h3>
+            <div class="user-info">
             <p>user.id: {{ user.id }}</p>
             <p>user.username: {{ user.username }}</p>
             <p>user.email: {{ user.email }}</p>
@@ -23,16 +26,23 @@
             <p>user.last_name: {{ user.last_name }}</p>
             <p>user.date_joined: {{ user.date_joined }}</p>
             <p>user.last_login: {{ user.last_login }}</p>
+            </div>
+          </div>
+        </div>
 
+            <div class="profile-info-column">
             <h3>Profile Information</h3>
+            <div class= "profile-info">
             <p>profile.bio: {{ profile.bio }}</p>
             <p>profile.location: {{ profile.location }}</p>
             <p>profile.primary_language: {{ profile.primary_language }}</p>
             <p>profile.other_languages: {{ profile.other_languages }}</p>
             <p>profile.is_anonymous: {{ profile.is_anonymous }}</p>
-            
+            </div>
+
             <button id="edit-profile-btn" class="btn btn-primary">Edit Profile</button>
           </div>
+        </div>
 
           <!--Edit Profile Form-->
           <div class="edit-profile-section" style="display: none;">
