@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .tech-demo {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--box-shadow);
+    }
+
+    .demo-section {
+        margin-bottom: 2rem;
+    }
+
+    .demo-section h2 {
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+    .demo-input {
+        margin-bottom: 1rem;
+    }
+
+    .demo-input textarea {
+        width: 100%;
+        min-height: 100px;
+        padding: 0.75rem;
+        border: var(--input-border);
+        border-radius: var(--border-radius-md);
+        background: var(--input-bg);
+        color: var(--text-primary);
+        font-size: 1rem;
+        resize: vertical;
+    }
+
+    .demo-input textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: var(--input-focus-shadow);
+    }
+
+    .demo-controls {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .language-select {
+        flex: 1;
+        padding: 0.75rem;
+        border: var(--input-border);
+        border-radius: var(--border-radius-md);
+        background: var(--input-bg);
+        color: var(--text-primary);
+    }
+
+    .demo-button {
+        padding: 0.75rem 1.5rem;
+        background: var(--gradient-primary);
+        color: var(--text-primary);
+        border: none;
+        border-radius: var(--border-radius-md);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition-normal);
+    }
+
+    .demo-button:hover {
+        background: var(--gradient-secondary);
+        transform: var(--btn-hover-transform);
+    }
+
+    .demo-button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .translated-output {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: var(--input-bg);
+        border-radius: var(--border-radius-md);
+        min-height: 100px;
+    }
+
+    .status-message {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        border-radius: var(--border-radius-md);
+    }
+
+    .status-message.success {
+        background: rgba(76, 175, 80, 0.1);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+        color: #4CAF50;
+    }
+
+    .status-message.error {
+        background: rgba(244, 67, 54, 0.1);
+        border: 1px solid rgba(244, 67, 54, 0.2);
+        color: #F44336;
+    }
+
+    .loading {
+        opacity: 0.7;
+        cursor: wait;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tech-demo">
+    {% csrf_token %}
+    <h1>Translator Tech Demo</h1>
+    <p>This page demonstrates the translation functionality. Enter text, select languages, and click "Translate" to see the result.</p>
+
+    <div class="demo-section">
+        <h2>Text Input</h2>
+        <div class="demo-input">
+            <textarea id="text-input" placeholder="Enter text to translate..."></textarea>
+        </div>
+        <div class="demo-controls">
+            <select id="source-language" class="language-select" disabled>
+                <option value="">Auto-detect</option>
+            </select>
+            <select id="target-language" class="language-select" disabled>
+                <option value="">Select target language...</option>
+            </select>
+            <button id="translate-btn" class="demo-button" disabled>Translate</button>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Translation Output</h2>
+        <div id="translated-output" class="translated-output"></div>
+        <div id="status-message" class="status-message" style="display: none;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    const textInput = document.getElementById('text-input');
+    const sourceLanguage = document.getElementById('source-language');
+    const targetLanguage = document.getElementById('target-language');
+    const translateBtn = document.getElementById('translate-btn');
+    const translatedOutput = document.getElementById('translated-output');
+    const statusMessage = document.getElementById('status-message');
+
+    // Load available languages
+    try {
+        const response = await fetch('/translator/languages/');
+        const data = await response.json();
+        
+        if (data.success) {
+            // Clear loading options
+            sourceLanguage.innerHTML = '<option value="">Auto-detect</option>';
+            targetLanguage.innerHTML = '<option value="">Select target language...</option>';
+            
+            // Add languages to selects
+            Object.entries(data.languages).forEach(([code, name]) => {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = `${name} (${code})`;
+                targetLanguage.appendChild(option.cloneNode(true));
+                sourceLanguage.appendChild(option);
+            });
+            
+            // Enable controls
+            sourceLanguage.disabled = false;
+            targetLanguage.disabled = false;
+            translateBtn.disabled = false;
+        } else {
+            showStatus('Failed to load languages', 'error');
+        }
+    } catch (error) {
+        showStatus('Error loading languages', 'error');
+    }
+
+    translateBtn.addEventListener('click', async function() {
+        const text = textInput.value.trim();
+        const sourceLang = sourceLanguage.value;
+        const targetLang = targetLanguage.value;
+
+        if (!text) {
+            showStatus('Please enter some text', 'error');
+            return;
+        }
+
+        if (!targetLang) {
+            showStatus('Please select a target language', 'error');
+            return;
+        }
+
+        translateBtn.disabled = true;
+        translateBtn.textContent = 'Translating...';
+        translatedOutput.textContent = '';
+        statusMessage.style.display = 'none';
+
+        try {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const response = await fetch('/translator/translate/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    text: text,
+                    target_language: targetLang,
+                    source_language: sourceLang || undefined
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                translatedOutput.textContent = data.translation;
+                showStatus(`Translated from ${data.source_language} to ${data.target_language}`, 'success');
+            } else {
+                showStatus(data.error || 'Failed to translate', 'error');
+            }
+        } catch (error) {
+            console.error('Translation error:', error);
+            showStatus('An error occurred while translating: ' + error.message, 'error');
+        } finally {
+            translateBtn.disabled = false;
+            translateBtn.textContent = 'Translate';
+        }
+    });
+
+    function showStatus(message, type) {
+        statusMessage.textContent = message;
+        statusMessage.className = `status-message ${type}`;
+        statusMessage.style.display = 'block';
+    }
+});
+</script>
+{% endblock %} 

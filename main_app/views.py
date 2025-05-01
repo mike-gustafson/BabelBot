@@ -6,9 +6,9 @@ import json
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from translator.services import translate_text, get_available_languages
-from tts.services import text_to_speech
+from tts.services import text_to_speech, is_language_supported, get_audio_base64
 from googletrans import LANGUAGES
-from .forms import TranslationForm, LoginForm, SignupForm, CustomUserCreationForm
+from .forms import TranslationForm, LoginForm, SignupForm, CustomUserCreationForm, ProfileForm
 from django.contrib.auth import login, authenticate, logout, get_user
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
@@ -16,21 +16,18 @@ from django.urls import reverse_lazy
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-from .models import Translation
+from .models import Translation, Profile
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from ocr.services import detect_text
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .utils import get_or_create_profile, update_preferred_language, get_preferred_language
 
 DEFAULT_TARGET_LANGUAGE = "es"
 DEFAULT_TEXT = (
-    "A long time ago, in a galaxy far, far away. It is a period of civil war. Rebel "
-    "spaceships, striking from a hidden base, have won their first victory against the evil "
-    "Galactic Empire. During the battle, Rebel spies managed to steal secret plans to the Empire's "
-    "ultimate weapon, the DEATH STAR, an armored space station with enough power to destroy an entire "
-    "planet. Pursued by the Empire's sinister agents, Princess Leia races home aboard her starship, "
-    "custodian of the stolen plans that can save her people and restore freedom to the galaxy..."
+    "A long time ago, in a galaxy far, far away..."
 )
 
 # Create async versions of database operations
@@ -105,24 +102,14 @@ async def translate_ajax(request):
                 user=user,
                 original_text=text_to_translate,
                 translated_text=result['translated_text'],
-                target_lang=target_language
+                target_language=target_language
             )
         
         # Generate TTS if the language is supported
         encoded_audio = None
         try:
-            from gtts.lang import tts_langs
-            supported_langs = tts_langs()
-            if target_language in supported_langs:
-                loop = asyncio.get_running_loop()
-                audio_buffer = await loop.run_in_executor(
-                    None, 
-                    text_to_speech, 
-                    result['translated_text'], 
-                    target_language
-                )
-                audio_data = audio_buffer.read()
-                encoded_audio = base64.b64encode(audio_data).decode("utf-8")
+            if is_language_supported(target_language):
+                encoded_audio = get_audio_base64(result['translated_text'], target_language)
         except Exception as e:
             # TTS failed but translation succeeded, we can continue
             pass
@@ -172,24 +159,169 @@ def signup(request):
     
     return render(request, 'signup.html', {'form': form})
 
+@login_required
 def account(request):
     if not request.user.is_authenticated:
         return redirect('login')
+    
+    # Get or create the user's profile
+    profile = get_or_create_profile(request.user)
+    
+    # Get the user's translations, ordered by most recent first
+    translations = request.user.translation_set.all().order_by('-created_at')
+    
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=profile, user=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('account')
+    else:
+        form = ProfileForm(instance=profile, user=request.user)
+    
+    # Get available languages for the edit form
+    languages = LANGUAGES.items()
+    
     context = {
         'user': request.user,
-        'first_name': request.user.first_name or request.user.username
+        'profile': profile,
+        'translations': translations,
+        'form': form,
+        'display_name': request.user.first_name or request.user.username,
+        'languages': languages,
     }
+    
     return render(request, 'account.html', context)
+
+@login_required
+@require_http_methods(["POST"])
+async def edit_translation(request):
+    try:
+        translation_id = request.POST.get('translation_id')
+        # Wrap database operations in sync_to_async
+        get_translation = sync_to_async(lambda: Translation.objects.get(id=translation_id, user=request.user))
+        translation = await get_translation()
+        
+        original_text = request.POST.get('original_text')
+        target_lang = request.POST.get('target_lang')
+        
+        # Translate the new text
+        result = await translate_text(original_text, target_lang)
+        
+        # Update the translation
+        translation.original_text = original_text
+        translation.translated_text = result['translated_text']
+        translation.target_lang = target_lang
+        
+        # Wrap save operation in sync_to_async
+        save_translation = sync_to_async(translation.save)
+        await save_translation()
+        
+        return JsonResponse({
+            'status': 'success',
+            'translated_text': result['translated_text']
+        })
+    except Translation.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Translation not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@login_required
+@require_http_methods(["POST"])
+def delete_translation(request, translation_id):
+    try:
+        translation = Translation.objects.get(id=translation_id, user=request.user)
+        translation.delete()
+        return JsonResponse({'status': 'success'})
+    except Translation.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Translation not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 def about(request):
     return render(request, 'about.html')
 
+@login_required
 def home(request):
+    """Home page view"""
     return render(request, 'home.html')
+
+@login_required
+def translate(request):
+    """Translation view"""
+    if request.method == 'POST':
+        form = TranslationForm(request.POST)
+        if form.is_valid():
+            text = form.cleaned_data['text']
+            target_language = form.cleaned_data['target_language']
+            
+            try:
+                # Perform translation
+                result = translate_text(text, target_language)
+                
+                if result.get('success'):
+                    # Save translation
+                    Translation.objects.create(
+                        user=request.user,
+                        original_text=text,
+                        translated_text=result['translation'],
+                        target_language=target_language
+                    )
+                    
+                    messages.success(request, 'Translation successful!')
+                    return render(request, 'translate.html', {
+                        'form': form,
+                        'translation': result['translation']
+                    })
+                else:
+                    messages.error(request, result.get('error', 'Translation failed'))
+            except Exception as e:
+                messages.error(request, f'Error during translation: {str(e)}')
+    else:
+        form = TranslationForm()
+    
+    return render(request, 'translate.html', {
+        'form': form,
+        'languages': get_available_languages()
+    })
+
+@login_required
+def history(request):
+    """Translation history view"""
+    translations = Translation.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'history.html', {'translations': translations})
+
+@login_required
+def settings(request):
+    """User settings view"""
+    if request.method == 'POST':
+        language = request.POST.get('preferred_language')
+        update_preferred_language(request.user, language)
+        messages.success(request, 'Settings updated successfully!')
+        return redirect('settings')
+    
+    profile = get_or_create_profile(request.user)
+    return render(request, 'settings.html', {
+        'profile': profile,
+        'languages': get_available_languages()
+    })
+
+def register(request):
+    """User registration view"""
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, 'Registration successful!')
+            return redirect('home')
+    else:
+        form = CustomUserCreationForm()
+    
+    return render(request, 'register.html', {'form': form})
 
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'password_reset.html'
-    email_template_name = 'password_reset_email.html'
+    email_template_name = 'registration/password_reset_email.html'
     success_url = reverse_lazy('password_reset_done')
 
 class CustomPasswordResetDoneView(PasswordResetDoneView):
@@ -199,44 +331,21 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = 'password_reset_confirm.html'
     success_url = reverse_lazy('password_reset_complete')
 
+    def form_valid(self, form):
+        # Save the new password
+        form.save()
+        # Get the user
+        user = form.user
+        # Log the user in
+        login(self.request, user)
+        return super().form_valid(form)
+
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'password_reset_complete.html'
 
 def index(request):
     languages = get_available_languages()
     return render(request, 'index.html', {'languages': languages})
-
-@csrf_exempt
-@require_http_methods(["POST"])
-def translate(request):
-    try:
-        data = json.loads(request.body)
-        text = data.get('text')
-        target_language = data.get('target_language')
-        
-        if not text or not target_language:
-            return JsonResponse({'error': 'Text and target language are required'}, status=400)
-        
-        # Translate the text
-        result = translate_text(text, target_language)
-        
-        # Create a translation record
-        translation = Translation.objects.create(
-            original_text=text,
-            translated_text=result['translated_text'],
-            source_language=result['src'],
-            target_language=target_language
-        )
-        
-        return JsonResponse({
-            'success': True,
-            'translation': result['translated_text'],
-            'source_language': result['src'],
-            'translation_id': translation.id
-        })
-        
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -273,19 +382,31 @@ def tts(request):
         if not text or not language:
             return JsonResponse({'error': 'Text and language are required'}, status=400)
         
-        # Generate speech
-        audio_data = text_to_speech(text, language)
+        if not is_language_supported(language):
+            return JsonResponse({'error': f'Language {language} is not supported'}, status=400)
         
-        # Save the audio file
-        filename = f"tts_{timezone.now().strftime('%Y%m%d_%H%M%S')}.mp3"
-        file_path = os.path.join('tts', filename)
-        default_storage.save(file_path, ContentFile(audio_data))
+        # Generate speech
+        encoded_audio = get_audio_base64(text, language)
         
         return JsonResponse({
             'success': True,
-            'audio_url': f'/media/{file_path}'
+            'encoded_audio': encoded_audio
         })
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def account_delete_confirm(request):
+    if request.method == 'POST':
+        # Delete the user's profile first
+        request.user.profile.delete()
+        # Delete the user
+        request.user.delete()
+        # Logout the user
+        logout(request)
+        messages.success(request, 'Your account has been successfully deleted.')
+        return redirect('home')
+    
+    return render(request, 'account_delete_confirm.html')
 

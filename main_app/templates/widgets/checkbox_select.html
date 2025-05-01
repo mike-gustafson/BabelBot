@@ -1,0 +1,16 @@
+{% spaceless %}
+<div class="language-selection">
+    <div class="language-columns">
+        {% for group, options, index in widget.optgroups %}
+            {% for option in options %}
+                <div class="language-checkbox">
+                    <input type="checkbox" name="{{ widget.name }}" value="{{ option.value }}" 
+                           {% if option.selected %}checked{% endif %}
+                           id="{{ option.attrs.id }}">
+                    <label for="{{ option.attrs.id }}">{{ option.label }}</label>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+{% endspaceless %} 

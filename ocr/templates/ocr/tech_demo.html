@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .tech-demo {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-section {
+        margin-bottom: 2rem;
+    }
+
+    .demo-section h2 {
+        margin-bottom: 1rem;
+        color: #333333;
+    }
+
+    .demo-input {
+        margin-bottom: 1rem;
+    }
+
+    .image-upload {
+        width: 100%;
+        min-height: 150px;
+        max-height: 250px;
+        border: 2px dashed #cccccc;
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .image-upload:hover {
+        border-color: #007bff;
+    }
+
+    .image-upload img {
+        max-width: 100%;
+        max-height: 200px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: 4px;
+    }
+
+    .image-upload p {
+        margin: 0.5rem 0;
+        color: #666666;
+        font-size: 0.9rem;
+    }
+
+    .demo-controls {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .language-select {
+        flex: 1;
+        padding: 0.75rem;
+        border: 1px solid #cccccc;
+        border-radius: 4px;
+        background: #ffffff;
+        color: #333333;
+    }
+
+    .demo-button {
+        padding: 0.75rem 1.5rem;
+        background: #007bff;
+        color: #ffffff;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .demo-button:hover {
+        background: #0056b3;
+        transform: translateY(-1px);
+    }
+
+    .demo-button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .output-section {
+        margin-top: 1rem;
+    }
+
+    .output-text {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 4px;
+        min-height: 100px;
+        white-space: pre-wrap;
+    }
+
+    .status-message {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        border-radius: 4px;
+    }
+
+    .status-message.success {
+        background: rgba(76, 175, 80, 0.1);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+        color: #4CAF50;
+    }
+
+    .status-message.error {
+        background: rgba(244, 67, 54, 0.1);
+        border: 1px solid rgba(244, 67, 54, 0.2);
+        color: #F44336;
+    }
+
+    .loading {
+        opacity: 0.7;
+        cursor: wait;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tech-demo">
+    {% csrf_token %}
+    <h1>OCR Tech Demo</h1>
+    <p>This page demonstrates the OCR functionality. Upload an image to extract text, then optionally translate it using the translator module.</p>
+
+    <div class="demo-section">
+        <h2>Image Upload</h2>
+        <div class="image-upload" id="image-upload">
+            <input type="file" id="image-input" accept="image/*" style="display: none;">
+            <p>Click to upload an image or drag and drop (max 5MB)</p>
+            <div id="preview"></div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Extracted Text</h2>
+        <div class="output-section">
+            <div id="extracted-text" class="output-text"></div>
+            <div id="ocr-status" class="status-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Translation</h2>
+        <div class="demo-controls">
+            <select id="target-language" class="language-select">
+                <option value="">Select target language...</option>
+            </select>
+            <button id="translate-btn" class="demo-button" disabled>Translate</button>
+        </div>
+        <div class="output-section">
+            <div id="translated-text" class="output-text"></div>
+            <div id="translation-status" class="status-message" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Standard error handling
+    function handleError(error) {
+        console.error('Error:', error);
+        showError(error.message || 'An error occurred');
+    }
+
+    // Standard success handling
+    function handleSuccess(data) {
+        updateUI(data);
+        showSuccess('Operation completed successfully');
+    }
+
+    // Standard API call pattern
+    async function callAPI(endpoint, data) {
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.error || 'API request failed');
+            }
+            return result;
+        } catch (error) {
+            handleError(error);
+            throw error;
+        }
+    }
+
+    // UI update functions
+    function updateUI(data) {
+        // Update extracted text
+        if (data.text) {
+            document.getElementById('extracted-text').textContent = data.text;
+        }
+        
+        // Update translation
+        if (data.translation) {
+            document.getElementById('translated-text').textContent = data.translation;
+        }
+    }
+
+    // Status message functions
+    function showError(message) {
+        const status = document.getElementById('ocr-status');
+        status.textContent = message;
+        status.className = 'status-message error';
+        status.style.display = 'block';
+    }
+
+    function showSuccess(message) {
+        const status = document.getElementById('ocr-status');
+        status.textContent = message;
+        status.className = 'status-message success';
+        status.style.display = 'block';
+    }
+
+    // Event listeners
+    document.getElementById('image-upload').addEventListener('click', () => {
+        document.getElementById('image-input').click();
+    });
+
+    document.getElementById('image-input').addEventListener('change', handleFileSelect);
+
+    // Drag and drop handlers
+    const dropZone = document.getElementById('image-upload');
+    
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#007bff';
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#cccccc';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#cccccc';
+        const files = e.dataTransfer.files;
+        handleFiles(files);
+    });
+
+    function handleFileSelect(e) {
+        const files = e.target.files;
+        handleFiles(files);
+    }
+
+    function handleFiles(files) {
+        if (files.length === 0) return;
+
+        const file = files[0];
+        if (!file.type.startsWith('image/')) {
+            showError('Please select an image file.');
+            return;
+        }
+
+        // Display image preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('preview');
+            preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+        };
+        reader.readAsDataURL(file);
+
+        // Process image with OCR
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        fetch('/ocr/process/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('extracted-text').textContent = data.data.text;
+                document.getElementById('translate-btn').disabled = false;
+                showSuccess('Text extracted successfully');
+            } else {
+                showError(data.error || 'Failed to extract text');
+            }
+        })
+        .catch(error => {
+            showError('Error processing image: ' + error);
+        });
+    }
+
+    // Load available languages
+    fetch('/translator/languages/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const select = document.getElementById('target-language');
+            select.innerHTML = '<option value="">Select target language...</option>' +
+                Object.entries(data.languages).map(([code, name]) => 
+                    `<option value="${code}">${name}</option>`
+                ).join('');
+        })
+        .catch(error => {
+            console.error('Error loading languages:', error);
+            showError('Error loading languages: ' + error.message);
+        });
+
+    // Handle translation
+    document.getElementById('translate-btn').addEventListener('click', () => {
+        const text = document.getElementById('extracted-text').textContent;
+        const language = document.getElementById('target-language').value;
+
+        if (!text || !language) {
+            showError('Please ensure text is extracted and a target language is selected.');
+            return;
+        }
+
+        callAPI('/translator/translate/', {
+            text: text,
+            target_language: language
+        })
+        .then(data => {
+            if (data.success) {
+                document.getElementById('translated-text').textContent = data.translation;
+                showSuccess('Translation completed successfully');
+            } else {
+                showError(data.error || 'Translation failed');
+            }
+        })
+        .catch(error => {
+            showError('Error translating text: ' + error);
+        });
+    });
+</script>
+{% endblock %} 
