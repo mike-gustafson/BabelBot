@@ -5,7 +5,6 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     # Website URLs
     path('', views.home, name='home'),
-    path('home/', views.home, name='home'),
     path('about/', views.about, name='about'),
     path('translate/', views.translate, name='translate'),
     path('ocr/process/', views.ocr, name='ocr_process'),
