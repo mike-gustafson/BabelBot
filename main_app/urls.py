@@ -15,7 +15,6 @@ urlpatterns = [
     path('account/translations/edit/', views.edit_translation, name='edit_translation'),
     path('account/translations/delete/<int:translation_id>/', views.delete_translation, name='delete_translation'),
     path('account/delete/', views.account_delete_confirm, name='account_delete_confirm'),
-    path('settings/', views.settings, name='settings'),
     path('register/', views.register, name='register'),
     
     # Password reset URLs

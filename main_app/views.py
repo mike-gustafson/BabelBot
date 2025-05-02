@@ -321,19 +321,6 @@ def home(request):
     
     return render(request, 'home.html', {'form': form})
 
-@login_required
-def settings(request):
-    profile = get_or_create_profile(request.user)
-    if request.method == 'POST':
-        form = ProfileForm(request.POST, instance=profile, user=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect('settings')
-    else:
-        form = ProfileForm(instance=profile, user=request.user)
-    
-    return render(request, 'settings.html', {'form': form})
-
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
