@@ -13,21 +13,13 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(
-            sql="""
-            DO $$
-            BEGIN
-                -- Drop all main_app tables if they exist
-                DROP TABLE IF EXISTS main_app_ocrusage CASCADE;
-                DROP TABLE IF EXISTS main_app_translation CASCADE;
-                DROP TABLE IF EXISTS main_app_profile CASCADE;
-                
-                -- Clear migration history for main_app
-                DELETE FROM django_migrations WHERE app = 'main_app';
-            END $$;
-            """,
-            reverse_sql="""
-            -- No reverse SQL needed as this is an initial migration
-            """
+            sql=[
+                "DROP TABLE IF EXISTS main_app_ocrusage CASCADE;",
+                "DROP TABLE IF EXISTS main_app_translation CASCADE;",
+                "DROP TABLE IF EXISTS main_app_profile CASCADE;",
+                "DELETE FROM django_migrations WHERE app = 'main_app';"
+            ],
+            reverse_sql=[]
         ),
         migrations.CreateModel(
             name='Profile',
