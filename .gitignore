@@ -25,7 +25,8 @@ wheels/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-media
+media/
+staticfiles/
 
 # Environment variables
 .env
@@ -39,4 +40,11 @@ media
 
 # OS
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.env
+.env.* 
