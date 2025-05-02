@@ -134,67 +134,25 @@ function initializeOCRProcessing() {
 async function handleTranslationResponse(data) {
     const translationResult = document.querySelector('.translated-output');
     const languageInfo = document.querySelector('.language-info');
-    const audioContainer = document.getElementById('audio_container');
-    const audioPlayer = document.getElementById('audio_player');
-
-    console.log('Translation response:', data); // Debug log
-
+    
     if (data.success) {
-        // Update translation text and language info
-        const translatedText = data.translated_text || data.text || data.translation;
-        if (!translatedText) {
-            console.error('No translation text found in response:', data);
-            translationResult.textContent = 'Translation failed: No text returned';
-            return;
-        }
-
+        const translatedText = data.translated_text;
+        const targetLang = (data.target_language || data.dest || '').substring(0, 2).toLowerCase();
+        
         translationResult.textContent = translatedText;
         languageInfo.textContent = `Translated from ${data.source_language || data.src || 'auto'} to ${data.target_language || data.dest}`;
         languageInfo.style.display = 'block';
-
-        // Try to generate speech
-        try {
-            // Get the target language code (first two characters)
-            const targetLang = (data.target_language || data.dest || '').substring(0, 2).toLowerCase();
-            
-            const response = await fetch('/tts/generate/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
-                body: JSON.stringify({
-                    text: translatedText,
-                    language: targetLang
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const ttsData = await response.json();
-            console.log('TTS response:', ttsData); // Debug log
-
-            if (ttsData.success) {
-                audioPlayer.src = `data:audio/mp3;base64,${ttsData.encoded_audio}`;
-                audioContainer.style.display = 'block';
-            } else {
-                console.error('TTS error:', ttsData.error);
-                audioContainer.style.display = 'none';
-            }
-        } catch (error) {
-            console.error('Error generating speech:', error);
-            audioContainer.style.display = 'none';
-        }
+        
+        // Generate speech for the translated text
+        await playAudio(translatedText, targetLang);
     } else {
         translationResult.textContent = data.error || 'Translation failed';
         languageInfo.style.display = 'none';
-        audioContainer.style.display = 'none';
+        document.getElementById('audio_container').style.display = 'none';
     }
 }
 
-function submitTextForm() {
+async function submitTextForm() {
     const form = document.getElementById('text-translation-form');
     const text = form.querySelector('textarea[name="text_to_translate"]').value;
     const targetLanguage = form.querySelector('select[name="target_language"]').value;
@@ -206,30 +164,46 @@ function submitTextForm() {
         return;
     }
 
-    const formData = new FormData();
-    formData.append('text', text);
-    formData.append('target_language', targetLanguage);
-    formData.append('form_type', 'text');
+    try {
+        console.log('Sending translation request:', { text, targetLanguage });
+        const response = await fetch('/translate/process/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                text: text,
+                target_language: targetLanguage
+            })
+        });
 
-    fetch('/translate/', {
-        method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => handleTranslationResponse(data))
-    .catch(error => {
-        console.error('Error:', error);
-        resultDiv.textContent = 'Error during translation';
+        console.log('Translation response status:', response.status);
+        const data = await response.json();
+        console.log('Translation response data:', data);
+
+        if (data.success) {
+            resultDiv.textContent = data.translation;
+            languageInfo.textContent = `Translated from ${data.source_language} to ${data.target_language}`;
+            languageInfo.style.display = 'block';
+            
+            // Generate speech for the translated text
+            await playAudio(data.translation, data.target_language);
+        } else {
+            console.error('Translation failed:', data.error);
+            resultDiv.textContent = data.error || 'Translation failed';
+            languageInfo.style.display = 'none';
+            document.getElementById('audio_container').style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error during translation:', error);
+        resultDiv.textContent = `Error during translation: ${error.message}`;
         languageInfo.style.display = 'none';
         document.getElementById('audio_container').style.display = 'none';
-    });
+    }
 }
 
-function submitOCRForm() {
+async function submitOCRForm() {
     const form = document.getElementById('ocr-translation-form');
     const extractedText = form.querySelector('textarea[name="extracted_text"]').value;
     const targetLanguage = form.querySelector('select[name="target_language"]').value;
@@ -241,27 +215,78 @@ function submitOCRForm() {
         return;
     }
 
-    const formData = new FormData();
-    formData.append('text', extractedText);
-    formData.append('target_language', targetLanguage);
-    formData.append('form_type', 'text');
+    try {
+        console.log('Sending OCR translation request:', { extractedText, targetLanguage });
+        const response = await fetch('/translate/process/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                text: extractedText,
+                target_language: targetLanguage
+            })
+        });
 
-    fetch('/translate/', {
-        method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => handleTranslationResponse(data))
-    .catch(error => {
-        console.error('Error:', error);
-        resultDiv.textContent = 'Error during translation';
+        console.log('OCR translation response status:', response.status);
+        const data = await response.json();
+        console.log('OCR translation response data:', data);
+
+        if (data.success) {
+            resultDiv.textContent = data.translation;
+            languageInfo.textContent = `Translated from ${data.source_language} to ${data.target_language}`;
+            languageInfo.style.display = 'block';
+            
+            // Generate speech for the translated text
+            await playAudio(data.translation, data.target_language);
+        } else {
+            console.error('OCR translation failed:', data.error);
+            resultDiv.textContent = data.error || 'Translation failed';
+            languageInfo.style.display = 'none';
+            document.getElementById('audio_container').style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error during OCR translation:', error);
+        resultDiv.textContent = `Error during translation: ${error.message}`;
         languageInfo.style.display = 'none';
         document.getElementById('audio_container').style.display = 'none';
-    });
+    }
+}
+
+async function playAudio(text, language) {
+    try {
+        const response = await fetch('/tts/generate/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                text: text,
+                language: language
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.success) {
+            const audioPlayer = document.getElementById('audio_player');
+            const audioContainer = document.getElementById('audio_container');
+            audioPlayer.src = `data:audio/mp3;base64,${data.encoded_audio}`;
+            audioContainer.style.display = 'block';
+            audioPlayer.play();
+        } else {
+            console.error('TTS error:', data.error);
+            document.getElementById('audio_container').style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error playing audio:', error);
+        document.getElementById('audio_container').style.display = 'none';
+    }
 }
 
 // Initialize all functionality when DOM is loaded

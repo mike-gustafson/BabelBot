@@ -14,10 +14,10 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from googletrans import LANGUAGES
 from ocr.services import detect_text
-from tts.services import text_to_speech, is_language_supported, get_audio_base64
 from translator.services import get_available_languages, translate_text
 from googletrans import Translator
 import asyncio
+import requests
 
 from .forms import TranslateFromTextForm, TranslateFromOCRForm, LoginForm, SignupForm, CustomUserCreationForm, ProfileForm
 from .models import Translation, Profile
@@ -37,91 +37,59 @@ get_user_async = sync_to_async(get_user)
 render_async = sync_to_async(render)
 create_form = sync_to_async(TranslateFromTextForm)
 
-def build_languages_html(selected_language, languages):
-    """Build HTML for language select dropdown efficiently."""
-    options = [
-        f'<option value="{code}"{" selected" if code == selected_language else ""}>{name}</option>'
-        for code, name in languages.items()
-    ]
-    return f'<select id="language-select" name="target_language"><option value="">Select a language</option>{"".join(options)}</select>'
+def build_languages_html(selected_language=None):
+    """Build HTML for language selection dropdown"""
+    languages = get_available_languages()
+    options = []
+    for code, name in languages.items():
+        selected = 'selected' if code == selected_language else ''
+        options.append(f'<option value="{code}" {selected}>{name}</option>')
+    return ''.join(options)
 
-def translate(request):
-    """Handle both GET and POST requests for translation"""
-    if request.method == 'GET':
-        # Get available languages
-        languages = get_available_languages()
+@require_http_methods(["POST"])
+@csrf_exempt
+async def translate(request):
+    """Handle translation requests from the frontend"""
+    try:
+        # Get data from JSON request body
+        data = json.loads(request.body)
+        text = data.get('text')
+        target_language = data.get('target_language')
         
-        # Create both forms with languages
-        text_form = TranslateFromTextForm(languages=languages)
-        ocr_form = TranslateFromOCRForm(languages=languages)
+        if not text or not target_language:
+            return JsonResponse({
+                'error': 'Text and target language are required'
+            }, status=400)
+            
+        # Make request to translator app using sync_to_async
+        response = await sync_to_async(lambda: requests.post(
+            'http://localhost:8000/translator/translate/',
+            json={
+                'text': text,
+                'target_language': target_language
+            },
+            headers={
+                'Content-Type': 'application/json',
+                'X-CSRFToken': request.COOKIES.get('csrftoken', '')
+            }
+        ))()
         
-        return render(request, 'translate.html', {
-            'text_form': text_form,
-            'ocr_form': ocr_form,
-            'languages': languages,
-        })
-    
-    elif request.method == 'POST':
-        # Check if it's an AJAX request
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            # Get data from either JSON or form data
-            if request.content_type == 'application/json':
-                try:
-                    data = json.loads(request.body)
-                    text = data.get('text')
-                    target_lang = data.get('target_language')
-                    form_type = data.get('form_type', 'text')
-                except json.JSONDecodeError:
-                    return JsonResponse({
-                        'error': 'Invalid JSON data'
-                    }, status=400)
-            else:
-                text = request.POST.get('text')
-                target_lang = request.POST.get('target_language')
-                form_type = request.POST.get('form_type', 'text')
+        if response.status_code != 200:
+            return JsonResponse({
+                'error': 'Translation service error'
+            }, status=500)
             
-            if not text or not target_lang:
-                return JsonResponse({
-                    'error': 'Please provide both text and target language'
-                }, status=400)
-            
-            try:
-                # Perform translation using the translation service
-                result = asyncio.run(translate_text(text, target_lang))
-                
-                # Create and save translation record only if user is authenticated
-                if request.user.is_authenticated:
-                    logger.info(f"translate view - Saving translation for user {request.user.username}")
-                    logger.info(f"Original text: {text[:50]}...")
-                    logger.info(f"Target language: {target_lang}")
-                    try:
-                        translation = Translation.objects.create(
-                            user=request.user,
-                            original_text=text,
-                            translated_text=result['translated_text'],
-                            target_language=target_lang,
-                            translation_type='typed'  # Always set translation_type to 'typed'
-                        )
-                        logger.info(f"Translation saved successfully with ID: {translation.id}")
-                    except Exception as e:
-                        logger.error(f"Error saving translation in translate view: {str(e)}")
-                        raise
-                
-                return JsonResponse({
-                    'success': True,
-                    'translated_text': result['translated_text'],
-                    'source_language': result['src'],
-                    'target_language': result['dest']
-                })
-            except Exception as e:
-                logger.error(f"Error in translate view: {str(e)}")
-                return JsonResponse({
-                    'error': f'Translation error: {str(e)}'
-                }, status=500)
-        else:
-            # Handle non-AJAX requests (fallback)
-            messages.error(request, 'Please enable JavaScript for this feature')
-            return redirect('translate')
+        # Return the translation response directly
+        return JsonResponse(response.json())
+
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
 
 @login_required
 @require_http_methods(["POST"])
@@ -160,20 +128,17 @@ async def perform_translation(request):
                 logger.error(f"Error saving translation in perform_translation view: {str(e)}")
                 raise
         
-        # Return translation result
         return JsonResponse({
             'success': True,
-            'translation': result['translated_text'],
+            'translated_text': result['translated_text'],
             'source_language': result['src'],
             'target_language': result['dest']
         })
-        
-    except json.JSONDecodeError:
-        logger.error("Invalid JSON in perform_translation view")
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
     except Exception as e:
         logger.error(f"Error in perform_translation view: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
 
 def logout_view(request):
     logout(request)
@@ -321,18 +286,6 @@ def home(request):
     
     return render(request, 'home.html', {'form': form})
 
-def register(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('home')
-    else:
-        form = CustomUserCreationForm()
-    
-    return render(request, 'register.html', {'form': form})
-
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'password_reset.html'
     email_template_name = 'registration/password_reset_email.html'
@@ -355,53 +308,6 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
 
 def index(request):
     return render(request, 'index.html')
-
-@csrf_exempt
-@require_http_methods(["POST"])
-def ocr(request):
-    try:
-        image_data = request.FILES['image'].read()
-        text = detect_text(image_data)
-        return JsonResponse({
-            'success': True,
-            'text': text
-        })
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
-
-@csrf_exempt
-@require_http_methods(["POST"])
-def tts(request):
-    try:
-        text = request.POST.get('text')
-        language = request.POST.get('language', 'en')
-        
-        if not text:
-            return JsonResponse({
-                'success': False,
-                'error': 'Text is required'
-            }, status=400)
-            
-        if not is_language_supported(language):
-            return JsonResponse({
-                'success': False,
-                'error': f'Language {language} is not supported'
-            }, status=400)
-            
-        audio_base64 = get_audio_base64(text, language)
-        
-        return JsonResponse({
-            'success': True,
-            'audio': audio_base64
-        })
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
 
 @login_required
 def account_delete_confirm(request):
@@ -458,3 +364,17 @@ async def translate_api(request):
             'error': str(e)
         }, status=500)
 
+def translate_page(request):
+    """Serve the translation page template"""
+    # Get available languages
+    languages = get_available_languages()
+    
+    # Create both forms with languages
+    text_form = TranslateFromTextForm(languages=languages)
+    ocr_form = TranslateFromOCRForm(languages=languages)
+    
+    return render(request, 'translate.html', {
+        'text_form': text_form,
+        'ocr_form': ocr_form,
+        'languages': languages,
+    })
