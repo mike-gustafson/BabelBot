@@ -1,31 +1,60 @@
-from datetime import datetime
 from django.utils import timezone
-from .models import OCRUsage
+from .models import Profile
 
-def get_or_create_ocr_usage(user):
-    """Get or create OCR usage record for the current month"""
-    current_month = timezone.now().replace(day=1)
-    usage, created = OCRUsage.objects.get_or_create(
-        user=user,
-        month=current_month,
-        defaults={'usage_count': 0}
-    )
-    return usage
+def get_or_create_profile(user):
+    """Get or create user profile"""
+    try:
+        profile = Profile.objects.get(user=user)
+    except Profile.DoesNotExist:
+        profile = Profile.objects.create(
+            user=user,
+            preferred_language='',
+            other_languages=[]
+        )
+    return profile
 
-def increment_ocr_usage(user):
-    """Increment OCR usage count for the current month"""
-    usage = get_or_create_ocr_usage(user)
-    usage.usage_count += 1
-    usage.save()
-    return usage.usage_count
+def update_primary_language(user, language):
+    """Update user's primary language"""
+    profile = get_or_create_profile(user)
+    profile.primary_language = language
+    profile.save()
+    return profile
 
-def get_ocr_usage_count(user):
-    """Get current month's OCR usage count"""
-    usage = get_or_create_ocr_usage(user)
-    return usage.usage_count
+def get_primary_language(user):
+    """Get user's primary language"""
+    profile = get_or_create_profile(user)
+    return profile.primary_language
 
-def can_use_ocr(user):
-    """Check if user can perform OCR (not anonymous and under monthly limit)"""
-    if user.profile.is_anonymous:
-        return False
-    return get_ocr_usage_count(user) < 1000 
+def update_other_languages(user, languages):
+    """Update user's other known languages"""
+    profile = get_or_create_profile(user)
+    profile.other_languages = languages
+    profile.save()
+    return profile
+
+def get_other_languages(user):
+    """Get user's other known languages"""
+    profile = get_or_create_profile(user)
+    return profile.other_languages
+
+def update_preferred_language(user, language):
+    """Update user's preferred target language for translation"""
+    profile = get_or_create_profile(user)
+    profile.preferred_language = language
+    profile.save()
+    return profile
+
+def get_preferred_language(user):
+    """Get user's preferred target language for translation"""
+    profile = get_or_create_profile(user)
+    return profile.preferred_language
+
+def get_all_user_languages(user):
+    """Get all languages associated with a user (primary + other)"""
+    profile = get_or_create_profile(user)
+    languages = []
+    if profile.primary_language:
+        languages.append(profile.primary_language)
+    if profile.other_languages:
+        languages.extend(profile.other_languages)
+    return list(set(languages))  # Remove duplicates 

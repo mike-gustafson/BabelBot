@@ -15,9 +15,12 @@ import dj_database_url
 from pathlib import Path
 import environ
 
-# Initialize environ
+# Load environment variables from .env file
 env = environ.Env()
-environ.Env.read_env()
+env_path = Path(__file__).resolve().parent.parent / '.env'
+if env_path.exists():
+    environ.Env.read_env(str(env_path))
+    print(f"Loaded .env file from: {env_path}")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -169,3 +172,33 @@ if 'ON_HEROKU' in os.environ:
         CSRF_COOKIE_SECURE = True
     except ImportError:
         print("Warning: django-heroku not installed. Some Heroku-specific settings may not be applied.")
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+# Debug: Print the email settings
+print("EMAIL_HOST_USER:", os.environ.get('EMAIL_HOST_USER', ''))
+print("EMAIL_HOST_PASSWORD:", os.environ.get('EMAIL_HOST_PASSWORD', ''))
+
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', '')
+SERVER_EMAIL = os.environ.get('EMAIL_HOST_USER', '')
+
+# Password Reset Settings
+PASSWORD_RESET_TIMEOUT = 3600  # 1 hour
+
+# Google Cloud Vision API settings
+GOOGLE_TYPE = os.environ.get('GOOGLE_TYPE', 'service_account')
+GOOGLE_PROJECT_ID = os.environ.get('GOOGLE_PROJECT_ID', '')
+GOOGLE_PRIVATE_KEY_ID = os.environ.get('GOOGLE_PRIVATE_KEY_ID', '')
+GOOGLE_PRIVATE_KEY = os.environ.get('GOOGLE_PRIVATE_KEY', '').replace('\\n', '\n')
+GOOGLE_CLIENT_EMAIL = os.environ.get('GOOGLE_CLIENT_EMAIL', '')
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+GOOGLE_AUTH_URI = os.environ.get('GOOGLE_AUTH_URI', 'https://accounts.google.com/o/oauth2/auth')
+GOOGLE_TOKEN_URI = os.environ.get('GOOGLE_TOKEN_URI', 'https://oauth2.googleapis.com/token')
+GOOGLE_AUTH_PROVIDER_X509_CERT_URL = os.environ.get('GOOGLE_AUTH_PROVIDER_X509_CERT_URL', 'https://www.googleapis.com/oauth2/v1/certs')
+GOOGLE_CLIENT_X509_CERT_URL = os.environ.get('GOOGLE_CLIENT_X509_CERT_URL', '')

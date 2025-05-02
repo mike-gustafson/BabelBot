@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BabelBot - {% block title %}{% endblock %}</title>
+  <title>{% block title %}BabelBot{% endblock %}</title>
   <link rel="icon" type="image/png" href="{% static 'images/logo2.png' %}">
   <script src="{% static 'js/theme-init.js' %}"></script>
   <style>
@@ -52,6 +52,10 @@
               <img src="{% static 'images/logo_translate.png' %}" alt="Translate" class="nav-icon">
             </div>
             Translate
+          </a>
+          <a href="{% url 'about' %}" class="{% if request.path == '/about/' %}active{% endif %}">
+            <img src="{% static 'images/logo_translate.png' %}" alt="About" class="nav-icon">
+            About
           </a>
           {% if user.is_authenticated %}
           <a href="/account/" class="{% if request.path == '/account/' %}active{% endif %}">

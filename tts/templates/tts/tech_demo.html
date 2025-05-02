@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .tech-demo {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--box-shadow);
+    }
+
+    .demo-section {
+        margin-bottom: 2rem;
+    }
+
+    .demo-section h2 {
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+    .demo-input {
+        margin-bottom: 1rem;
+    }
+
+    .demo-input textarea {
+        width: 100%;
+        min-height: 100px;
+        padding: 0.75rem;
+        border: var(--input-border);
+        border-radius: var(--border-radius-md);
+        background: var(--input-bg);
+        color: var(--text-primary);
+        font-size: 1rem;
+        resize: vertical;
+    }
+
+    .demo-input textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: var(--input-focus-shadow);
+    }
+
+    .demo-controls {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .language-select {
+        flex: 1;
+        padding: 0.75rem;
+        border: var(--input-border);
+        border-radius: var(--border-radius-md);
+        background: var(--input-bg);
+        color: var(--text-primary);
+    }
+
+    .demo-button {
+        padding: 0.75rem 1.5rem;
+        background: var(--gradient-primary);
+        color: var(--text-primary);
+        border: none;
+        border-radius: var(--border-radius-md);
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition-normal);
+    }
+
+    .demo-button:hover {
+        background: var(--gradient-secondary);
+        transform: var(--btn-hover-transform);
+    }
+
+    .demo-button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .audio-container {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: var(--input-bg);
+        border-radius: var(--border-radius-md);
+    }
+
+    .audio-container audio {
+        width: 100%;
+    }
+
+    .status-message {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        border-radius: var(--border-radius-md);
+    }
+
+    .status-message.success {
+        background: rgba(76, 175, 80, 0.1);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+        color: #4CAF50;
+    }
+
+    .status-message.error {
+        background: rgba(244, 67, 54, 0.1);
+        border: 1px solid rgba(244, 67, 54, 0.2);
+        color: #F44336;
+    }
+
+    .loading {
+        opacity: 0.7;
+        cursor: wait;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tech-demo">
+    <h1>TTS Tech Demo</h1>
+    <p>This page demonstrates the Text-to-Speech functionality. Enter text, select a language, and click "Generate Speech" to hear the result.</p>
+
+    <div class="demo-section">
+        <h2>Text Input</h2>
+        <div class="demo-input">
+            <textarea id="text-input" placeholder="Enter text to convert to speech..."></textarea>
+        </div>
+        <div class="demo-controls">
+            <select id="language-select" class="language-select" disabled>
+                <option value="">Loading languages...</option>
+            </select>
+            <button id="generate-btn" class="demo-button" disabled>Generate Speech</button>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Audio Output</h2>
+        <div id="audio-container" class="audio-container" style="display: none;">
+            <audio id="audio-player" controls>
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+        <div id="status-message" class="status-message" style="display: none;"></div>
+    </div>
+</div>
+{% csrf_token %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    const textInput = document.getElementById('text-input');
+    const languageSelect = document.getElementById('language-select');
+    const generateBtn = document.getElementById('generate-btn');
+    const audioContainer = document.getElementById('audio-container');
+    const audioPlayer = document.getElementById('audio-player');
+    const statusMessage = document.getElementById('status-message');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Load available languages
+    try {
+        const response = await fetch('/tts/languages/');
+        const data = await response.json();
+        
+        if (data.success) {
+            // Clear loading option
+            languageSelect.innerHTML = '';
+            
+            // Add languages to select
+            Object.entries(data.languages).forEach(([code, name]) => {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = `${name} (${code})`;
+                languageSelect.appendChild(option);
+            });
+            
+            // Enable controls
+            languageSelect.disabled = false;
+            generateBtn.disabled = false;
+        } else {
+            showStatus('Failed to load languages', 'error');
+        }
+    } catch (error) {
+        showStatus('Error loading languages', 'error');
+    }
+
+    generateBtn.addEventListener('click', async function() {
+        const text = textInput.value.trim();
+        const language = languageSelect.value;
+
+        if (!text) {
+            showStatus('Please enter some text', 'error');
+            return;
+        }
+
+        generateBtn.disabled = true;
+        generateBtn.textContent = 'Generating...';
+        audioContainer.style.display = 'none';
+        statusMessage.style.display = 'none';
+
+        try {
+            const response = await fetch('/tts/generate/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    text: text,
+                    language: language
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                audioPlayer.src = `data:audio/mp3;base64,${data.encoded_audio}`;
+                audioContainer.style.display = 'block';
+                showStatus('Speech generated successfully!', 'success');
+            } else {
+                showStatus(data.error || 'Failed to generate speech', 'error');
+            }
+        } catch (error) {
+            showStatus('An error occurred while generating speech', 'error');
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.textContent = 'Generate Speech';
+        }
+    });
+
+    function showStatus(message, type) {
+        statusMessage.textContent = message;
+        statusMessage.className = `status-message ${type}`;
+        statusMessage.style.display = 'block';
+    }
+});
+</script>
+{% endblock %} 
