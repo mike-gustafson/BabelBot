@@ -30,8 +30,10 @@
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="text">
                         {{ text_form.text_to_translate }}
-                        {{ text_form.target_language }}
-                        <button type="button" class="translate-button" onclick="submitTextForm()">Translate</button>
+                        <div class="form-actions">
+                            {{ text_form.target_language }}
+                            <button type="button" class="translate-button" onclick="submitTextForm()">Translate</button>
+                        </div>
                     </form>
                 </div>
 
