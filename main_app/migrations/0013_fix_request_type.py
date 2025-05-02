@@ -10,9 +10,41 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='translation',
-            name='request_type',
+        migrations.RunSQL(
+            # First check if request_type exists, if it does, rename it to translation_type
+            sql="""
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'main_app_translation' 
+                    AND column_name = 'request_type'
+                ) THEN
+                    ALTER TABLE main_app_translation RENAME COLUMN request_type TO translation_type;
+                ELSIF NOT EXISTS (
+                    SELECT 1 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'main_app_translation' 
+                    AND column_name = 'translation_type'
+                ) THEN
+                    ALTER TABLE main_app_translation ADD COLUMN translation_type character varying(10) NOT NULL DEFAULT 'typed';
+                END IF;
+            END $$;
+            """,
+            reverse_sql="""
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'main_app_translation' 
+                    AND column_name = 'translation_type'
+                ) THEN
+                    ALTER TABLE main_app_translation RENAME COLUMN translation_type TO request_type;
+                END IF;
+            END $$;
+            """
         ),
         migrations.AlterField(
             model_name='profile',
