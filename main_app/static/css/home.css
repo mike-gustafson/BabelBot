@@ -10,14 +10,13 @@
 .home-section::before {
   content: '';
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
   z-index: 0;
-  width: 100vw; 
-  height: 100vh;
+  width: calc(100vw + 40px); 
+  height: calc(100vh + 40px);
 }
 
 .home-content-wrapper {
