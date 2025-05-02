@@ -127,13 +127,19 @@
           <div class="translations-section">
             <h2>Translation History</h2>
             <div class="translations-table-container">
+              <!-- Debug info -->
+              <div style="background: #f8f9fa; padding: 10px; margin-bottom: 10px;">
+                <p>Number of translations: {{ translations|length }}</p>
+                <p>User ID: {{ user.id }}</p>
+                <p>Most recent translation date: {{ translations.0.created_at|date:"Y-m-d H:i:s" }}</p>
+              </div>
               <table class="translations-table">
                 <thead>
                   <tr>
                     <th>Original Text</th>
                     <th>Translated Text</th>
                     <th>Target Language</th>
-                    <th>Date</th>
+                    <th>Date (Full)</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -142,10 +148,10 @@
                   <tr>
                     <td>{{ translation.original_text|truncatechars:50 }}</td>
                     <td>{{ translation.translated_text|truncatechars:50 }}</td>
-                    <td>{{ translation.target_lang }}</td>
-                    <td>{{ translation.created_at|date:"M d, Y" }}</td>
+                    <td>{{ translation.target_language }}</td>
+                    <td>{{ translation.created_at|date:"Y-m-d H:i:s" }}</td>
                     <td>
-                      <button class="edit-translation-btn" data-translation-id="{{ translation.id }}" data-original-text="{{ translation.original_text }}" data-translated-text="{{ translation.translated_text }}" data-target-lang="{{ translation.target_lang }}">
+                      <button class="edit-translation-btn" data-translation-id="{{ translation.id }}" data-original-text="{{ translation.original_text }}" data-translated-text="{{ translation.translated_text }}" data-target-lang="{{ translation.target_language }}">
                         Edit
                       </button>
                       <button class="delete-translation-btn" data-translation-id="{{ translation.id }}">
@@ -231,12 +237,12 @@ editButtons.forEach(button => {
     const translationId = button.dataset.translationId;
     const originalText = button.dataset.originalText;
     const translatedText = button.dataset.translatedText;
-    const targetLang = button.dataset.targetLang;
+    const targetLanguage = button.dataset.targetLang;
 
     document.getElementById('editTranslationId').value = translationId;
     document.getElementById('editOriginalText').value = originalText;
     document.getElementById('currentTranslation').textContent = translatedText;
-    document.getElementById('editTargetLang').value = targetLang;
+    document.getElementById('editTargetLang').value = targetLanguage;
 
     editModal.style.display = 'block';
   });

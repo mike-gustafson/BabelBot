@@ -206,16 +206,18 @@ function submitTextForm() {
         return;
     }
 
-    fetch('/translator/translate/', {
+    const formData = new FormData();
+    formData.append('text', text);
+    formData.append('target_language', targetLanguage);
+    formData.append('form_type', 'text');
+
+    fetch('/translate/', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
         },
-        body: JSON.stringify({
-            text: text,
-            target_language: targetLanguage
-        })
+        body: formData
     })
     .then(response => response.json())
     .then(data => handleTranslationResponse(data))
@@ -239,16 +241,18 @@ function submitOCRForm() {
         return;
     }
 
-    fetch('/translator/translate/', {
+    const formData = new FormData();
+    formData.append('text', extractedText);
+    formData.append('target_language', targetLanguage);
+    formData.append('form_type', 'text');
+
+    fetch('/translate/', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
         },
-        body: JSON.stringify({
-            text: extractedText,
-            target_language: targetLanguage
-        })
+        body: formData
     })
     .then(response => response.json())
     .then(data => handleTranslationResponse(data))

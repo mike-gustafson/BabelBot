@@ -95,81 +95,60 @@ def translate(request):
     elif request.method == 'POST':
         # Check if it's an AJAX request
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            form_type = request.POST.get('form_type', 'text')
-            languages = get_available_languages()
-            
-            if form_type == 'text':
-                # Handle text translation
+            # Get data from either JSON or form data
+            if request.content_type == 'application/json':
+                try:
+                    data = json.loads(request.body)
+                    text = data.get('text')
+                    target_lang = data.get('target_language')
+                    form_type = data.get('form_type', 'text')
+                except json.JSONDecodeError:
+                    return JsonResponse({
+                        'error': 'Invalid JSON data'
+                    }, status=400)
+            else:
                 text = request.POST.get('text')
                 target_lang = request.POST.get('target_language')
+                form_type = request.POST.get('form_type', 'text')
+            
+            if not text or not target_lang:
+                return JsonResponse({
+                    'error': 'Please provide both text and target language'
+                }, status=400)
+            
+            try:
+                # Perform translation using the translation service
+                result = asyncio.run(translate_text(text, target_lang))
                 
-                if not text or not target_lang:
-                    return JsonResponse({
-                        'error': 'Please provide both text and target language'
-                    }, status=400)
-                
-                try:
-                    # Perform translation using the translation service
-                    result = asyncio.run(translate_text(text, target_lang))
-                    
-                    # Create and save translation record only if user is authenticated
-                    if request.user.is_authenticated:
+                # Create and save translation record only if user is authenticated
+                if request.user.is_authenticated:
+                    logger.info(f"translate view - Saving translation for user {request.user.username}")
+                    logger.info(f"Original text: {text[:50]}...")
+                    logger.info(f"Target language: {target_lang}")
+                    try:
                         translation = Translation.objects.create(
                             user=request.user,
                             original_text=text,
-                            translated_text=result['text'],
+                            translated_text=result['translated_text'],
                             target_language=target_lang,
-                            translation_type='typed'
+                            translation_type='typed'  # Always set translation_type to 'typed'
                         )
-                    
-                    return JsonResponse({
-                        'success': True,
-                        'translated_text': result['text'],
-                        'source_language': result['src'],
-                        'target_language': result['dest']
-                    })
-                except Exception as e:
-                    return JsonResponse({
-                        'error': f'Translation error: {str(e)}'
-                    }, status=500)
-            else:
-                # Handle OCR translation
-                image = request.FILES.get('image')
-                target_lang = request.POST.get('target_language')
+                        logger.info(f"Translation saved successfully with ID: {translation.id}")
+                    except Exception as e:
+                        logger.error(f"Error saving translation in translate view: {str(e)}")
+                        raise
                 
-                if not image or not target_lang:
-                    return JsonResponse({
-                        'error': 'Please provide both image and target language'
-                    }, status=400)
-                
-                try:
-                    # Perform OCR and get the full_text
-                    ocr_result = detect_text(image.read())
-                    text = ocr_result['full_text']
-                    
-                    # Perform translation using the translation service
-                    result = asyncio.run(translate_text(text, target_lang))
-                    
-                    # Create and save translation record only if user is authenticated
-                    if request.user.is_authenticated:
-                        translation = Translation.objects.create(
-                            user=request.user,
-                            original_text=text,
-                            translated_text=result['text'],
-                            target_language=target_lang,
-                            translation_type='ocr'
-                        )
-                    
-                    return JsonResponse({
-                        'success': True,
-                        'translated_text': result['text'],
-                        'source_language': result['src'],
-                        'target_language': result['dest']
-                    })
-                except Exception as e:
-                    return JsonResponse({
-                        'error': f'Error processing image: {str(e)}'
-                    }, status=500)
+                return JsonResponse({
+                    'success': True,
+                    'translated_text': result['translated_text'],
+                    'source_language': result['src'],
+                    'target_language': result['dest']
+                })
+            except Exception as e:
+                logger.error(f"Error in translate view: {str(e)}")
+                return JsonResponse({
+                    'error': f'Translation error: {str(e)}'
+                }, status=500)
         else:
             # Handle non-AJAX requests (fallback)
             messages.error(request, 'Please enable JavaScript for this feature')
@@ -196,13 +175,21 @@ async def perform_translation(request):
         
         # Save translation if user is authenticated - use sync_to_async
         if request.user.is_authenticated:
-            await create_translation(
-                user=request.user,
-                original_text=text,
-                translated_text=result['translated_text'],
-                target_language=target_lang,
-                translation_type='typed'
-            )
+            logger.info(f"perform_translation view - Saving translation for user {request.user.username}")
+            logger.info(f"Original text: {text[:50]}...")
+            logger.info(f"Target language: {target_lang}")
+            try:
+                translation = await create_translation(
+                    user=request.user,
+                    original_text=text,
+                    translated_text=result['translated_text'],
+                    target_language=target_lang,
+                    translation_type='typed'
+                )
+                logger.info(f"Translation saved successfully with ID: {translation.id}")
+            except Exception as e:
+                logger.error(f"Error saving translation in perform_translation view: {str(e)}")
+                raise
         
         # Return translation result
         return JsonResponse({
@@ -213,8 +200,10 @@ async def perform_translation(request):
         })
         
     except json.JSONDecodeError:
+        logger.error("Invalid JSON in perform_translation view")
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
     except Exception as e:
+        logger.error(f"Error in perform_translation view: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
 
 def login_view(request):
@@ -258,8 +247,30 @@ def account(request):
     # Get or create the user's profile
     profile = get_or_create_profile(request.user)
     
-    # Get the user's translations, ordered by most recent first
-    translations = request.user.translation_set.all().order_by('-created_at')
+    # Debug: Print all translations in the database
+    all_translations = Translation.objects.all()
+    logger.info(f"Total translations in database: {all_translations.count()}")
+    for t in all_translations:
+        logger.info(f"DB Translation - ID: {t.id}, User: {t.user.username if t.user else 'None'}, Created: {t.created_at}")
+    
+    # Get the user's translations using a more explicit query
+    translations = Translation.objects.filter(user=request.user).order_by('-created_at')
+    
+    # Debug logging with dates
+    logger.info(f"Account view - User: {request.user.username} (ID: {request.user.id})")
+    logger.info(f"Number of translations found for user: {translations.count()}")
+    
+    # Also check for any translations with null users
+    null_user_translations = Translation.objects.filter(user__isnull=True)
+    logger.info(f"Number of translations with null users: {null_user_translations.count()}")
+    
+    for translation in translations:
+        logger.info(f"User Translation ID: {translation.id}")
+        logger.info(f"Created at: {translation.created_at}")
+        logger.info(f"Original: {translation.original_text[:50]}")
+        logger.info(f"Target Language: {translation.target_language}")
+        logger.info(f"User ID: {translation.user.id}")
+        logger.info("---")
     
     if request.method == 'POST':
         form = ProfileForm(request.POST, instance=profile, user=request.user)
@@ -446,4 +457,55 @@ def tts(request):
 @login_required
 def account_delete_confirm(request):
     return render(request, 'account_delete_confirm.html')
+
+@csrf_exempt
+@require_http_methods(["POST"])
+async def translate_api(request):
+    try:
+        # Try to get data from JSON first, then fall back to form data
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            data = request.POST
+            
+        text = data.get('text')
+        target_language = data.get('target_language')
+        source_language = data.get('source_language')
+        
+        if not text or not target_language:
+            return JsonResponse({
+                'error': 'Text and target language are required'
+            }, status=400)
+            
+        result = await translate_text(text, target_language, source_language)
+        
+        # Log the translation attempt
+        logger.info(f"Translation attempt - User authenticated: {request.user.is_authenticated}")
+        
+        # Save translation if user is authenticated - use sync_to_async
+        if request.user.is_authenticated:
+            try:
+                translation = await create_translation(
+                    user=request.user,
+                    original_text=text,
+                    translated_text=result['translated_text'],
+                    target_language=target_language,
+                    translation_type='typed'  # Always set translation_type to 'typed'
+                )
+                logger.info(f"Translation saved successfully - ID: {translation.id}")
+            except Exception as e:
+                logger.error(f"Error saving translation: {str(e)}")
+        
+        # Return translation result
+        return JsonResponse({
+            'success': True,
+            'translated_text': result['translated_text'],
+            'source_language': result['src'],
+            'target_language': result['dest']
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 

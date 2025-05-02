@@ -34,7 +34,7 @@ class Translation(models.Model):
         ('typed', 'Typed'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     original_text = models.TextField()
     translated_text = models.TextField()
     target_language = models.CharField(max_length=10)
