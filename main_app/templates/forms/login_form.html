@@ -1,6 +1,6 @@
 {% load static %}
 
-<form method="post" action="{% url 'login' %}" class="login-form" id="login-form">
+<form method="post" action="{% url 'home' %}" class="login-form" id="login-form">
     {% csrf_token %}
     <div class="form-group">
         <label for="username">Username</label>

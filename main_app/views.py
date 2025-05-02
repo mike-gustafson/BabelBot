@@ -45,37 +45,6 @@ def build_languages_html(selected_language, languages):
     ]
     return f'<select id="language-select" name="target_language"><option value="">Select a language</option>{"".join(options)}</select>'
 
-async def translate_view(request):
-    try:
-        # Wrap session access in sync_to_async
-        text_to_translate = await sync_to_async(lambda: request.session.get('text_to_translate', DEFAULT_TEXT))()
-        lang = await sync_to_async(lambda: request.session.get('target_language', DEFAULT_TARGET_LANGUAGE))()
-        
-        # Get languages directly from the translator service
-        languages = await get_languages()
-        
-        # Create form instance with languages
-        form = await sync_to_async(TranslationForm)(languages=languages, selected_language=lang)
-        
-        return await sync_to_async(render)(request, 'translate.html', {
-            'form': form,
-            'text_to_translate': text_to_translate,
-            'translated_text': "",
-            'languages': languages
-        })
-        
-    except Exception as e:
-        logger.error(f"Error in translate_view: {str(e)}")
-        # Create form instance with fallback languages
-        form = await sync_to_async(TranslationForm)(languages=LANGUAGES, selected_language=DEFAULT_TARGET_LANGUAGE)
-        
-        return await sync_to_async(render)(request, 'translate.html', {
-            'form': form,
-            'text_to_translate': DEFAULT_TEXT,
-            'translated_text': "An error occurred. Please try again.",
-            'languages': LANGUAGES
-        })
-
 def translate(request):
     """Handle both GET and POST requests for translation"""
     if request.method == 'GET':
@@ -206,23 +175,6 @@ async def perform_translation(request):
         logger.error(f"Error in perform_translation view: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
 
-def login_view(request):
-    if request.method == 'POST':
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('home')
-            else:
-                form.add_error(None, 'Invalid username or password')
-    else:
-        form = LoginForm()
-    
-    return render(request, 'login.html', {'form': form})
-
 def logout_view(request):
     logout(request)
     return redirect('home')
@@ -352,12 +304,22 @@ def about(request):
     return render(request, 'about.html')
 
 def home(request):
-    return render(request, 'home.html')
-
-@login_required
-def history(request):
-    translations = Translation.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'history.html', {'translations': translations})
+    if request.method == 'POST':
+        # Handle login form submission
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('home')
+            else:
+                form.add_error(None, 'Invalid username or password')
+    else:
+        form = LoginForm()
+    
+    return render(request, 'home.html', {'form': form})
 
 @login_required
 def settings(request):
