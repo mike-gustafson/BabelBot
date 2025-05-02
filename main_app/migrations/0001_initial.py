@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('auth', '0012_alter_user_first_name_max_length'),
     ]
 
     operations = [
@@ -23,10 +23,10 @@ class Migration(migrations.Migration):
                 ('primary_language', models.CharField(blank=True, max_length=30)),
                 ('other_languages', models.JSONField(default=list)),
                 ('preferred_language', models.CharField(blank=True, max_length=30)),
-                ('is_anonymous', models.BooleanField(blank=True, null=True)),
+                ('is_anonymous', models.BooleanField(blank=True, null=True, default=False)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='auth.user')),
             ],
         ),
         migrations.CreateModel(
@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                 ('target_language', models.CharField(max_length=10)),
                 ('translation_type', models.CharField(choices=[('typed', 'Typed')], default='typed', max_length=10)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='auth.user')),
             ],
         ),
     ]
