@@ -290,7 +290,7 @@
         formData.append('image', file);
         formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
 
-        fetch('/ocr/process/', {
+        fetch('{% url "ocr:perform_ocr" %}', {
             method: 'POST',
             body: formData,
             headers: {
@@ -313,7 +313,7 @@
     }
 
     // Load available languages
-    fetch('/translator/languages/')
+    fetch('{% url "translator:get_languages" %}')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -342,7 +342,7 @@
             return;
         }
 
-        callAPI('/translator/translate/', {
+        callAPI('{% url "translator:translate_api" %}', {
             text: text,
             target_language: language
         })

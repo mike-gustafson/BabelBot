@@ -88,5 +88,10 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+    // Add URL variables for JavaScript
+    const OCR_PROCESS_URL = '{% url "ocr:perform_ocr" %}';
+    const TRANSLATE_PROCESS_URL = '{% url "translator:translate_api" %}';
+</script>
 <script src="{% static 'js/translate.js' %}"></script>
 {% endblock %}
