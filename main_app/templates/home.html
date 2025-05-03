@@ -22,11 +22,15 @@
   <div id="auth-section">
     <div id="auth-content">
       <div id="auth-tabs">
-        <button class="auth-tab active" data-tab="login">Login</button>
-        <button class="auth-tab" data-tab="signup">Sign Up</button>
+        <button class="auth-tab {% if not show_signup %}active{% endif %}" data-tab="login">Login</button>
+        <button class="auth-tab {% if show_signup %}active{% endif %}" data-tab="signup">Sign Up</button>
       </div>
-      {% include 'forms/login_form.html' %}
-      {% include 'forms/signup_form.html' %}
+      <div class="auth-form {% if show_signup %}hidden{% endif %}" id="login-form">
+        {% include 'forms/login_form.html' %}
+      </div>
+      <div class="auth-form {% if not show_signup %}hidden{% endif %}" id="signup-form">
+        {% include 'forms/signup_form.html' %}
+      </div>
     </div>
   </div>
   {% endif %}
@@ -50,4 +54,4 @@
 
 {% block extra_js %}
 <script src="{% static 'js/home.js' %}"></script>
-{% endblock %}
+{% endblock %}                                                                                                                                                                                                                                                             
