@@ -2,23 +2,33 @@
 
 <form method="post" action="{% url 'home' %}" class="login-form" id="login-form">
     {% csrf_token %}
+    {% if login_form.errors %}
+        <div class="alert alert-danger">
+            {% for field, errors in login_form.errors.items %}
+                {% for error in errors %}
+                    <p>{{ field|title }}: {{ error }}</p>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    {% endif %}
+    
     <div class="form-group">
-        <label for="username">Username</label>
+        <label for="id_username">Username</label>
         <div class="input-with-icon">
             <i class="fas fa-user"></i>
-            <input type="text" id="username" name="username" required>
+            {{ login_form.username }}
         </div>
     </div>
     
     <div class="form-group">
-        <label for="password">Password</label>
+        <label for="id_password">Password</label>
         <div class="input-with-icon">
             <i class="fas fa-lock"></i>
-            <input type="password" id="password" name="password" required>
+            {{ login_form.password }}
         </div>
     </div>
 
-    <button type="submit" class="btn btn-primary">
+    <button type="submit" name="login-submit" class="btn btn-primary">
         <i class="fas fa-sign-in-alt"></i>
         Login
     </button>
