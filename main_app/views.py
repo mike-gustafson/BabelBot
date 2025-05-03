@@ -1,24 +1,36 @@
+# Standard library imports
 import json
 import logging
+
+# Third-party imports
 from asgiref.sync import sync_to_async
-from django import forms
+import requests
+
+# Django imports
 from django.contrib import messages
-from django.contrib.auth import login, authenticate, logout, get_user
+from django.contrib.auth import (
+    login, authenticate, logout, get_user
+)
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
+from django.contrib.auth.views import (
+    PasswordResetView, PasswordResetDoneView,
+    PasswordResetConfirmView, PasswordResetCompleteView
+)
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from ocr.services import detect_text
-from translator.services import get_available_languages, translate_text
-import requests
 
-from .forms import TranslateFromTextForm, TranslateFromOCRForm, LoginForm, SignupForm, CustomUserCreationForm, ProfileForm
+# Local application imports
+from translator.services import get_available_languages, translate_text
+from .forms import (
+    TranslateFromTextForm, TranslateFromOCRForm,
+    LoginForm, CustomUserCreationForm, ProfileForm
+)
 from .models import Translation, Profile
-from .utils import get_or_create_profile, update_preferred_language, get_preferred_language
+from .utils import get_or_create_profile
 
 logger = logging.getLogger(__name__)
 
@@ -336,7 +348,13 @@ async def handle_translation(request, translation_id=None):
     returns: JsonResponse with success or error message
     """
     try:
-        # Handle delete operation
+        """
+        function: DELETE the translation
+        parameters:
+            request - the request object
+            translation_id - the ID of the translation to delete
+        returns: if Params has translation_id, delete the translation and return JsonResponse with success or error message.
+        """
         if translation_id is not None:
             translation = await get_translation(translation_id, request.user)
             await sync_to_async(translation.delete)()
@@ -345,37 +363,35 @@ async def handle_translation(request, translation_id=None):
                 'message': 'Translation deleted successfully'
             })
         
-        # Handle edit operation
+        """
+        function: EDIT the translation
+        parameters:
+            request - the request object
+        returns: If Params does NOT have a translation_id, edit the translation and return JsonResponse with success or error message.
+        """
         translation_id = request.POST.get('translation_id')
         translation = await get_translation(translation_id, request.user)
         
-        # Get the new values
         new_original_text = request.POST.get('original_text', translation.original_text)
         new_target_language = request.POST.get('target_language', translation.target_language)
         
-        # Check if we need to retranslate
         needs_retranslation = (
             new_original_text != translation.original_text or 
             new_target_language != translation.target_language
         )
         
-        # Update the fields
         translation.original_text = new_original_text
         translation.target_language = new_target_language
         
-        # Only update translated_text if we need to retranslate
         if needs_retranslation:
-            # Get the translation result
             result = await translate_text(
                 translation.original_text,
                 translation.target_language
             )
             translation.translated_text = result['translated_text']
         else:
-            # Keep the existing translated text
             translation.translated_text = request.POST.get('translated_text', translation.translated_text)
         
-        # Save the updated translation
         await save_model(translation)
         
         return JsonResponse({
@@ -394,6 +410,39 @@ async def handle_translation(request, translation_id=None):
             'error': str(e)
         }, status=500)
 
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def account_delete_confirm(request):
+    if request.method == 'POST':
+        """
+        function: Handle account delete confirmation form submissions
+        parameters: request - the request object
+        returns: redirect to the home page or error message
+        """
+        try:
+            user = request.user
+            user.delete()
+            logout(request)
+            messages.success(request, 'Your account has been deleted successfully.')
+            return redirect('home')
+        except Exception as e:
+            logger.error(f"Error in account_delete_confirm view: {str(e)}")
+            messages.error(request, 'An error occurred. Please try again.')
+            return redirect('account_delete_confirm')
+        
+    """
+    function: Serve the account delete confirmation page template
+    parameters: request - the request object
+    returns: render the account delete confirmation page template
+    """
+    try: 
+        return render(request, 'account_delete_confirm.html')
+    except Exception as e:
+        logger.error(f"Error in account_delete_confirm view: {str(e)}")
+        messages.error(request, 'An error occurred. Please try again.')
+        return render(request, 'home.html')
+
 class CustomPasswordResetView(PasswordResetView):
     template_name = 'password_reset.html'
     email_template_name = 'registration/password_reset_email.html'
@@ -407,67 +456,8 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     success_url = reverse_lazy('password_reset_complete')
     
     def form_valid(self, form):
-        # Save the new password
         form.save()
         return super().form_valid(form)
 
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'password_reset_complete.html'
-
-@login_required
-def account_delete_confirm(request):
-    return render(request, 'account_delete_confirm.html')
-
-@csrf_exempt
-@require_http_methods(["POST"])
-async def translate_api(request):
-    try:
-        # Try to get data from JSON first, then fall back to form data
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            data = request.POST
-            
-        text = data.get('text')
-        target_language = data.get('target_language')
-        source_language = data.get('source_language')
-        
-        if not text or not target_language:
-            return JsonResponse({
-                'error': 'Text and target language are required'
-            }, status=400)
-            
-        result = await translate_text(text, target_language, source_language)
-        
-        # Log the translation attempt
-        auth_status = await is_authenticated(request.user)
-        logger.info(f"Translation attempt - User authenticated: {auth_status}")
-        
-        # Save translation if user is authenticated - use sync_to_async
-        if auth_status:
-            try:
-                translation = await create_translation(
-                    user=request.user,
-                    original_text=text,
-                    translated_text=result['translated_text'],
-                    target_language=target_language,
-                    translation_type='typed'  # Always set translation_type to 'typed'
-                )
-                logger.info(f"Translation saved successfully - ID: {translation.id}")
-            except Exception as e:
-                logger.error(f"Error saving translation: {str(e)}")
-        
-        # Return translation result
-        return JsonResponse({
-            'success': True,
-            'translated_text': result['translated_text'],
-            'source_language': result['src'],
-            'target_language': result['dest']
-        })
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
-
-
