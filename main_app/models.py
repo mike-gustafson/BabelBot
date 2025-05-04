@@ -23,6 +23,7 @@ class Profile(models.Model):
     other_languages = models.JSONField(default=list)
     preferred_language = models.CharField(max_length=30, blank=True)
     is_anonymous = models.BooleanField(null=True, blank=True)
+    photo = models.ImageField(upload_to='profile_photos/', null=True, blank=True, default='profile_photos/default-avatar.png')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

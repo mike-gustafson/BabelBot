@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from .views import update_profile_photo
 
 urlpatterns = [
     # Website URLs
@@ -14,6 +15,7 @@ urlpatterns = [
     path('account/translations/edit/', views.edit_translation, name='edit_translation'),
     path('account/translations/delete/<int:translation_id>/', views.delete_translation, name='delete_translation'),
     path('account/delete/', views.account_delete_confirm, name='account_delete_confirm'),
+    path('account/update_photo/', update_profile_photo, name='update_profile_photo'),
     
     # Password reset URLs
     path('password-reset/', views.CustomPasswordResetView.as_view(), name='password_reset'),
