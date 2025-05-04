@@ -39,7 +39,7 @@
 
                 <!-- OCR Form -->
                 <div id="ocr-form" class="translation-form" {% if active_form != 'ocr' %}style="display: none;"{% endif %}>
-                    <form id="ocr-translation-form" onsubmit="return false;" action="{% url 'perform_ocr' %}">
+                    <form id="ocr-translation-form" onsubmit="return false;" action="{% url 'ocr:perform_ocr' %}">
                         {% csrf_token %}
                         <input type="hidden" name="form_type" value="ocr">
                         <div class="ocr-container">
@@ -88,5 +88,10 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+    // Add URL variables for JavaScript
+    const OCR_PROCESS_URL = '{% url "ocr:perform_ocr" %}';
+    const TRANSLATE_PROCESS_URL = '{% url "translator:translate_api" %}';
+</script>
 <script src="{% static 'js/translate.js' %}"></script>
 {% endblock %}
