@@ -20,7 +20,7 @@ from django.contrib.auth.views import (
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.views.decorators.csrf import csrf_exempt
 
 # Local application imports
@@ -320,6 +320,7 @@ async def account(request):
         form = ProfileForm(request.POST, instance=profile, user=request.user)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Profile updated successfully!')
             return redirect('account')
     else:
         form = ProfileForm(instance=profile, user=request.user)
