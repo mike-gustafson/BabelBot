@@ -56,6 +56,7 @@ get_user_translation_count = sync_to_async(lambda user: Translation.objects.filt
 get_null_user_translation_count = sync_to_async(lambda: Translation.objects.filter(user__isnull=True).count())
 get_user_id = sync_to_async(lambda translation: translation.user.id if translation.user else None)
 format_languages = sync_to_async(lambda: [(code, name) for code, name in get_available_languages().items()])
+save_form = sync_to_async(lambda form: form.save())
 
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
@@ -319,7 +320,7 @@ async def account(request):
     if request.method == 'POST':
         form = ProfileForm(request.POST, instance=profile, user=request.user)
         if form.is_valid():
-            form.save()
+            await save_form(form)
             messages.success(request, 'Profile updated successfully!')
             return redirect('account')
     else:
