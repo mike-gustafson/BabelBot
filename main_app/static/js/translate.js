@@ -96,7 +96,7 @@ function initializeOCRProcessing() {
         formData.append('image', file);
         formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
 
-        fetch('/ocr/process/', {
+        fetch(OCR_PROCESS_URL, {
             method: 'POST',
             body: formData,
             headers: {
@@ -166,7 +166,7 @@ async function submitTextForm() {
 
     try {
         console.log('Sending translation request:', { text, targetLanguage });
-        const response = await fetch('/translate/process/', {
+        const response = await fetch(TRANSLATE_PROCESS_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     signupTab.addEventListener('click', function() {
         signupTab.classList.add('active');
         loginTab.classList.remove('active');
-        signupForm.classList.remove('hidden');
         loginForm.classList.add('hidden');
+        signupForm.classList.remove('hidden');
     });
 }); 

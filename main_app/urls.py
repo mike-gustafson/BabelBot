@@ -1,19 +1,20 @@
 from django.urls import path
 from . import views
-from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     # Website URLs
     path('', views.home, name='home'),
+    path('translate/', views.translate, name='translate'),
     path('about/', views.about, name='about'),
-    path('translate/', views.translate_page, name='translate'),
-    path('translate/process/', views.translate, name='translate_process'),
-    path('logout/', views.logout_view, name='logout'),
-    path('signup/', views.signup, name='signup'),
     path('account/', views.account, name='account'),
-    path('account/translations/edit/', views.edit_translation, name='edit_translation'),
-    path('account/translations/delete/<int:translation_id>/', views.delete_translation, name='delete_translation'),
     path('account/delete/', views.account_delete_confirm, name='account_delete_confirm'),
+    
+    # POST request urls
+    path('signup/', views.signup, name='signup'),
+    path('logout/', views.logout_view, name='logout'),
+    path('translate/process/', views.translate, name='translate_process'),
+    path('account/translations/edit/', views.handle_translation, name='edit_translation'),
+    path('account/translations/delete/<int:translation_id>/', views.handle_translation, name='delete_translation'),
     
     # Password reset URLs
     path('password-reset/', views.CustomPasswordResetView.as_view(), name='password_reset'),

@@ -36,10 +36,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-development-key-only'
 # SECURITY WARNING: don't run with debug turned on in production!
 if not "ON_HEROKU" in os.environ:
     DEBUG = True
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 else:
     DEBUG = False
-
-ALLOWED_HOSTS = ["*"]
+    ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOST', 'babelbot-80382e0f3acb.herokuapp.com')]
 
 # Authentication settings
 LOGIN_URL = '/'
