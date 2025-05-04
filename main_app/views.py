@@ -317,7 +317,7 @@ async def account(request):
     profile = await get_profile(request.user)
     translations = await get_user_translations(request.user)
     if request.method == 'POST':
-        form = ProfileForm(request.POST, user=request.user)
+        form = ProfileForm(request.POST, instance=profile user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, 'Profile updated successfully!')
