@@ -21,29 +21,8 @@
             <div class="user-info-column business-card">
               <div class="business-card-content">
                 <div class="profile-photo-container">
-                  {% if profile.photo %}
-                    <!-- Debug info -->
-                    <div style="display: none;">
-                      Photo URL: {{ profile.photo.url }}
-                      Photo Path: {{ profile.photo.path }}
-                      Photo Exists: {{ profile.photo }}
-                    </div>
-                    <img src="{{ profile.photo.url }}" alt="Profile Photo" class="profile-photo" 
-                         onerror="console.error('Photo failed to load:', this.src); this.onerror=null; this.src='{% static 'images/default-avatar.png' %}';">
-                  {% else %}
-                    <div class="profile-photo-placeholder">
-                      <i class="fas fa-user"></i>
-                    </div>
-                  {% endif %}
-                  <div class="photo-upload-overlay">
-                    <form id="photo-upload-form" method="post" enctype="multipart/form-data">
-                      {% csrf_token %}
-                      <label for="photo-upload" class="photo-upload-label">
-                        <i class="fas fa-camera"></i>
-                        <span>Change Photo</span>
-                      </label>
-                      <input type="file" id="photo-upload" name="photo" accept="image/*" style="display: none;">
-                    </form>
+                  <div class="profile-photo-placeholder">
+                    <i class="fas fa-user"></i>
                   </div>
                 </div>
                 <div class="user-info">
@@ -383,67 +362,6 @@ deleteButtons.forEach(button => {
       }
     }
   });
-});
-
-// Photo Upload Functionality
-document.getElementById('photo-upload').addEventListener('change', async function(e) {
-  if (e.target.files && e.target.files[0]) {
-    const file = e.target.files[0];
-    console.log('Selected file:', file);
-    
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
-      return;
-    }
-    
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
-      return;
-    }
-    
-    const formData = new FormData();
-    formData.append('photo', file);
-    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
-    
-    try {
-      console.log('Uploading photo...');
-      const response = await fetch('/account/update_photo/', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        }
-      });
-      
-      console.log('Response status:', response.status);
-      const result = await response.json();
-      console.log('Response data:', result);
-      
-      if (response.ok && result.success) {
-        console.log('Photo uploaded successfully:', result.photo_url);
-        const img = document.querySelector('.profile-photo') || document.querySelector('.profile-photo-placeholder');
-        if (img) {
-          if (img.classList.contains('profile-photo-placeholder')) {
-            img.style.display = 'none';
-            const newImg = document.createElement('img');
-            newImg.src = result.photo_url;
-            newImg.className = 'profile-photo';
-            document.querySelector('.profile-photo-container').appendChild(newImg);
-          } else {
-            img.src = result.photo_url;
-          }
-        }
-      } else {
-        console.error('Upload failed:', result.error);
-        alert(result.error || 'Error uploading photo. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error uploading photo. Please try again.');
-    }
-  }
 });
 </script>
 {% endblock %} 

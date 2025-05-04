@@ -164,44 +164,18 @@ def account(request):
     if not request.user.is_authenticated:
         return redirect('login')
     
-    # Get or create the user's profile
     profile = get_or_create_profile(request.user)
-    
-    # Debug: Print all translations in the database
-    all_translations = Translation.objects.all()
-    logger.info(f"Total translations in database: {all_translations.count()}")
-    for t in all_translations:
-        logger.info(f"DB Translation - ID: {t.id}, User: {t.user.username if t.user else 'None'}, Created: {t.created_at}")
-    
-    # Get the user's translations using a more explicit query
     translations = Translation.objects.filter(user=request.user).order_by('-created_at')
-    
-    # Debug logging with dates
-    logger.info(f"Account view - User: {request.user.username} (ID: {request.user.id})")
-    logger.info(f"Number of translations found for user: {translations.count()}")
-    
-    # Also check for any translations with null users
-    null_user_translations = Translation.objects.filter(user__isnull=True)
-    logger.info(f"Number of translations with null users: {null_user_translations.count()}")
-    
-    for translation in translations:
-        logger.info(f"User Translation ID: {translation.id}")
-        logger.info(f"Created at: {translation.created_at}")
-        logger.info(f"Original: {translation.original_text[:50]}")
-        logger.info(f"Target Language: {translation.target_language}")
-        logger.info(f"User ID: {translation.user.id}")
-        logger.info("---")
+    form = ProfileForm(user=request.user)
+    languages = [(code, name.title()) for code, name in LANGUAGES.items()]
+    languages.sort(key=lambda x: x[1])  # Sort by language name
     
     if request.method == 'POST':
-        form = ProfileForm(request.POST, instance=profile, user=request.user)
+        form = ProfileForm(request.POST, user=request.user)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Profile updated successfully!')
             return redirect('account')
-    else:
-        form = ProfileForm(instance=profile, user=request.user)
-    
-    # Get available languages for the edit form
-    languages = LANGUAGES.items()
     
     context = {
         'user': request.user,
@@ -381,51 +355,3 @@ def translate_page(request):
         'ocr_form': ocr_form,
         'languages': languages,
     })
-
-@require_POST
-def update_profile_photo(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({'error': 'Not authenticated'}, status=401)
-    
-    if 'photo' not in request.FILES:
-        return JsonResponse({'error': 'No photo provided'}, status=400)
-    
-    try:
-        profile = request.user.profile
-        photo = request.FILES['photo']
-        print(f"Uploading photo: {photo.name}, size: {photo.size}, type: {photo.content_type}")
-        
-        # Validate file type
-        if not photo.content_type.startswith('image/'):
-            return JsonResponse({'error': 'File must be an image'}, status=400)
-        
-        # Validate file size (max 5MB)
-        if photo.size > 5 * 1024 * 1024:
-            return JsonResponse({'error': 'File size must be less than 5MB'}, status=400)
-        
-        # Delete old photo if it exists
-        if profile.photo and profile.photo.name != 'profile_photos/default-avatar.png':
-            try:
-                if os.path.isfile(profile.photo.path):
-                    print(f"Deleting old photo: {profile.photo.path}")
-                    os.remove(profile.photo.path)
-            except Exception as e:
-                print(f"Error deleting old photo: {e}")
-        
-        # Save new photo
-        print(f"Saving new photo to: {photo.name}")
-        profile.photo = photo
-        profile.save()
-        
-        # Verify the photo was saved
-        if not profile.photo:
-            raise Exception("Photo was not saved properly")
-            
-        print(f"Photo saved successfully. URL: {profile.photo.url}")
-        return JsonResponse({
-            'success': True,
-            'photo_url': profile.photo.url
-        })
-    except Exception as e:
-        print(f"Error uploading photo: {e}")
-        return JsonResponse({'error': f'Error uploading photo: {str(e)}'}, status=500)
