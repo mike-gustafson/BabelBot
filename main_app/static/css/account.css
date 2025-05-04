@@ -455,20 +455,23 @@
 }
 
 .btn-danger {
-  background-color: var(--error);
-  color: var(--text-on-error);
+  background-color: #dc3545;
+  color: white;
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: var(--border-radius);
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .btn-danger:hover {
-  background-color: var(--error-dark);
-  transform: translateY(-1px);
+  background-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
 }
 
 /* Translation Table Styles */
