@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Load available languages
     try {
-        const response = await fetch('/tts/languages/');
+        const response = await fetch('{% url "tts:get_languages" %}');
         const data = await response.json();
         
         if (data.success) {

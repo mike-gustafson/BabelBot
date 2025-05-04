@@ -173,7 +173,7 @@ async def translate(request):
 
             # Make request to translator app using sync_to_async
             response = await sync_to_async(lambda: requests.post(
-                'http://localhost:8000/translator/translate/',
+                request.build_absolute_uri('/translator/translate/'),
                 json={
                     'text': text,
                     'target_language': target_language
