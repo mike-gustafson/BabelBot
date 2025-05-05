@@ -10,9 +10,10 @@
   <div class="account-content-wrapper">
     <div class="account-content">
       <h2>Welcome, {{ display_name }}</h2>
-      
-      <div class="card">
+<div class="card">
         <h2>User Account</h2>
+      
+      
         
         <!-- Profile Display Section -->
         <div class="profile-display">
@@ -25,6 +26,8 @@
                     <i class="fas fa-user"></i>
                   </div>
                 </div>
+              </div>
+            </div>
                 <div class="user-info">
                   <h3 class="user-name">{{ user.first_name }} {{ user.last_name }}</h3>
                   <p class="user-title">Member since {{ user.date_joined|date:"Y" }}</p>
@@ -34,8 +37,7 @@
                     <p><i class="fas fa-id-card"></i> ID: {{ user.id }}</p>
                   </div>
                 </div>
-              </div>
-            </div>
+            
 
             <!-- Profile Information Business Card -->
             <div class="profile-info-column business-card">
