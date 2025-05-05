@@ -2,14 +2,15 @@ nav {
     position: fixed;
     top: 0;
     left: 0;
-    background: rgba(var(--bg-primary-rgb), 0.6);
+    background: rgba(var(--bg-primary-rgb), 0.2);
     border-bottom: 1px solid var(--border-primary);
     z-index: 1000;
-    height: var(--nav-height);
+    height: calc(var(--nav-height) + 32px);
     width: 100%;
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     margin: auto 0;
+    overflow: visible;
 }
 
 .nav-content {
@@ -19,6 +20,8 @@ nav {
     max-width: 1200px;
     height: 100%;
     justify-content: center;
+    position: relative;
+    overflow: visible;
 }
 
 /* Logo Elements */
@@ -92,17 +95,61 @@ nav {
 
 /* Nav Links Elements */
 .nav-link {
+    position: relative;
+    overflow: visible;
+    display: block;
     text-decoration: none;
+    padding: 5px var(--spacing-md);
+    font-size: 1rem;
+    font-family: inherit;
     color: var(--text-primary);
-    padding: var(--spacing-sm) var(--spacing-md);
+    text-transform: uppercase;
     border-radius: var(--border-radius-md);
-    transition: all 0.3s ease;
-    gap: var(--spacing-sm);
+    transition: 0.5s;
+    z-index: 1;
+}
+
+.nav-content:hover .nav-link {
+    transform: scale(1.2);
+    opacity: 0.2;
+    filter: blur(4px);
+    transition: 0.5s;
+    z-index: 1;
+}
+
+.nav-content:hover .nav-link:hover {
+    transform: scale(1.6);
+    opacity: 1;
+    filter: blur(0);
+    z-index: 2000;
+    transition: 0.5s;
 }
 
 .nav-link:hover {
-    background: var(--gradient-secondary);
-    transform: var(--btn-hover-transform);
+    position: relative;
+    z-index: 2000;
+}
+
+.nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--primary);
+    transition: 0.5s;
+    transform-origin: right;
+    transform: scaleX(0);
+    z-index: -1;
+    border-radius: var(--border-radius-md);
+}
+
+.nav-link:hover::before,
+.nav-content:hover .nav-link:hover::before {
+    transition: transform 0.5s;
+    transform-origin: left;
+    transform: scaleX(1);
 }
 
 .nav-link.active {
