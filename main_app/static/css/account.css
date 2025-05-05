@@ -750,6 +750,7 @@ select[name="other_languages"] {
   margin-top: 1.5rem;
 }
 
+
 .edit-translation-form textarea {
   min-height: 100px;
   resize: vertical;
