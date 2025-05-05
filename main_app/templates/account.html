@@ -265,6 +265,7 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Profile edit toggle
     const editBtn = document.getElementById('edit-profile-btn');
     const cancelBtn = document.getElementById('cancel-edit-btn');
     const editSection = document.querySelector('.edit-profile-section');
@@ -278,6 +279,36 @@ document.addEventListener('DOMContentLoaded', function() {
     cancelBtn.addEventListener('click', function() {
         editSection.style.display = 'none';
         profileDisplay.style.display = 'block';
+    });
+
+    // Language selection enhancement
+    const languageSelects = document.querySelectorAll('.language-select');
+    
+    languageSelects.forEach(select => {
+        // Add search functionality for multiple select
+        if (select.multiple) {
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.className = 'language-search';
+            searchInput.placeholder = 'Search languages...';
+            select.parentNode.insertBefore(searchInput, select);
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                Array.from(select.options).forEach(option => {
+                    const text = option.text.toLowerCase();
+                    option.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            });
+        }
+
+        // Add keyboard navigation
+        select.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.blur();
+            }
+        });
     });
 });
 
