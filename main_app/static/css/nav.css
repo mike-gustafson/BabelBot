@@ -7,8 +7,8 @@ nav {
     z-index: 1000;
     height: var(--nav-height);
     width: 100%;
-    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     margin: auto 0;
 }
 
@@ -39,6 +39,10 @@ nav {
     animation: wave 1.5s ease;
 }
 
+#logo-link:active #logo {
+    animation: bounce 0.5s ease;
+}
+
 #logo {
     display: flex;
     align-items: center;
@@ -55,6 +59,35 @@ nav {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    text-shadow: var(--box-shadow);
+    letter-spacing: 0.5px;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 20px var(--shadow-color),
+                     0 0 40px var(--shadow-color),
+                     0 0 60px var(--shadow-color),
+                     0 0 80px var(--shadow-color),
+                     0 0 100px var(--shadow-color);
+    }
+    to {
+        text-shadow: 0 0 40px var(--shadow-color),
+                     0 0 80px var(--shadow-color),
+                     0 0 120px var(--shadow-color),
+                     0 0 160px var(--shadow-color),
+                     0 0 200px var(--shadow-color);
+    }
+}
+
+:root[data-theme="light"] #app-name {
+    background: none;
+    color: #17643b;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    text-shadow: none;
+    animation: none;
 }
 
 /* Nav Links Elements */
@@ -92,6 +125,11 @@ nav {
     40% { transform: rotate(9deg); }
     50% { transform: rotate(0deg); }
     100% { transform: rotate(0deg); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
 }
 
 .nav-icon-wrapper {
@@ -191,6 +229,7 @@ nav {
 
     .app-name {
         font-size: var(--font-size-xl);
+        
     }
 
     .logo-img {
