@@ -153,26 +153,25 @@ def about(request):
 @csrf_exempt
 async def translate(request):
     if request.method == 'POST':
-        """
-        function: Handle translation requests from the frontend
-        parameters: request - the request object
-        returns: JsonResponse with the translation result or an error message
-        """
         try:
-            # Check authentication status using sync_to_async
-            is_authenticated = await sync_to_async(lambda: request.user.is_authenticated)()
-
+            print("\n=== Starting translation request processing ===")
+            print(f"Request method: {request.method}")
+            print(f"Request path: {request.path}")
+            
             # Get data from JSON request body
             data = json.loads(request.body)
             text = data.get('text')
             target_language = data.get('target_language')
+            print(f"Received translation request - Text: {text}, Target Language: {target_language}")
 
             if not text or not target_language:
+                print("Missing text or target language in request")
                 return JsonResponse({
                     'error': 'Text and target language are required'
                 }, status=400)
 
             # Make request to translator app using sync_to_async
+            print("Making request to translator service")
             response = await sync_to_async(lambda: requests.post(
                 request.build_absolute_uri('/translator/translate/'),
                 json={
@@ -184,37 +183,45 @@ async def translate(request):
                     'X-CSRFToken': request.COOKIES.get('csrftoken', '')
                 }
             ))()
+            response_data = await sync_to_async(lambda: response.json())()
 
             if response.status_code != 200:
+                print(f"Translation service error: {response.status_code}")
                 return JsonResponse({
                     'error': 'Translation service error'
                 }, status=500)
-            response_data = response.json()
+            
+            print("Received successful translation response")
+            print(f"Translation response data: {response_data}")
 
-            # Save translation if user is authenticated - use sync_to_async
-            if is_authenticated:
+            # Save translation if user is authenticated
+            if await is_authenticated(request.user):
+                print("User is authenticated, attempting to save translation")
                 try:
-                    await create_translation(
+                    translation = await create_translation(
                         user=request.user,
                         original_text=text,
                         translated_text=response_data['translation'],
                         target_language=target_language,
                         translation_type='typed'
                     )
+                    print(f"Successfully saved translation with ID: {translation.id}")
                 except Exception as e:
-                    logger.error(f"Error saving translation in translate view: {str(e)}")
-                    raise
-                
-            # Return the translation response
-            return JsonResponse(response_data)
+                    print(f"Error saving translation: {str(e)}")
+            else:
+                print("User is not authenticated, skipping translation save")
 
-        except json.JSONDecodeError:
+            # Return data in format expected by frontend
             return JsonResponse({
-                'error': 'Invalid JSON data'
-            }, status=400)
+                'success': True,
+                'translation': response_data['translation'],
+                'source_language': response_data.get('source_language', 'auto'),
+                'target_language': target_language
+            })
         except Exception as e:
+            print(f"Error in translate view: {str(e)}")
             return JsonResponse({
-                'error': str(e)
+                'error': 'An error occurred during translation'
             }, status=500)
             
     else:

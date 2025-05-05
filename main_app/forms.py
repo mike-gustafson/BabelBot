@@ -204,9 +204,10 @@ class ProfileForm(forms.ModelForm):
     )
     other_languages = forms.MultipleChoiceField(
         choices=LANGUAGE_CHOICES,
-        widget=forms.CheckboxSelectMultiple(attrs={
-            'class': 'language-checkbox',
-            'template_name': 'widgets/checkbox_select.html'
+        widget=forms.SelectMultiple(attrs={
+            'class': 'dual-listbox',
+            'size': '10',
+            'multiple': 'multiple'
         }),
         required=False
     )
