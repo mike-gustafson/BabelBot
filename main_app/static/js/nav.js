@@ -1,27 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const menuToggle = document.getElementById('menu-toggle');
-  const navLinks = document.querySelector('.nav-links');
+  const menuButton = document.getElementById('mobile-menu-trigger');
+  const navContent = document.querySelector('.nav-content');
 
-  menuToggle.addEventListener('click', function() {
-    menuToggle.classList.toggle('active');
-    navLinks.classList.toggle('nav-visible');
-  });
-
-  // Close menu when clicking outside
-  document.addEventListener('click', function(event) {
-    const isClickInside = navLinks.contains(event.target) || menuToggle.contains(event.target);
-    
-    if (!isClickInside && navLinks.classList.contains('nav-visible')) {
-      menuToggle.classList.remove('active');
-      navLinks.classList.remove('nav-visible');
-    }
-  });
-
-  // Close menu when window is resized to desktop size
-  window.addEventListener('resize', function() {
-    if (window.innerWidth > 768) {
-      menuToggle.classList.remove('active');
-      navLinks.classList.remove('nav-visible');
-    }
-  });
+  if (menuButton && navContent) {
+    menuButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      navContent.classList.toggle('nav--active');
+    });
+  }
 });
