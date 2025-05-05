@@ -200,7 +200,10 @@ class ProfileForm(forms.ModelForm):
     )
     primary_language = forms.ChoiceField(
         choices=[('', 'Select a language')] + LANGUAGE_CHOICES,
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={
+            'class': 'form-control language-select',
+            'data-placeholder': 'Select primary language'
+        })
     )
     other_languages = forms.MultipleChoiceField(
         choices=LANGUAGE_CHOICES,
