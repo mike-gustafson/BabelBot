@@ -87,7 +87,7 @@
             </div>
           </div>
           <div class="profile-actions">
-            <button onclick="showEditForm()" class="btn btn-primary profile-action-btn">
+            <button id="edit-profile-btn" onclick="showEditForm()" class="btn btn-primary">
               <i class="fas fa-edit"></i> Edit
             </button>
             <button onclick="window.location.href='{% url 'account_delete_confirm' %}'" class="btn profile-action-btn-danger">
@@ -106,8 +106,7 @@
       {% csrf_token %}
       
       <div class="form-group">
-        <h4>User Information</h4>
-        <div class="form-group">
+        <div class="form-row">
           {{ form.first_name.label_tag }}
           {{ form.first_name }}
           {% if form.first_name.errors %}
@@ -115,7 +114,7 @@
           {% endif %}
         </div>
         
-        <div class="form-group">
+        <div class="form-row">
           {{ form.last_name.label_tag }}
           {{ form.last_name }}
           {% if form.last_name.errors %}
@@ -123,18 +122,15 @@
           {% endif %}
         </div>
         
-        <div class="form-group">
+        <div class="form-row">
           {{ form.email.label_tag }}
           {{ form.email }}
           {% if form.email.errors %}
             <div class="error">{{ form.email.errors }}</div>
           {% endif %}
         </div>
-      </div>
-
-      <div class="form-group">
-        <h4>Profile Information</h4>
-        <div class="form-group">
+        
+        <div class="form-row">
           {{ form.bio.label_tag }}
           {{ form.bio }}
           {% if form.bio.errors %}
@@ -142,7 +138,7 @@
           {% endif %}
         </div>
         
-        <div class="form-group">
+        <div class="form-row">
           {{ form.location.label_tag }}
           {{ form.location }}
           {% if form.location.errors %}
@@ -150,55 +146,51 @@
           {% endif %}
         </div>
         
-        <div class="form-group">
-          <div class="primary-language-select">
-            {{ form.primary_language.label_tag }}
-            {{ form.primary_language }}
-            {% if form.primary_language.errors %}
-              <div class="error">{{ form.primary_language.errors }}</div>
-            {% endif %}
-          </div>
-        </div>
-        
-        <div class="form-group">
-          {{ form.other_languages.label_tag }}
-          <div class="dual-listbox-container">
-            <div class="dual-listbox-wrapper">
-              <div class="available-languages">
-                <h4>Available Languages</h4>
-                <select multiple="multiple" id="available-languages" class="dual-listbox">
-                  {% for code, name in languages %}
-                    {% if code not in form.other_languages.value %}
-                      <option value="{{ code }}">{{ name }}</option>
-                    {% endif %}
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="dual-listbox-buttons">
-                <button type="button" id="add-language" class="btn btn-secondary">
-                  <i class="fas fa-chevron-right"></i>
-                </button>
-                <button type="button" id="remove-language" class="btn btn-secondary">
-                  <i class="fas fa-chevron-left"></i>
-                </button>
-              </div>
-              <div class="selected-languages">
-                <h4>Selected Languages</h4>
-                <select multiple="multiple" id="selected-languages" class="dual-listbox">
-                  {% for code, name in languages %}
-                    {% if code in form.other_languages.value %}
-                      <option value="{{ code }}">{{ name }}</option>
-                    {% endif %}
-                  {% endfor %}
-                </select>
-              </div>
-            </div>
-            {{ form.other_languages }}
-          </div>
-          {% if form.other_languages.errors %}
-            <div class="error">{{ form.other_languages.errors }}</div>
+        <div class="form-row">
+          {{ form.primary_language.label_tag }}
+          {{ form.primary_language }}
+          {% if form.primary_language.errors %}
+            <div class="error">{{ form.primary_language.errors }}</div>
           {% endif %}
         </div>
+        
+        <h4>Other Languages</h4>
+        <div class="dual-listbox-container">
+          <div class="dual-listbox-wrapper">
+            <div class="available-languages">
+              <h4>Available Languages</h4>
+              <select multiple="multiple" id="available-languages" class="dual-listbox">
+                {% for code, name in languages %}
+                  {% if code not in form.other_languages.value %}
+                    <option value="{{ code }}">{{ name }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <div class="dual-listbox-buttons">
+              <button type="button" id="add-language" class="btn btn-secondary">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+              <button type="button" id="remove-language" class="btn btn-secondary">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+            </div>
+            <div class="selected-languages">
+              <h4>Selected Languages</h4>
+              <select multiple="multiple" id="selected-languages" class="dual-listbox">
+                {% for code, name in languages %}
+                  {% if code in form.other_languages.value %}
+                    <option value="{{ code }}">{{ name }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          {{ form.other_languages }}
+        </div>
+        {% if form.other_languages.errors %}
+          <div class="error">{{ form.other_languages.errors }}</div>
+        {% endif %}
       </div>
       
       <div class="form-actions">
@@ -215,28 +207,37 @@
     <!-- Edit Translation Form (initially hidden) -->
     <div id="editTranslationForm" class="edit-translation-form" style="display: none;">
       <h3>Edit Translation</h3>
+      <div class="translation-display">
+        <div class="translation-row">
+          <label>Original Text:</label>
+          <div class="original-text" id="editOriginalText"></div>
+        </div>
+        <div class="translation-row">
+          <label>Original Translation:</label>
+          <div class="translated-text" id="currentTranslation"></div>
+          <div class="translation-language" id="currentLanguage"></div>
+        </div>
+      </div>
       <form method="post">
         {% csrf_token %}
         <input type="hidden" name="translation_id" id="editTranslationId">
         <div class="form-group">
-          <label for="editOriginalText">Original Text</label>
-          <textarea id="editOriginalText" name="original_text" required></textarea>
-        </div>
-        <div class="form-group">
-          <label>Current Translation</label>
-          <div class="current-translation" id="currentTranslation"></div>
-        </div>
-        <div class="form-group">
-          <label for="editTargetLang">Target Language</label>
-          <select id="editTargetLang" name="target_lang" required>
-            {% for code, name in languages %}
-            <option value="{{ code }}">{{ name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Save Changes</button>
-          <button type="button" id="cancelEditTranslation" class="btn btn-secondary">Cancel</button>
+          <div class="form-row">
+            <label for="newTranslation">New Translation:</label>
+            <textarea id="newTranslation" name="translated_text" required></textarea>
+          </div>
+          <div class="form-row form-actions-row">
+            <label for="editTargetLang">Target Language:</label>
+            <select id="editTargetLang" name="target_lang" required>
+              {% for code, name in languages %}
+              <option value="{{ code }}">{{ name }}</option>
+              {% endfor %}
+            </select>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+              <button type="button" id="cancelEditTranslation" class="btn btn-secondary">Cancel</button>
+            </div>
+          </div>
         </div>
       </form>
     </div>
@@ -347,9 +348,16 @@ editButtons.forEach(button => {
     const targetLanguage = button.dataset.targetLang;
 
     document.getElementById('editTranslationId').value = translationId;
-    document.getElementById('editOriginalText').value = originalText;
+    document.getElementById('editOriginalText').textContent = originalText;
     document.getElementById('currentTranslation').textContent = translatedText;
-    document.getElementById('editTargetLang').value = targetLanguage;
+    document.getElementById('newTranslation').value = originalText;
+    
+    // Find the full language name and capitalize first letter
+    const languageSelect = document.getElementById('editTargetLang');
+    const languageOption = Array.from(languageSelect.options).find(option => option.value === targetLanguage);
+    const fullLanguageName = languageOption ? languageOption.text : targetLanguage;
+    const capitalizedName = fullLanguageName.charAt(0).toUpperCase() + fullLanguageName.slice(1);
+    document.getElementById('currentLanguage').textContent = capitalizedName;
 
     translationsTable.style.display = 'none';
     editForm.style.display = 'block';
@@ -363,7 +371,12 @@ cancelEditBtn.addEventListener('click', () => {
 
 editForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const formData = new FormData(editForm);
+  
+  const formData = new FormData();
+  formData.append('translation_id', document.getElementById('editTranslationId').value);
+  formData.append('original_text', document.getElementById('newTranslation').value);
+  formData.append('target_language', document.getElementById('editTargetLang').value);
+  formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
   
   try {
     const response = await fetch('/account/translations/edit/', {
@@ -375,9 +388,14 @@ editForm.addEventListener('submit', async (e) => {
     });
     
     if (response.ok) {
+      // Hide the edit form and show the table
+      editForm.style.display = 'none';
+      translationsTable.style.display = 'block';
+      // Reload the page to show updated data
       window.location.reload();
     } else {
-      alert('Error updating translation');
+      const data = await response.json();
+      alert(data.error || 'Error updating translation');
     }
   } catch (error) {
     console.error('Error:', error);
