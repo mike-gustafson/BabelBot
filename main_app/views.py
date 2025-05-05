@@ -153,15 +153,7 @@ def about(request):
 @csrf_exempt
 async def translate(request):
     if request.method == 'POST':
-        """
-        function: Handle translation requests from the frontend
-        parameters: request - the request object
-        returns: JsonResponse with the translation result or an error message
-        """
         try:
-            # Check authentication status using sync_to_async
-            is_authenticated = await sync_to_async(lambda: request.user.is_authenticated)()
-
             # Get data from JSON request body
             data = json.loads(request.body)
             text = data.get('text')
@@ -184,17 +176,17 @@ async def translate(request):
                     'X-CSRFToken': request.COOKIES.get('csrftoken', '')
                 }
             ))()
+            response_data = await sync_to_async(lambda: response.json())()
 
             if response.status_code != 200:
                 return JsonResponse({
                     'error': 'Translation service error'
                 }, status=500)
-            response_data = response.json()
 
-            # Save translation if user is authenticated - use sync_to_async
-            if is_authenticated:
+            # Save translation if user is authenticated
+            if await is_authenticated(request.user):
                 try:
-                    await create_translation(
+                    translation = await create_translation(
                         user=request.user,
                         original_text=text,
                         translated_text=response_data['translation'],
@@ -202,19 +194,20 @@ async def translate(request):
                         translation_type='typed'
                     )
                 except Exception as e:
-                    logger.error(f"Error saving translation in translate view: {str(e)}")
-                    raise
-                
-            # Return the translation response
-            return JsonResponse(response_data)
+                    return JsonResponse({
+                        'error': 'Error saving translation'
+                    }, status=500)
 
-        except json.JSONDecodeError:
+            # Return data in format expected by frontend
             return JsonResponse({
-                'error': 'Invalid JSON data'
-            }, status=400)
+                'success': True,
+                'translation': response_data['translation'],
+                'source_language': response_data.get('source_language', 'auto'),
+                'target_language': target_language
+            })
         except Exception as e:
             return JsonResponse({
-                'error': str(e)
+                'error': 'An error occurred during translation'
             }, status=500)
             
     else:

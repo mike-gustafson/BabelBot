@@ -527,6 +527,38 @@
   }
 }
 
+.dual-listbox-container {
+    margin-top: 1rem;
+}
+
+.dual-listbox-wrapper {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.available-languages,
+.selected-languages {
+    flex: 1;
+}
+
+.dual-listbox {
+    width: 100%;
+    height: 200px;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+}
+
+.dual-listbox option {
+    padding: 0.5rem;
+    cursor: pointer;
+}
+
+.dual-listbox option:hover {
+=======
 .language-select {
     width: 100%;
     padding: 0.6rem;
@@ -560,59 +592,33 @@
     color: var(--text-light);
 }
 
-/* For multiple select */
-.language-select[multiple] {
-    height: auto;
-    min-height: 100px;
-    padding-right: 0.75rem;
+.dual-listbox-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-.language-select[multiple] option {
+.dual-listbox-buttons button {
     padding: 0.5rem;
-    margin: 0.25rem 0;
-    border-radius: var(--border-radius-sm);
-}
-
-.language-select[multiple] option:checked {
+    border: none;
     background-color: var(--primary);
     color: var(--text-light);
-}
-
-/* Language selection container */
-.language-selection {
-    position: relative;
-    margin-top: 0.5rem;
-}
-
-.language-selection::after {
-    content: '⌄';
-    position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-primary);
-    pointer-events: none;
-}
-
-.language-search {
-    width: 100%;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-    background-color: var(--input-bg);
-    border: var(--input-border);
     border-radius: var(--border-radius-md);
-    color: var(--text-primary);
-    font-size: 0.9rem;
+    cursor: pointer;
     transition: var(--transition-normal);
 }
 
-.language-search:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: var(--input-focus-shadow);
+.dual-listbox-buttons button:hover {
+    background-color: var(--secondary);
+    transform: var(--btn-hover-transform);
 }
 
-.language-search::placeholder {
-    color: var(--text-secondary);
-    opacity: 0.7;
+.dual-listbox-container h4 {
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-size: 1rem;
 }
+
+/* Hide the original select element */
+select[name="other_languages"] {
+    display: none;

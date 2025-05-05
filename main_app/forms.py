@@ -208,8 +208,8 @@ class ProfileForm(forms.ModelForm):
     other_languages = forms.MultipleChoiceField(
         choices=LANGUAGE_CHOICES,
         widget=forms.SelectMultiple(attrs={
-            'class': 'form-control language-select',
-            'data-placeholder': 'Select other languages',
+            'class': 'dual-listbox',
+            'size': '10',
             'multiple': 'multiple'
         }),
         required=False
