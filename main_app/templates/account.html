@@ -6,309 +6,278 @@
 {% endblock %}
 
 {% block content %}
-<section class="section">
-  <div class="account-content-wrapper">
-    <div class="account-content">
-      <h2>Welcome, {{ display_name }}</h2>
-      
-      <div class="card">
-        <h2>User Account</h2>
-        
-        <!-- Profile Display Section -->
-        <div class="profile-display">
-          <div class="info-row">
-            <!-- User Information Business Card -->
-            <div class="user-info-column business-card">
-              <div class="business-card-content">
-                <div class="profile-photo-container">
-                  <div class="profile-photo-placeholder">
-                    <i class="fas fa-user"></i>
-                  </div>
-                </div>
-                <div class="user-info">
-                  <h3 class="user-name">{{ user.first_name }} {{ user.last_name }}</h3>
-                  <p class="user-title">Member since {{ user.date_joined|date:"Y" }}</p>
-                  <div class="contact-info">
-                    <p><i class="fas fa-envelope"></i> {{ user.email }}</p>
-                    <p><i class="fas fa-user"></i> {{ user.username }}</p>
-                    <p><i class="fas fa-id-card"></i> ID: {{ user.id }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Profile Information Business Card -->
-            <div class="profile-info-column business-card">
-              <div class="business-card-content">
-                <h3 class="card-title">Profile Information</h3>
-                <div class="profile-info">
-                  <div class="info-item">
-                    <i class="fas fa-quote-left"></i>
-                    <p class="bio">{{ profile.bio|default:"No bio provided" }}</p>
-                  </div>
-                  <div class="info-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <p>{{ profile.location|default:"Location not set" }}</p>
-                  </div>
-                  <div class="info-item">
-                    <i class="fas fa-language"></i>
-                    <p>Primary: 
-                      {% if profile.primary_language %}
-                        {% for lang_code, lang_name in languages %}
-                          {% if profile.primary_language == lang_code %}
-                            {{ lang_name|title }}
-                          {% endif %}
-                        {% endfor %}
-                      {% else %}
-                        Not set
-                      {% endif %}
-                    </p>
-                  </div>
-                  <div class="info-item">
-                    <i class="fas fa-globe"></i>
-                    <p>Other Languages: 
-                      {% if profile.other_languages %}
-                        {% for code in profile.other_languages %}
-                          {% for lang_code, lang_name in languages %}
-                            {% if code == lang_code %}
-                              {{ lang_name|title }}{% if not forloop.last %}, {% endif %}
-                            {% endif %}
-                          {% endfor %}
-                        {% endfor %}
-                      {% else %}
-                        None
-                      {% endif %}
-                    </p>
-                  </div>
-                  <div class="info-item">
-                    <i class="fas fa-user-secret"></i>
-                    <p>Anonymous Mode: {{ profile.is_anonymous|yesno:"Enabled,Disabled" }}</p>
-                  </div>
-                </div>
-                <button id="edit-profile-btn" class="btn btn-primary">
-                  <i class="fas fa-edit"></i> Edit Profile
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Edit Profile Form -->
-        <div class="edit-profile-section" style="display: none;">
-          <h3>Edit Profile</h3>
-          <form method="post" class="profile-form">
-            {% csrf_token %}
-            
-            <div class="form-group">
-              <h4>User Information</h4>
-              <div class="form-group">
-                {{ form.first_name.label_tag }}
-                {{ form.first_name }}
-                {% if form.first_name.errors %}
-                  <div class="error">{{ form.first_name.errors }}</div>
-                {% endif %}
-              </div>
-              
-              <div class="form-group">
-                {{ form.last_name.label_tag }}
-                {{ form.last_name }}
-                {% if form.last_name.errors %}
-                  <div class="error">{{ form.last_name.errors }}</div>
-                {% endif %}
-              </div>
-              
-              <div class="form-group">
-                {{ form.email.label_tag }}
-                {{ form.email }}
-                {% if form.email.errors %}
-                  <div class="error">{{ form.email.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-
-            <div class="form-group">
-              <h4>Profile Information</h4>
-              <div class="form-group">
-                {{ form.bio.label_tag }}
-                {{ form.bio }}
-                {% if form.bio.errors %}
-                  <div class="error">{{ form.bio.errors }}</div>
-                {% endif %}
-              </div>
-              
-              <div class="form-group">
-                {{ form.location.label_tag }}
-                {{ form.location }}
-                {% if form.location.errors %}
-                  <div class="error">{{ form.location.errors }}</div>
-                {% endif %}
-              </div>
-              
-              <div class="form-group">
-                <div class="primary-language-select">
-                  {{ form.primary_language.label_tag }}
-                  {{ form.primary_language }}
-                  {% if form.primary_language.errors %}
-                    <div class="error">{{ form.primary_language.errors }}</div>
-                  {% endif %}
-                </div>
-              </div>
-              
-              <div class="form-group">
-                {{ form.other_languages.label_tag }}
-                <div class="dual-listbox-container">
-                  <div class="dual-listbox-wrapper">
-                    <div class="available-languages">
-                      <h4>Available Languages</h4>
-                      <select multiple="multiple" id="available-languages" class="dual-listbox">
-                        {% for code, name in languages %}
-                          {% if code not in form.other_languages.value %}
-                            <option value="{{ code }}">{{ name }}</option>
-                          {% endif %}
-                        {% endfor %}
-                      </select>
-                    </div>
-                    <div class="dual-listbox-buttons">
-                      <button type="button" id="add-language" class="btn btn-secondary">
-                        <i class="fas fa-chevron-right"></i>
-                      </button>
-                      <button type="button" id="remove-language" class="btn btn-secondary">
-                        <i class="fas fa-chevron-left"></i>
-                      </button>
-                    </div>
-                    <div class="selected-languages">
-                      <h4>Selected Languages</h4>
-                      <select multiple="multiple" id="selected-languages" class="dual-listbox">
-                        {% for code, name in languages %}
-                          {% if code in form.other_languages.value %}
-                            <option value="{{ code }}">{{ name }}</option>
-                          {% endif %}
-                        {% endfor %}
-                      </select>
-                    </div>
-                  </div>
-                  {{ form.other_languages }}
-                </div>
-                {% if form.other_languages.errors %}
-                  <div class="error">{{ form.other_languages.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-            
-            <div class="form-actions">
-              <button type="submit" class="btn btn-primary">Save Changes</button>
-              <button type="button" id="cancel-edit-btn" class="btn btn-secondary">Cancel</button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Translation History Section -->
-        <div class="translations-section">
-          <h2>Translation History</h2>
-          
-          <!-- Translation Summary -->
-          <div class="translation-summary">
-            <div class="summary-item">
-              <i class="fas fa-list-ol"></i>
-              <div class="summary-content">
-                <span class="summary-label">Total Translations</span>
-                <span class="summary-value">{{ translations|length }}</span>
-              </div>
-            </div>
-            <div class="summary-item">
+<section class="section account-section">
+  <!-- Profile Display Section -->
+  <div class="profile-display">
+    <div class="info-row">
+      <!-- User Information Business Card -->
+      <div class="user-info-column business-card">
+        <div class="business-card-content">
+          <div class="profile-photo-container">
+            <div class="profile-photo-placeholder">
               <i class="fas fa-user"></i>
-              <div class="summary-content">
-                <span class="summary-label">User ID</span>
-                <span class="summary-value">{{ user.id }}</span>
-              </div>
-            </div>
-            <div class="summary-item">
-              <i class="fas fa-clock"></i>
-              <div class="summary-content">
-                <span class="summary-label">Most Recent</span>
-                <span class="summary-value">
-                  {% if translations %}
-                    {{ translations.0.created_at|date:"M j, Y" }}
-                  {% else %}
-                    No translations yet
-                  {% endif %}
-                </span>
-              </div>
             </div>
           </div>
-
-          <div class="translations-table-container">
-            <table class="translations-table">
-              <thead>
-                <tr>
-                  <th>Original Text</th>
-                  <th>Translated Text</th>
-                  <th>Target Language</th>
-                  <th>Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for translation in translations %}
-                <tr>
-                  <td title="{{ translation.original_text }}">{{ translation.original_text|truncatechars:50 }}</td>
-                  <td title="{{ translation.translated_text }}">{{ translation.translated_text|truncatechars:50 }}</td>
-                  <td>{{ translation.target_language }}</td>
-                  <td>{{ translation.created_at|date:"M j, Y" }}</td>
-                  <td>
-                    <button class="edit-translation-btn" data-translation-id="{{ translation.id }}" data-original-text="{{ translation.original_text }}" data-translated-text="{{ translation.translated_text }}" data-target-lang="{{ translation.target_language }}">
-                      Edit
-                    </button>
-                    <button class="delete-translation-btn" data-translation-id="{{ translation.id }}">
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-                {% empty %}
-                <tr>
-                  <td colspan="5" style="text-align: center; padding: 2rem;">No translations yet</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
+          <div class="user-info">
+            <h3 class="user-name">{{ user.first_name }} {{ user.last_name }}</h3>
+            <p class="user-title">Member since {{ user.date_joined|date:"Y" }}</p>
+            <div class="contact-info">
+              <p><i class="fas fa-envelope"></i> Email: {{ user.email }}</p>
+              <p><i class="fas fa-user"></i> Username: {{ user.username }}</p>
+              <p><i class="fas fa-id-card"></i> Account ID: {{ user.id }}</p>
+              <p><i class="fas fa-list-ol"></i> Total Translations: {{ translations|length }}</p>
+              <p><i class="fas fa-clock"></i> Most Recent: 
+                {% if translations %}
+                  {{ translations.0.created_at|date:"M j, Y" }}
+                {% else %}
+                  No translations yet
+                {% endif %}
+              </p>
+            </div>
           </div>
         </div>
+      </div>
 
-        <!-- Edit Translation Modal -->
-        <div id="editTranslationModal" class="modal">
-          <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2>Edit Translation</h2>
-            <form id="editTranslationForm" method="post">
-              {% csrf_token %}
-              <input type="hidden" name="translation_id" id="editTranslationId">
-              <div class="form-group">
-                <label for="editOriginalText">Original Text</label>
-                <textarea id="editOriginalText" name="original_text" required></textarea>
-              </div>
-              <div class="form-group">
-                <label>Current Translation</label>
-                <div class="current-translation" id="currentTranslation"></div>
-              </div>
-              <div class="form-group">
-                <label for="editTargetLang">Target Language</label>
-                <select id="editTargetLang" name="target_lang" required>
+      <!-- Profile Information Business Card -->
+      <div class="profile-info-column business-card">
+        <div class="business-card-content">
+          <h3 class="card-title">Profile Information</h3>
+          <div class="profile-info">
+            <div class="info-item">
+              <i class="fas fa-quote-left"></i>
+              <p class="bio">{{ profile.bio|default:"No bio provided" }}</p>
+            </div>
+            <div class="info-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <p>{{ profile.location|default:"Location not set" }}</p>
+            </div>
+            <div class="info-item">
+              <i class="fas fa-language"></i>
+              <p>Primary: 
+                {% if profile.primary_language %}
+                  {% for lang_code, lang_name in languages %}
+                    {% if profile.primary_language == lang_code %}
+                      {{ lang_name|title }}
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  Not set
+                {% endif %}
+              </p>
+            </div>
+            <div class="info-item">
+              <i class="fas fa-globe"></i>
+              <p>Other Languages: 
+                {% if profile.other_languages %}
+                  {% for code in profile.other_languages %}
+                    {% for lang_code, lang_name in languages %}
+                      {% if code == lang_code %}
+                        {{ lang_name|title }}{% if not forloop.last %}, {% endif %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endfor %}
+                {% else %}
+                  None
+                {% endif %}
+              </p>
+            </div>
+            <div class="info-item">
+              <i class="fas fa-user-secret"></i>
+              <p>Anonymous Mode: {{ profile.is_anonymous|yesno:"Enabled,Disabled" }}</p>
+            </div>
+          </div>
+          <div class="profile-actions">
+            <button onclick="showEditForm()" class="btn btn-primary profile-action-btn">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button onclick="window.location.href='{% url 'account_delete_confirm' %}'" class="btn profile-action-btn-danger">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Form -->
+  <div class="edit-profile-section" style="display: none;">
+    <h3>Edit Profile</h3>
+    <form method="post" class="profile-form">
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <h4>User Information</h4>
+        <div class="form-group">
+          {{ form.first_name.label_tag }}
+          {{ form.first_name }}
+          {% if form.first_name.errors %}
+            <div class="error">{{ form.first_name.errors }}</div>
+          {% endif %}
+        </div>
+        
+        <div class="form-group">
+          {{ form.last_name.label_tag }}
+          {{ form.last_name }}
+          {% if form.last_name.errors %}
+            <div class="error">{{ form.last_name.errors }}</div>
+          {% endif %}
+        </div>
+        
+        <div class="form-group">
+          {{ form.email.label_tag }}
+          {{ form.email }}
+          {% if form.email.errors %}
+            <div class="error">{{ form.email.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <h4>Profile Information</h4>
+        <div class="form-group">
+          {{ form.bio.label_tag }}
+          {{ form.bio }}
+          {% if form.bio.errors %}
+            <div class="error">{{ form.bio.errors }}</div>
+          {% endif %}
+        </div>
+        
+        <div class="form-group">
+          {{ form.location.label_tag }}
+          {{ form.location }}
+          {% if form.location.errors %}
+            <div class="error">{{ form.location.errors }}</div>
+          {% endif %}
+        </div>
+        
+        <div class="form-group">
+          <div class="primary-language-select">
+            {{ form.primary_language.label_tag }}
+            {{ form.primary_language }}
+            {% if form.primary_language.errors %}
+              <div class="error">{{ form.primary_language.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          {{ form.other_languages.label_tag }}
+          <div class="dual-listbox-container">
+            <div class="dual-listbox-wrapper">
+              <div class="available-languages">
+                <h4>Available Languages</h4>
+                <select multiple="multiple" id="available-languages" class="dual-listbox">
                   {% for code, name in languages %}
-                  <option value="{{ code }}">{{ name }}</option>
+                    {% if code not in form.other_languages.value %}
+                      <option value="{{ code }}">{{ name }}</option>
+                    {% endif %}
                   {% endfor %}
                 </select>
               </div>
-              <button type="submit" class="btn btn-primary">Save Changes</button>
-            </form>
+              <div class="dual-listbox-buttons">
+                <button type="button" id="add-language" class="btn btn-secondary">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+                <button type="button" id="remove-language" class="btn btn-secondary">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+              </div>
+              <div class="selected-languages">
+                <h4>Selected Languages</h4>
+                <select multiple="multiple" id="selected-languages" class="dual-listbox">
+                  {% for code, name in languages %}
+                    {% if code in form.other_languages.value %}
+                      <option value="{{ code }}">{{ name }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            {{ form.other_languages }}
           </div>
-        </div>
-
-        <!-- Delete Account Section -->
-        <div class="delete-account-section">
-          <h2>Delete Account</h2>
-          <a href="{% url 'account_delete_confirm' %}" class="btn btn-danger">Delete Account</a>
+          {% if form.other_languages.errors %}
+            <div class="error">{{ form.other_languages.errors }}</div>
+          {% endif %}
         </div>
       </div>
+      
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <button type="button" id="cancel-edit-btn" class="btn btn-secondary">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Translation History Section -->
+  <div class="translations-section">
+    <h2>Translation History</h2>
+    
+    <!-- Edit Translation Form (initially hidden) -->
+    <div id="editTranslationForm" class="edit-translation-form" style="display: none;">
+      <h3>Edit Translation</h3>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="translation_id" id="editTranslationId">
+        <div class="form-group">
+          <label for="editOriginalText">Original Text</label>
+          <textarea id="editOriginalText" name="original_text" required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Current Translation</label>
+          <div class="current-translation" id="currentTranslation"></div>
+        </div>
+        <div class="form-group">
+          <label for="editTargetLang">Target Language</label>
+          <select id="editTargetLang" name="target_lang" required>
+            {% for code, name in languages %}
+            <option value="{{ code }}">{{ name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <button type="button" id="cancelEditTranslation" class="btn btn-secondary">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Translations Table -->
+    <div id="translationsTable" class="translations-table-container">
+      <table class="translations-table">
+        <thead>
+          <tr>
+            <th>Original Text</th>
+            <th>Translated Text</th>
+            <th>Target Language</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for translation in translations %}
+          <tr>
+            <td title="{{ translation.original_text }}">{{ translation.original_text|truncatechars:50 }}</td>
+            <td title="{{ translation.translated_text }}">{{ translation.translated_text|truncatechars:50 }}</td>
+            <td>{{ translation.target_language }}</td>
+            <td>{{ translation.created_at|date:"M j, Y" }}</td>
+            <td class="actions-cell">
+              <div class="action-buttons">
+                <button class="edit-translation-btn" data-translation-id="{{ translation.id }}" data-original-text="{{ translation.original_text }}" data-translated-text="{{ translation.translated_text }}" data-target-lang="{{ translation.target_language }}">
+                  Edit
+                </button>
+                <button class="delete-translation-btn" data-translation-id="{{ translation.id }}">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 2rem;">No translations yet</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
@@ -364,11 +333,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Edit Translation Modal
-const editModal = document.getElementById('editTranslationModal');
-const editButtons = document.querySelectorAll('.edit-translation-btn');
-const closeModal = document.querySelector('.close-modal');
+// Edit Translation
 const editForm = document.getElementById('editTranslationForm');
+const translationsTable = document.getElementById('translationsTable');
+const editButtons = document.querySelectorAll('.edit-translation-btn');
+const cancelEditBtn = document.getElementById('cancelEditTranslation');
 
 editButtons.forEach(button => {
   button.addEventListener('click', () => {
@@ -382,18 +351,14 @@ editButtons.forEach(button => {
     document.getElementById('currentTranslation').textContent = translatedText;
     document.getElementById('editTargetLang').value = targetLanguage;
 
-    editModal.style.display = 'block';
+    translationsTable.style.display = 'none';
+    editForm.style.display = 'block';
   });
 });
 
-closeModal.addEventListener('click', () => {
-  editModal.style.display = 'none';
-});
-
-window.addEventListener('click', (event) => {
-  if (event.target === editModal) {
-    editModal.style.display = 'none';
-  }
+cancelEditBtn.addEventListener('click', () => {
+  editForm.style.display = 'none';
+  translationsTable.style.display = 'block';
 });
 
 editForm.addEventListener('submit', async (e) => {
