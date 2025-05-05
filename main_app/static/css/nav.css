@@ -300,4 +300,8 @@ nav {
     .nav-links .logout-link.mobile-show {
         margin-top: var(--spacing-md);
     }
+}
+
+.nav-icon[src*="logo_account.png"] {
+    filter: brightness(0.7) contrast(1.2);
 } 
