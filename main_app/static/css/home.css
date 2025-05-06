@@ -99,6 +99,7 @@
   width: 100%;
 }
 
+/* --- Feature Card Styles (single definition, no animation property) --- */
 .feature-card {
   background: var(--gradient-tertiary);
   padding: var(--spacing-lg);
@@ -249,14 +250,6 @@
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
   margin-bottom: 4rem;
-}
-
-.feature-card {
-  background: var(--bg-secondary);
-  padding: 2rem;
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--box-shadow);
-  transition: var(--transition-normal);
 }
 
 .feature-card:hover {
@@ -455,4 +448,7 @@
   font-size: 1rem;
   color: var(--text-secondary, #555);
   margin-top: 0.5rem;
-} 
+}
+
+/* Animation utility class */
+.animate-float { animation: floatCard 3s ease-in-out infinite; } 
