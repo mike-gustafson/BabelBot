@@ -247,15 +247,19 @@ nav {
 
 @media (max-width: 768px) {
     .menu-button {
-        display: block;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: var(--spacing-sm);
-        margin-right: var(--spacing-md);
-        z-index: 3000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+        left: 50%;
+        top: 2rem;
+        transform: translateX(-50%);
+        z-index: 4100;
     }
-
+    .close-menu-button {
+        display: none !important;
+    }
+    /* Hamburger to X animation */
     .menu-icon {
         display: block;
         width: 28px;
@@ -264,7 +268,6 @@ nav {
         position: relative;
         transition: background 0.3s;
     }
-
     .menu-icon::before,
     .menu-icon::after {
         content: '';
@@ -276,30 +279,23 @@ nav {
         left: 0;
         transition: transform 0.3s, top 0.3s;
     }
-
     .menu-icon::before {
         top: -8px;
     }
-
     .menu-icon::after {
         top: 8px;
     }
-
-    /* Transform menu icon to X when menu is active */
-    .nav-content.nav--active .menu-icon {
+    .nav--active .menu-icon {
         background: transparent;
     }
-
-    .nav-content.nav--active .menu-icon::before {
+    .nav--active .menu-icon::before {
         top: 0;
         transform: rotate(45deg);
     }
-
-    .nav-content.nav--active .menu-icon::after {
+    .nav--active .menu-icon::after {
         top: 0;
         transform: rotate(-45deg);
     }
-
     .nav-content {
         flex-direction: row;
         position: relative;
