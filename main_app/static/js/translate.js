@@ -278,7 +278,6 @@ async function playAudio(text, language) {
             const audioContainer = document.getElementById('audio_container');
             audioPlayer.src = `data:audio/mp3;base64,${data.encoded_audio}`;
             audioContainer.style.display = 'block';
-            audioPlayer.play();
         } else {
             console.error('TTS error:', data.error);
             document.getElementById('audio_container').style.display = 'none';

@@ -6,7 +6,7 @@
         <div class="alert alert-danger">
             {% for field, errors in login_form.errors.items %}
                 {% for error in errors %}
-                    <p>{{ field|title }}: {{ error }}</p>
+                    <p>{{ error }}</p>
                 {% endfor %}
             {% endfor %}
         </div>
