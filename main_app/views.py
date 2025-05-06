@@ -112,6 +112,13 @@ def home(request):
                     form_data = signup_form.data.copy()
                     signup_form = CustomUserCreationForm(data=form_data)
                     signup_form.is_valid()
+            
+            # Return the home page with the current form state for POST requests
+            return render(request, 'home.html', {
+                'login_form': login_form,
+                'signup_form': signup_form,
+                'show_signup': show_signup
+            })
         else:
             """
             function: Serve the home page template
