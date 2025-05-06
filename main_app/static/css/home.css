@@ -1,4 +1,40 @@
 /* Home Page Styles */
+
+.home-section {
+  min-height: calc(100vh - 120px);
+  position: relative;
+  overflow: visible; 
+  padding: var(--spacing-md) 0;
+}
+
+/* Background logo with overlay */
+.home-section::before {
+  content: '';
+  position: fixed;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  z-index: 0;
+  width: calc(100vw + 40px); 
+  height: calc(100vh + 40px);
+}
+
+.home-content-wrapper {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.3);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-md) auto;
+  max-width: 1200px;
+  box-shadow: var(--box-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: grid;
+}
+
 .section {
   grid-template-columns: 1.5fr 1fr;
   grid-template-rows: auto auto;
