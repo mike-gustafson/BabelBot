@@ -36,13 +36,13 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-development-key-only'
 # SECURITY WARNING: don't run with debug turned on in production!
 if not "ON_HEROKU" in os.environ:
     DEBUG = True
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 else:
     DEBUG = False
-
-ALLOWED_HOSTS = ["*"]
+    ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOST', 'babelbot-80382e0f3acb.herokuapp.com')]
 
 # Authentication settings
-LOGIN_URL = '/login/'
+LOGIN_URL = '/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
@@ -154,11 +154,43 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# WhiteNoise configuration
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_MANIFEST_STRICT = False
+WHITENOISE_ALLOW_ALL_ORIGINS = True
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'main_app': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
 
 # Configure Django App for Heroku
 if 'ON_HEROKU' in os.environ:
@@ -192,13 +224,17 @@ SERVER_EMAIL = os.environ.get('EMAIL_HOST_USER', '')
 PASSWORD_RESET_TIMEOUT = 3600  # 1 hour
 
 # Google Cloud Vision API settings
-GOOGLE_TYPE = os.environ.get('GOOGLE_TYPE', 'service_account')
-GOOGLE_PROJECT_ID = os.environ.get('GOOGLE_PROJECT_ID', '')
-GOOGLE_PRIVATE_KEY_ID = os.environ.get('GOOGLE_PRIVATE_KEY_ID', '')
-GOOGLE_PRIVATE_KEY = os.environ.get('GOOGLE_PRIVATE_KEY', '').replace('\\n', '\n')
-GOOGLE_CLIENT_EMAIL = os.environ.get('GOOGLE_CLIENT_EMAIL', '')
-GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
-GOOGLE_AUTH_URI = os.environ.get('GOOGLE_AUTH_URI', 'https://accounts.google.com/o/oauth2/auth')
-GOOGLE_TOKEN_URI = os.environ.get('GOOGLE_TOKEN_URI', 'https://oauth2.googleapis.com/token')
-GOOGLE_AUTH_PROVIDER_X509_CERT_URL = os.environ.get('GOOGLE_AUTH_PROVIDER_X509_CERT_URL', 'https://www.googleapis.com/oauth2/v1/certs')
-GOOGLE_CLIENT_X509_CERT_URL = os.environ.get('GOOGLE_CLIENT_X509_CERT_URL', '')
+GOOGLE_TYPE = env('GOOGLE_TYPE', default='service_account')
+GOOGLE_PROJECT_ID = env('GOOGLE_PROJECT_ID', default='')
+GOOGLE_PRIVATE_KEY_ID = env('GOOGLE_PRIVATE_KEY_ID', default='')
+GOOGLE_PRIVATE_KEY = env('GOOGLE_PRIVATE_KEY', default='').replace('\\n', '\n')
+GOOGLE_CLIENT_EMAIL = env('GOOGLE_CLIENT_EMAIL', default='')
+GOOGLE_CLIENT_ID = env('GOOGLE_CLIENT_ID', default='')
+GOOGLE_AUTH_URI = env('GOOGLE_AUTH_URI', default='https://accounts.google.com/o/oauth2/auth')
+GOOGLE_TOKEN_URI = env('GOOGLE_TOKEN_URI', default='https://oauth2.googleapis.com/token')
+GOOGLE_AUTH_PROVIDER_X509_CERT_URL = env('GOOGLE_AUTH_PROVIDER_X509_CERT_URL', default='https://www.googleapis.com/oauth2/v1/certs')
+GOOGLE_CLIENT_X509_CERT_URL = env('GOOGLE_CLIENT_X509_CERT_URL', default='')
+
+# Debug: Print the Google Cloud settings
+print("GOOGLE_PROJECT_ID:", GOOGLE_PROJECT_ID)
+print("GOOGLE_CLIENT_EMAIL:", GOOGLE_CLIENT_EMAIL)

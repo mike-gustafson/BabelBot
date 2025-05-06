@@ -1,0 +1,91 @@
+/* Common Variables */
+:root {
+  /* Navbar */
+  --nav-height: 60px;
+
+  /* Footer */
+  --footer-height: 40px;
+
+  /* Colors */
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Border radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+
+  /* Font sizes */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+
+  /* Font weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+
+  /* Transitions */
+  --transition-normal: all 0.3s ease;
+  --transition-slow: all 0.5s ease;
+
+  /* Box shadows */
+  --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --box-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  /* Z-index layers */
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1020;
+  --z-index-fixed: 1030;
+  --z-index-modal-backdrop: 1040;
+  --z-index-modal: 1050;
+  --z-index-tooltip: 1060;
+
+  /* Common gradients */
+  --gradient-primary: linear-gradient(135deg, rgba(76, 255, 139, 0.3), rgba(76, 255, 139, 0.1));
+  --gradient-secondary: linear-gradient(135deg, rgba(76, 255, 139, 0.4), rgba(76, 255, 139, 0.2));
+  --gradient-tertiary: linear-gradient(135deg, rgba(76, 255, 139, 0.15), rgba(76, 255, 139, 0.05));
+  --gradient-container: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  
+  /* Common container styles */
+  --container-bg: rgba(30, 41, 59, 0.7);
+  --container-border: 1px solid rgba(76, 255, 139, 0.2);
+  --container-backdrop: blur(8px);
+  
+  /* Button styles */
+  --btn-primary-bg: var(--gradient-primary);
+  --btn-secondary-bg: var(--gradient-tertiary);
+  --btn-hover-transform: translateY(-2px);
+  
+  /* Input styles */
+  --input-bg: rgba(255, 255, 255, 0.1);
+  --input-border: 1px solid rgba(76, 255, 139, 0.2);
+  --input-focus-shadow: 0 0 0 3px rgba(76, 255, 139, 0.2);
+  
+}
+
+/* Theme Switching */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+  }
+}
+
+/* Default Theme (Light) */
+:root:not([data-theme]) {
+  color-scheme: light;
+} 

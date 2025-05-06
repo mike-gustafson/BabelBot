@@ -1,12 +1,11 @@
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render
-from .services import detect_text
-import time
-import logging
+from .services import extract_text_from_image
 from functools import wraps
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -38,44 +37,41 @@ def tech_demo(request):
     return render(request, 'ocr/tech_demo.html')
 
 @csrf_exempt
-@require_POST
+@require_http_methods(["POST"])
 @standard_api_view
 def perform_ocr(request):
-    """
-    Handle OCR requests by processing an uploaded image file.
-    Returns the extracted text and detected language (if available).
-    """
-    start_time = time.time()
-    
-    # Get image from request
-    image = request.FILES.get('image')
-    if not image:
+    if 'image' not in request.FILES:
         return standard_response(
             success=False,
             error='No image provided',
-            status=400
+            metadata={'status': 400}
         )
-    
-    # Perform OCR
-    ocr_result = detect_text(image.read())
-    if not ocr_result:
+            
+    try:
+        image = request.FILES['image']
+        logger.info(f"Processing image: {image.name}")
+        
+        # Read the image data
+        image_data = image.read()
+        if not image_data:
+            return standard_response(
+                success=False,
+                error='Empty image data',
+                metadata={'status': 400}
+            )
+            
+        # Extract text from the image
+        text = extract_text_from_image(image_data)
+        
+        return standard_response(
+            success=True,
+            data={'text': text},
+            metadata={'status': 200}
+        )
+    except Exception as e:
+        logger.error(f"Error processing image: {str(e)}")
         return standard_response(
             success=False,
-            error='Failed to extract text from image',
-            status=400
+            error=str(e),
+            metadata={'status': 500}
         )
-    
-    # Calculate processing time
-    processing_time = time.time() - start_time
-    
-    return standard_response(
-        success=True,
-        data={
-            'text': ocr_result['full_text'],
-            'language': ocr_result.get('language', 'unknown'),
-            'confidence': ocr_result.get('confidence')
-        },
-        metadata={
-            'processing_time': round(processing_time, 2)
-        }
-    )

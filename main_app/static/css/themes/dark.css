@@ -1,33 +1,33 @@
 :root[data-theme="dark"] {
   /* Base Colors */
-  --primary: #64ff9c;
-  --secondary: #00ff7f;
-  --accent: #00ff7f;
-  --error: #fc8181;
-  --success: #68d391;
-  --warning: #f6ad55;
-  --info: #63b3ed;
+  --primary: rgb(100, 255, 156);
+  --secondary: rgb(0, 255, 127);
+  --accent: rgb(0, 255, 127);
+  --error: rgb(252, 129, 129);
+  --success: rgb(104, 211, 145);
+  --warning: rgb(246, 173, 85);
+  --info: rgb(99, 179, 237);
 
   /* Background Colors */
-  --bg-primary: #1a202c;
-  --bg-secondary: #2d3748;
-  --bg-tertiary: #4a5568;
+  --bg-primary: rgb(26, 32, 44);
+  --bg-secondary: rgb(45, 55, 72);
+  --bg-tertiary: rgb(74, 85, 104);
 
   /* Text Colors */
-  --text-primary: #f7fafc;
-  --text-secondary: #e2e8f0;
-  --text-tertiary: #cbd5e0;
+  --text-primary: rgb(247, 250, 252);
+  --text-secondary: rgb(226, 232, 240);
+  --text-tertiary: rgb(203, 213, 224);
 
   /* Border Colors */
-  --border-primary: #4a5568;
-  --border-secondary: #718096;
+  --border-primary: rgb(74, 85, 104);
+  --border-secondary: rgb(113, 128, 150);
 
   /* Card Colors */
-  --card-bg: rgba(45, 55, 72, 0.9);
+  --card-bg: rgba(45, 55, 72, 0.8);
   --card-border: rgba(74, 85, 104, 0.8);
 
   /* Gradient Colors */
-  --gradient-primary: linear-gradient(135deg, #64ff9c 0%, #00ff7f 100%);
+  --gradient-primary: linear-gradient(135deg, rgb(100, 255, 156) 0%, rgb(0, 255, 127) 100%);
   --gradient-secondary: linear-gradient(135deg, rgba(100, 255, 156, 0.2) 0%, rgba(0, 255, 127, 0.1) 100%);
   --gradient-tertiary: linear-gradient(135deg, rgba(45, 55, 72, 0.9) 0%, rgba(45, 55, 72, 0.95) 100%);
 

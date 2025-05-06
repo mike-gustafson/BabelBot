@@ -1,0 +1,54 @@
+{% load static %}
+
+<nav>
+    <div class="nav-overlay" id="nav-overlay"></div>
+    <div class="nav-content flex-center">
+        <button class="menu-button" id="mobile-menu-trigger" aria-label="Open menu">
+            <span class="menu-icon"></span>
+        </button>
+        <button class="close-menu-button" id="close-menu-button" aria-label="Close menu">&times;</button>
+        
+        <a href="{% url 'home' %}" id="logo-link" class="flex-center">
+            <img src="{% static 'images/logo2.png' %}" alt="BabelBot Logo" id="logo">
+            <span id="app-name">BabelBot</span>
+        </a>
+        
+        <a href="{% url 'translate' %}" class="nav-link flex-center {% if request.resolver_match.url_name == 'translate' %}active{% endif %}">
+            <div class="nav-icon-wrapper flex-center">
+                <img src="{% static 'images/logo_translate.png' %}" alt="Translate" class="nav-icon">
+            </div>
+            <span>Translate</span>
+        </a>
+        
+        {% if user.is_authenticated %}
+        <a href="{% url 'account' %}" class="nav-link flex-center {% if request.resolver_match.url_name == 'account' %}active{% endif %}">
+            <div class="nav-icon-wrapper flex-center">
+                <img src="{% static 'images/logo_account.png' %}" alt="Account" class="nav-icon">
+            </div>
+            <span>Account</span>
+        </a>
+        {% endif %}
+            
+        <a href="{% url 'about' %}" class="nav-link flex-center {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+            <div class="nav-icon-wrapper flex-center">
+                <img src="{% static 'images/logo_about.png' %}" alt="About" class="nav-icon">
+            </div>
+            <span>About</span>
+        </a>
+    
+        {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}" class="nav-link flex-center" id="logout">
+            <div class="nav-icon-wrapper flex-center">
+                <img src="{% static 'images/logo_logout.png' %}" alt="Logout" class="nav-icon">
+            </div>
+            <span>Logout</span>
+        </a>
+        {% endif %}
+        
+        <button id="theme-toggle" class="theme-toggle flex-center" aria-label="Toggle theme">
+            <img src="{% static 'images/sun.svg' %}" alt="Light mode" class="theme-icon sun">
+            <img src="{% static 'images/moon.svg' %}" alt="Dark mode" class="theme-icon moon">
+        </button>
+
+    </div>
+</nav> 

@@ -1,0 +1,28 @@
+/* 
+ * Utility Classes
+ * 
+ * This file contains reusable utility classes that can be used across multiple pages.
+ * These classes provide common styling patterns and layout helpers.
+ */
+
+/* Flexbox Utilities */
+.flex-center {
+    display: flex;
+    align-items: center;
+}
+
+/* Display Utilities */
+.hidden {
+    display: none;
+}
+
+/* Layout Utilities */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+}
+
+.text-center {
+    text-align: center;
+} 

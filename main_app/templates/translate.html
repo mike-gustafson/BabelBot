@@ -6,224 +6,92 @@
 {% endblock %}
 
 {% block content %}
-<div class="translate-section">
-  <form method="post" id="translate-form">
-    {% csrf_token %}
-    <div class="translate-grid">
-      <div class="translate-column">
-        <div class="translate-box">
-          <h3>Input Language</h3>
-          <textarea name="text_to_translate" id="original_text" class="translate-textarea"
-            placeholder="Enter text to translate">{% if text_to_translate %}{{ text_to_translate }}{% endif %}</textarea>
-          <div class="translate-controls">
-            <select name="target_language" id="language-select" class="language-select" aria-label="Select target language">
-              <option value="">Select a language</option>
-              {% for code, name in languages.items %}
-              <option value="{{ code }}">{{ name|title }}</option>
-              {% endfor %}
-            </select>
-            <button type="submit" class="translate-btn">
-              <img src="{% static 'images/logo2.png' %}" alt="BabelBot Logo" class="translate-btn-logo">
-              <span>TRANSLATE!</span>
-            </button>
-          </div>
-        </div>
-      </div>
-      <div class="translate-column">
-        <div class="translate-box">
-          <h3>Translated Text</h3>
-          <div class="translated-output" id="translated_text">{% if translated_text %}{{ translated_text }}{% endif %}</div>
-          <div id="audio_container"></div>
-          {% if tts_message %}
-          <div class="tts-message">
-            {{ tts_message }}
-          </div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </form>
+<section class="section">
+  <div id="translate-content">
+    <div class="translate-column">
+      <h3>Input</h3>
+            <div class="translation-form-section">
+                <div class="form-toggle">
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="input-type" value="text" {% if active_form != 'ocr' %}checked{% endif %}>
+                            <span class="radio-label">Text</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="input-type" value="ocr" {% if active_form == 'ocr' %}checked{% endif %}>
+                            <span class="radio-label">OCR</span>
+                        </label>
+                    </div>
+                </div>
 
-  <!-- OCR Section -->
-  <div class="ocr-section">
-    <h3>Translate from Image</h3>
-    <div class="ocr-container">
-      <div class="ocr-options">
-        <div class="ocr-option">
-          <label for="image-upload" class="ocr-btn">
-            <i class="fas fa-upload"></i>
-            Upload Image
-          </label>
-          <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                <!-- Text Input Form -->
+                <div id="text-form" class="translation-form" {% if active_form == 'ocr' %}style="display: none;"{% endif %}>
+                    <form id="text-translation-form" onsubmit="return false;">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="text">
+                        {{ text_form.text_to_translate }}
+                        <div class="form-actions">
+                            {{ text_form.target_language }}
+                            <button type="button" class="translate-button" onclick="submitTextForm()">Translate</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- OCR Form -->
+                <div id="ocr-form" class="translation-form" {% if active_form != 'ocr' %}style="display: none;"{% endif %}>
+                    <form id="ocr-translation-form" onsubmit="return false;" action="{% url 'ocr:perform_ocr' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="ocr">
+                        <div class="ocr-container">
+                            <div class="image-upload">
+                                <label for="ocr-image-input" class="upload-label">
+                                    <span class="upload-icon">📷</span>
+                                    <span class="upload-text">Click to upload image</span>
+                                </label>
+                                {{ ocr_form.image }}
+                                <img id="image-preview" style="display: none; max-width: 100%; margin-top: 10px;">
+                            </div>
+                            <div id="ocr-result" style="display: none;">
+                                <div class="extracted-text">
+                                    <label>Extracted Text:</label>
+                                    <textarea name="extracted_text" readonly></textarea>
+                                </div>
+                                <div class="ocr-actions">
+                                    {{ ocr_form.target_language }}
+                                    <button type="button" class="translate-button" onclick="submitOCRForm()">Translate</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="ocr-status"></div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="ocr-option">
-          <button id="camera-btn" class="ocr-btn">
-            <i class="fas fa-camera"></i>
-            Use Camera
-          </button>
+
+        <!-- Output Column -->
+        <div class="translate-column">
+            <h3>Translation</h3>
+            <div class="translation-result-section">
+                <div class="translation-result">
+                    <div id="audio_container" style="display: none;">
+                        <audio id="audio_player" controls>
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                    <div class="translated-output"></div>
+                    <div class="language-info"></div>
+                </div>
+            </div>
         </div>
-      </div>
-        <div id="ocr-preview" class="ocr-preview" style="display: none;">
-          <img id="preview-image" src="" alt="Preview">
-          <button id="process-ocr" class="ocr-process-btn">Process Image</button>
-        </div>
-      <div id="ocr-status" class="ocr-status"></div>
     </div>
-  </div>
-</div>
+</section>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('translate-form');
-    const translatedOutput = document.querySelector('.translated-output');
-    const audioContainer = document.getElementById('audio_container');
-    const imageUpload = document.getElementById('image-upload');
-    const cameraBtn = document.getElementById('camera-btn');
-    const ocrPreview = document.getElementById('ocr-preview');
-    const previewImage = document.getElementById('preview-image');
-    const processOcrBtn = document.getElementById('process-ocr');
-    const ocrStatus = document.getElementById('ocr-status');
-
-    // Handle image upload
-    imageUpload.addEventListener('change', function(e) {
-      if (e.target.files && e.target.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          previewImage.src = e.target.result;
-          ocrPreview.style.display = 'block';
-        }
-        reader.readAsDataURL(e.target.files[0]);
-      }
-    });
-
-    // Handle camera capture
-    cameraBtn.addEventListener('click', async function() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        const video = document.createElement('video');
-        video.srcObject = stream;
-        video.play();
-        
-        // Create canvas to capture image
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        
-        video.addEventListener('canplay', function() {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          context.drawImage(video, 0, 0);
-          previewImage.src = canvas.toDataURL('image/jpeg');
-          ocrPreview.style.display = 'block';
-          
-          // Stop the video stream
-          stream.getTracks().forEach(track => track.stop());
-        });
-      } catch (err) {
-        ocrStatus.innerHTML = `<p class="error">Error accessing camera: ${err.message}</p>`;
-      }
-    });
-
-    // Handle OCR processing
-    processOcrBtn.addEventListener('click', async function() {
-      const imageData = previewImage.src;
-      if (!imageData) {
-        ocrStatus.innerHTML = '<p class="error">No image selected</p>';
-        return;
-      }
-
-      processOcrBtn.disabled = true;
-      processOcrBtn.textContent = 'Processing...';
-      ocrStatus.innerHTML = '<p>Processing image...</p>';
-
-      try {
-        const response = await fetch('/ocr/process/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-          },
-          body: JSON.stringify({
-            image: imageData,
-            target_language: document.querySelector('#language-select').value
-          })
-        });
-
-        const data = await response.json();
-        
-        if (data.error) {
-          ocrStatus.innerHTML = `<p class="error">${data.error}</p>`;
-        } else {
-          // Update the translation form with the extracted text
-          document.querySelector('#original_text').value = data.extracted_text;
-          translatedOutput.textContent = data.translated_text;
-          
-          // Clear OCR preview
-          ocrPreview.style.display = 'none';
-          previewImage.src = '';
-          ocrStatus.innerHTML = '<p class="success">Text extracted successfully!</p>';
-        }
-      } catch (error) {
-        ocrStatus.innerHTML = `<p class="error">Error processing image: ${error.message}</p>`;
-      } finally {
-        processOcrBtn.disabled = false;
-        processOcrBtn.textContent = 'Process Image';
-      }
-    });
-
-    // Original translation form handling
-    form.addEventListener('submit', async function (e) {
-      e.preventDefault();
-
-      const submitButton = form.querySelector('button[type="submit"]');
-      const originalButtonContent = submitButton.innerHTML;
-      submitButton.disabled = true;
-      submitButton.innerHTML = '<span>Translating...</span>';
-
-      try {
-        const formData = new FormData(form);
-        const response = await fetch('/translate/ajax/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-          },
-          body: JSON.stringify({
-            text_to_translate: form.querySelector('#original_text').value,
-            target_language: form.querySelector('#language-select').value
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.translated_text) {
-          translatedOutput.textContent = data.translated_text;
-
-          // Clear existing audio players
-          audioContainer.innerHTML = '';
-
-          // Handle audio if available
-          if (data.encoded_audio) {
-            const audioElement = document.createElement('audio');
-            audioElement.controls = true;
-            const sourceElement = document.createElement('source');
-            sourceElement.src = `data:audio/mp3;base64,${data.encoded_audio}`;
-            sourceElement.type = 'audio/mp3';
-            audioElement.appendChild(sourceElement);
-            audioContainer.appendChild(audioElement);
-          }
-        } else {
-          translatedOutput.innerHTML = `<p class="error">${data.error || 'Translation failed'}</p>`;
-        }
-      } catch (error) {
-        translatedOutput.innerHTML = `<p class="error">An error occurred during translation.</p>`;
-        console.error('Translation error:', error);
-      } finally {
-        submitButton.disabled = false;
-        submitButton.innerHTML = originalButtonContent;
-      }
-    });
-  });
+    // Add URL variables for JavaScript
+    const OCR_PROCESS_URL = '{% url "ocr:perform_ocr" %}';
+    const TRANSLATE_PROCESS_URL = '{% url "translate_process" %}';
 </script>
+<script src="{% static 'js/translate.js' %}"></script>
 {% endblock %}

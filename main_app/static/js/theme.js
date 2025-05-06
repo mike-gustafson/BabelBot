@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const themeToggle = document.getElementById('theme-toggle');
-  const moonIcon = document.querySelector('.theme-icon-moon');
-  const sunIcon = document.querySelector('.theme-icon-sun');
+  const moonIcon = document.querySelector('.moon');
+  const sunIcon = document.querySelector('.sun');
   const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
 
   // Re-enable transitions after initial load

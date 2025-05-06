@@ -7,9 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}BabelBot{% endblock %}</title>
   <link rel="icon" type="image/png" href="{% static 'images/logo2.png' %}">
-  <script src="{% static 'js/theme-init.js' %}"></script>
+  <script src="{% static 'js/theme-init.js' %}" defer></script>
   <style>
-    /* Prevent transitions during initial load */
     body {
       transition: none !important;
     }
@@ -19,99 +18,34 @@
     }
   </style>
   <link rel="stylesheet" href="{% static 'css/variables.css' %}">
-  <link rel="stylesheet" href="{% static 'css/themes/base.css' %}">
-  <link rel="stylesheet" href="{% static 'css/themes/light.css' %}">
-  <link rel="stylesheet" href="{% static 'css/themes/dark.css' %}">
+  <link rel="stylesheet" href="{% static 'css/themes/variables.css' %}">
+  <link rel="stylesheet" href="{% static 'css/themes/light.css' %}" id="theme-stylesheet">
+  <link rel="stylesheet" href="{% static 'css/themes/dark.css' %}" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="{% static 'css/themes/utilities.css' %}">
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/nav.css' %}">
+  <link rel="stylesheet" href="{% static 'css/footer.css' %}">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  {% if request.path == '/' %}
-  <link rel="stylesheet" href="{% static 'css/home.css' %}">
-  {% endif %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
   {% block extra_css %}{% endblock %}
 </head>
 
 <body>
-  <header>
-    <div class="navbar-container">
-      <div class="logo-container">
-        <a href="{% url 'home' %}" class="logo-link">
-          <img src="{% static 'images/logo2.png' %}" alt="BabelBot Logo" class="logo-img">
-          <span class="app-name">BabelBot</span>
-        </a>
-      </div>
-      <div class="nav-menu">
-        <nav class="nav-links">
-          <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-            <div class="nav-icon-wrapper">
-              <img src="{% static 'images/logo_home.png' %}" alt="Home" class="nav-icon">
-            </div>
-            Home
-          </a>
-          <a href="{% url 'translate' %}" class="{% if request.resolver_match.url_name == 'translate' %}active{% endif %}">
-            <div class="nav-icon-wrapper">
-              <img src="{% static 'images/logo_translate.png' %}" alt="Translate" class="nav-icon">
-            </div>
-            Translate
-          </a>
-          <a href="{% url 'about' %}" class="{% if request.path == '/about/' %}active{% endif %}">
-            <img src="{% static 'images/logo_translate.png' %}" alt="About" class="nav-icon">
-            About
-          </a>
-          {% if user.is_authenticated %}
-          <a href="/account/" class="{% if request.path == '/account/' %}active{% endif %}">
-            <div class="nav-icon-wrapper">
-              <img src="{% static 'images/logo_account.png' %}" alt="Account" class="nav-icon">
-            </div>
-            Account
-          </a>
-          {% endif %}
-          <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">
-            <div class="nav-icon-wrapper">
-              <img src="{% static 'images/logo_about.png' %}" alt="About" class="nav-icon">
-            </div>
-            About
-          </a>
-          {% if user.is_authenticated %}
-          <a href="{% url 'logout' %}" class="{% if request.path == '/logout/' %}active{% endif %}">
-            <div class="nav-icon-wrapper">
-              <img src="{% static 'images/logo_logout.png' %}" alt="Logout" class="nav-icon">
-            </div>
-            Logout
-          </a>
-          {% endif %}
-        </nav>
-        <div class="nav-actions">
-          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
-            <img src="{% static 'images/moon.svg' %}" alt="Dark Mode" class="theme-icon theme-icon-moon">
-            <img src="{% static 'images/sun.svg' %}" alt="Light Mode" class="theme-icon theme-icon-sun hidden">
-          </button>
-          <button id="menu-toggle" class="menu-toggle" aria-label="Toggle navigation menu">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
+  <div class="background-logo"></div>
+  
+  {% include 'nav.html' %}
 
   <main>
-    <div class="page-section">
-      <div class="section-container">
-        {% block content %}
-        {% endblock %}
-      </div>
-    </div>
+    {% block content %}
+    {% endblock %}
   </main>
 
-  <footer>
-    <p>Made with 💚 by Team Green — 2025</p>
-    <img src="{% static 'images/logo2.png' %}" alt="BabelBot" class="footer-bot">
-  </footer>
+  {% include 'footer.html' %}
 
-  <script src="{% static 'js/nav.js' %}"></script>
-  <script src="{% static 'js/theme.js' %}"></script>
-  <script src="{% static 'js/logo-animation.js' %}"></script>
+  <script src="{% static 'js/nav.js' %}" defer></script>
+  <script src="{% static 'js/theme.js' %}" defer></script>
+  <script src="{% static 'js/logo-animation.js' %}" defer></script>
   {% block extra_js %}{% endblock %}
 </body>
 

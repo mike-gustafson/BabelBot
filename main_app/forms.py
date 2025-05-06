@@ -6,7 +6,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Profile
 
-class TranslationForm(forms.Form):
+class TranslateFromTextForm(forms.Form):
     text_to_translate = forms.CharField(
         widget=forms.Textarea(attrs={
             'rows': 4,
@@ -19,7 +19,7 @@ class TranslationForm(forms.Form):
     )
     
     target_language = forms.ChoiceField(
-        choices=[('', 'Select a language')] + [(code, name.title()) for code, name in LANGUAGES.items()],
+        choices=[('', 'Select a language')],
         widget=forms.Select(attrs={
             'id': 'language-select',
             'class': 'form-input',
@@ -30,7 +30,44 @@ class TranslationForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         selected_language = kwargs.pop('selected_language', None)
+        languages = kwargs.pop('languages', None)
         super().__init__(*args, **kwargs)
+        
+        if languages:
+            self.fields['target_language'].choices = [('', 'Select a language')] + [(code, name.title()) for code, name in languages.items()]
+        
+        if selected_language:
+            self.fields['target_language'].initial = selected_language
+
+class TranslateFromOCRForm(forms.Form):
+    image = forms.ImageField(
+        widget=forms.FileInput(attrs={
+            'id': 'ocr-image-input',
+            'class': 'form-input',
+            'accept': 'image/*',
+            'required': True
+        }),
+        label=''
+    )
+    
+    target_language = forms.ChoiceField(
+        choices=[('', 'Select a language')],
+        widget=forms.Select(attrs={
+            'id': 'language-select',
+            'class': 'form-input',
+            'required': True
+        }),
+        label=''
+    )
+
+    def __init__(self, *args, **kwargs):
+        selected_language = kwargs.pop('selected_language', None)
+        languages = kwargs.pop('languages', None)
+        super().__init__(*args, **kwargs)
+        
+        if languages:
+            self.fields['target_language'].choices = [('', 'Select a language')] + [(code, name.title()) for code, name in languages.items()]
+        
         if selected_language:
             self.fields['target_language'].initial = selected_language
 
@@ -163,13 +200,17 @@ class ProfileForm(forms.ModelForm):
     )
     primary_language = forms.ChoiceField(
         choices=[('', 'Select a language')] + LANGUAGE_CHOICES,
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={
+            'class': 'form-control language-select',
+            'data-placeholder': 'Select primary language'
+        })
     )
     other_languages = forms.MultipleChoiceField(
         choices=LANGUAGE_CHOICES,
-        widget=forms.CheckboxSelectMultiple(attrs={
-            'class': 'language-checkbox',
-            'template_name': 'widgets/checkbox_select.html'
+        widget=forms.SelectMultiple(attrs={
+            'class': 'dual-listbox',
+            'size': '10',
+            'multiple': 'multiple'
         }),
         required=False
     )
