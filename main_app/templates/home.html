@@ -7,13 +7,13 @@
 
 {% block content %}
 <section class="section">
-  <div id="hero-content">
-    <h2>Welcome to BabelBot 🌍</h2>
+  <div id="hero-content" class="animate-fadein">
+    <h2>Welcome to BabelBot <span class="rotate-logo">🌍</span></h2>
     <p class="hero-description">
       Your AI-powered language companion. Translate text, images, and more with ease.
       Experience seamless communication across languages with our advanced translation technology.
     </p>
-    <a href="{% url 'translate' %}" class="btn btn-primary">
+    <a href="{% url 'translate' %}" class="btn btn-primary animate-pulse animate-fadein">
       <i class="fas fa-language"></i> Start Translating Now
     </a>
   </div>
@@ -36,15 +36,15 @@
   {% endif %}
 
   <div id="features-grid">
-    <div class="feature-card">
+    <div class="feature-card animate-float animate-fadein">
       <h3>Text Translation</h3>
       <p>Translate any text between multiple languages instantly with our advanced AI technology.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card animate-float animate-fadein">
       <h3>Image Translation</h3>
       <p>Upload images containing text and get accurate translations while preserving the original layout.</p>
     </div>
-    <div class="feature-card">
+    <div class="feature-card animate-float animate-fadein">
       <h3>Real-time Chat</h3>
       <p>Communicate with others in different languages with our real-time translation chat feature.</p>
     </div>

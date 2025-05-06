@@ -40,8 +40,8 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
 }
 
 /* Common form elements */
