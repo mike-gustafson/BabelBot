@@ -57,8 +57,10 @@
   margin-right: auto;
   line-height: 1.6;
   font-weight: 400;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
-
 
 .features-grid {
   display: grid;
