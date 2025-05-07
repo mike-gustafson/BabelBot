@@ -494,4 +494,8 @@ select:focus, input:focus, textarea:focus {
 .animate-float { animation: floatCard 3s ease-in-out infinite; }
 .animate-fadein { animation: fadeIn 1s ease both; }
 .animate-pulse { animation: pulseButton 2s infinite; transition: transform 0.3s ease; }
-.animate-pulse:hover { transform: scale(1.05); animation: none; } 
+.animate-pulse:hover { transform: scale(1.05); animation: none; }
+
+[data-theme="light"] .translate-column {
+  background: rgba(168, 230, 207, 0.078); /* slightly darker mint green */
+} 
