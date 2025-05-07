@@ -1,3 +1,4 @@
+/* Common styles that can be moved to base.css */
 .translate-section {
   width: 100%;
   display: flex;
@@ -5,10 +6,9 @@
   justify-content: center;
   align-items: center;
   min-height: 70vh;
-  margin-top: var(--spacing-xl);
+  margin: var(--spacing-xl) auto;
   gap: var(--spacing-xl);
   max-width: 1200px;
-  margin: 0 auto;
   padding: var(--spacing-xl);
 }
 
@@ -55,6 +55,7 @@
   letter-spacing: 0.5px;
 }
 
+/* Form elements */
 #original_text, .translate-textarea {
   width: 100%;
   min-height: 350px;
@@ -111,6 +112,7 @@
   background-color: var(--input-focus-bg);
 }
 
+/* Buttons */
 .translate-btn {
   display: flex;
   align-items: center;
@@ -155,7 +157,7 @@
   margin-bottom: var(--spacing-md);
 }
 
-/* OCR Section Styles */
+/* OCR Section */
 .ocr-section {
   width: 100%;
   max-width: 1200px;
@@ -302,6 +304,7 @@
   text-align: center;
 }
 
+/* Responsive Design */
 @media (max-width: 900px) {
   #translate-content {
     grid-template-columns: 1fr;
@@ -371,11 +374,6 @@
 }
 
 [data-theme="dark"] .ocr-section {
-  background: var(--translate-column-bg-dark);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .translate-box {
   background: var(--translate-column-bg-dark);
   border-color: rgba(255, 255, 255, 0.1);
 }

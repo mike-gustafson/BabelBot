@@ -1,5 +1,4 @@
 /* Home Page Styles */
-
 .home-section {
   min-height: calc(100vh - 120px);
   position: relative;
@@ -211,7 +210,7 @@
   }
 }
 
-/* Home page styles */
+
 .hero {
   text-align: center;
   padding: 4rem 2rem;
@@ -387,30 +386,25 @@
 }
 
 .qr-section {
-  margin: 3rem auto 0 auto;
-  padding: 2rem 1rem;
-  background: var(--bg-secondary, #fff);
-  border-radius: var(--border-radius-lg, 16px);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
   text-align: center;
-  max-width: 350px;
+  padding: var(--spacing-lg);
+  margin: var(--spacing-lg) auto;
+  max-width: 400px;
 }
 
 .qr-title {
   font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--primary, #1ecb6b);
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
 }
 
 .qr-image {
-  width: 200px;
-  height: 200px;
-  margin: 0 auto 1rem auto;
-  display: block;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(30,203,107,0.12);
-  background: #fff;
+  max-width: 200px;
+  height: auto;
+  margin: 0 auto var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--box-shadow);
 }
 
 .qr-caption {
