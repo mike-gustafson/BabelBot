@@ -40,6 +40,7 @@
   box-shadow: var(--box-shadow);
   padding: var(--spacing-lg);
   min-height: 400px;
+  height: 100%;
 }
 
 .translate-column h3 {
@@ -377,6 +378,9 @@
 
 /* Translation Form Section */
 .translation-form-section {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 800px;
   margin: 0 auto var(--spacing-lg);
@@ -444,33 +448,32 @@
   background: var(--input-hover-bg);
 }
 
-.translation-form, .ocr-container {
-  width: 100%;
+.translation-form {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  background: var(--container-bg);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-lg);
-  border: var(--container-border);
-  box-shadow: var(--box-shadow);
+  justify-content: stretch;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto var(--spacing-lg);
 }
 
 .translation-form textarea {
+  flex: 1 1 auto;
+  min-height: 80px;
+  resize: vertical;
   width: 100%;
-  min-height: 120px;
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   border: var(--input-border);
   border-radius: var(--border-radius-md);
   background: var(--input-bg);
   color: var(--text-primary);
   font-size: var(--font-size-base);
-  resize: vertical;
 }
 
 .translation-form .form-actions {
   display: flex;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   align-items: center;
 }
 
