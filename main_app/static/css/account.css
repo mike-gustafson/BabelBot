@@ -134,43 +134,7 @@
 }
 
 /* Responsive table */
-@media screen and (max-width: 600px) {
-  .translations-table table {
-    display: block;
-  }
-  
-  .translations-table thead {
-    display: none;
-  }
-  
-  .translations-table tbody {
-    display: block;
-  }
-  
-  .translations-table tr {
-    display: block;
-    margin-bottom: 10px;
-    border: var(--container-border);
-  }
-  
-  .translations-table td {
-    display: block;
-    text-align: right;
-    padding-left: 50%;
-    position: relative;
-  }
-  
-  .translations-table td:before {
-    content: attr(data-label);
-    position: absolute;
-    left: 0;
-    width: 50%;
-    padding-left: 12px;
-    font-weight: bold;
-    text-align: left;
-    color: var(--text-primary);
-  }
-}
+
 
 .edit-profile-section {
   background: var(--card-bg);
@@ -536,11 +500,20 @@
   color: var(--text-primary);
 }
 
+.translations-table-mobile {
+  display: none;
+}
 /* Responsive adjustments for summary */
 @media (max-width: 768px) {
   .translation-summary {
     flex-direction: column;
     gap: 1rem;
+  }
+  .translations-table {
+    display: none;
+  }
+  .translations-table-mobile {
+    display: block;
   }
   
   .summary-item {

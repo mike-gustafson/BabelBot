@@ -245,6 +245,24 @@
 
     <!-- Translations Table -->
     <div id="translationsTable" class="translations-table-container">
+      <div class="translations-table-mobile">
+        {% for translation in translations %}
+        <h4>{{ translation.original_text|truncatechars:50 }}</h4>
+        </h4>{{ translation.translated_text|truncatechars:50 }}</h4>
+        <h4>{{ translation.target_language }} <div class="action-buttons">
+          <button class="edit-translation-btn" data-translation-id="{{ translation.id }}" data-original-text="{{ translation.original_text }}" data-translated-text="{{ translation.translated_text }}" data-target-lang="{{ translation.target_language }}">
+            Edit
+          </button>
+          <button class="delete-translation-btn" data-translation-id="{{ translation.id }}">
+            Delete
+          </button>
+        </div></h4>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 2rem;">No translations yet</td>
+        </tr>
+        {% endfor %}
+      </div> 
       <table class="translations-table">
         <thead>
           <tr>
