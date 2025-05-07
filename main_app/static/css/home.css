@@ -240,10 +240,10 @@
   margin-bottom: 4rem;
 }
 
-.feature-card:hover {
+/* .feature-card:hover {
   transform: translateY(-5px);
   box-shadow: var(--box-shadow-hover);
-}
+} */
 
 .feature-card h3 {
   font-size: 1.5rem;
@@ -377,11 +377,6 @@
     display: block;
 }
 
-/* Feature Card Hover Effects */
-.feature-card h3 { transition: color 0.3s ease; }
-.feature-card:hover h3 { color: var(--primary); }
-.feature-card p { transition: transform 0.3s ease; }
-.feature-card:hover p { transform: translateY(-5px); }
 
 .rotate-logo {
   display: inline-block;
