@@ -69,65 +69,6 @@
   margin-top: var(--spacing-lg);
 }
 
-.feature-card {
-  background: var(--gradient-tertiary);
-  padding: var(--spacing-lg);
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--box-shadow);
-  transition: var(--transition-normal);
-  position: relative;
-  overflow: hidden;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.feature-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--gradient-secondary);
-  z-index: 0;
-}
-
-.feature-card h3 {
-  color: var(--text-primary);
-  margin-bottom: var(--spacing-md);
-  position: relative;
-  z-index: 1;
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: -0.3px;
-  transition: color 0.3s ease;
-}
-
-.feature-card p {
-  color: var(--text-secondary);
-  opacity: 0.9;
-  line-height: 1.8;
-  position: relative;
-  z-index: 1;
-  font-size: 1.1rem;
-  transition: transform 0.3s ease;
-}
-
-/* Feature Card Hover Effects */
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--box-shadow-hover);
-}
-
-.feature-card:hover h3 {
-  color: var(--primary);
-}
-
-.feature-card:hover p {
-  transform: translateY(-5px);
-}
-
 .app-description {
   background: var(--gradient-tertiary);
   padding: var(--spacing-xl);
