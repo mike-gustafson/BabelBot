@@ -101,6 +101,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.3px;
+  transition: color 0.3s ease;
 }
 
 .feature-card p {
@@ -110,6 +111,21 @@
   position: relative;
   z-index: 1;
   font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+/* Feature Card Hover Effects */
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--box-shadow-hover);
+}
+
+.feature-card:hover h3 {
+  color: var(--primary);
+}
+
+.feature-card:hover p {
+  transform: translateY(-5px);
 }
 
 .app-description {
