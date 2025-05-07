@@ -1,5 +1,4 @@
 /* Home Page Styles */
-
 .home-section {
   min-height: calc(100vh - 120px);
   position: relative;
@@ -135,50 +134,6 @@
   width: 100%;
 }
 
-/* --- Feature Card Styles (single definition, no animation property) --- */
-.feature-card {
-  background: var(--gradient-tertiary);
-  padding: var(--spacing-lg);
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--box-shadow);
-  transition: var(--transition-normal);
-  position: relative;
-  overflow: hidden;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.feature-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--gradient-secondary);
-  z-index: 0;
-}
-
-.feature-card h3 {
-  color: var(--text-primary);
-  margin-bottom: var(--spacing-md);
-  position: relative;
-  z-index: 1;
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: -0.3px;
-}
-
-.feature-card p {
-  color: var(--text-secondary);
-  opacity: 0.9;
-  line-height: 1.8;
-  position: relative;
-  z-index: 1;
-  font-size: 1.1rem;
-}
-
 .cta-section {
   text-align: center;
   padding: 4rem 2rem;
@@ -242,10 +197,6 @@
     font-size: 1.75rem;
   }
 
-  .feature-card {
-    padding: var(--spacing-md);
-  }
-
   .cta-section {
     padding: 2rem 1rem;
   }
@@ -259,7 +210,7 @@
   }
 }
 
-/* Home page styles */
+
 .hero {
   text-align: center;
   padding: 4rem 2rem;
@@ -288,10 +239,10 @@
   margin-bottom: 4rem;
 }
 
-.feature-card:hover {
+/* .feature-card:hover {
   transform: translateY(-5px);
   box-shadow: var(--box-shadow-hover);
-}
+} */
 
 .feature-card h3 {
   font-size: 1.5rem;
@@ -425,25 +376,6 @@
     display: block;
 }
 
-/* --- Animation Keyframes & Utility Classes --- */
-@keyframes floatCard { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-15px);} }
-@keyframes pulseButton { 0%{box-shadow:0 0 0 0 rgba(0,255,150,0.4);} 70%{box-shadow:0 0 0 10px rgba(0,255,150,0);} 100%{box-shadow:0 0 0 0 rgba(0,255,150,0);} }
-@keyframes fadeIn { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
-@keyframes rotate360 {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.animate-float { animation: floatCard 3s ease-in-out infinite; }
-.animate-fadein { animation: fadeIn 1s ease both; }
-.animate-pulse { animation: pulseButton 2s infinite; transition: transform 0.3s ease; }
-.animate-pulse:hover { transform: scale(1.05); animation: none; }
-
-/* Feature Card Hover Effects */
-.feature-card h3 { transition: color 0.3s ease; }
-.feature-card:hover h3 { color: var(--primary); }
-.feature-card p { transition: transform 0.3s ease; }
-.feature-card:hover p { transform: translateY(-5px); }
 
 .rotate-logo {
   display: inline-block;
@@ -454,30 +386,25 @@
 }
 
 .qr-section {
-  margin: 3rem auto 0 auto;
-  padding: 2rem 1rem;
-  background: var(--bg-secondary, #fff);
-  border-radius: var(--border-radius-lg, 16px);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
   text-align: center;
-  max-width: 350px;
+  padding: var(--spacing-lg);
+  margin: var(--spacing-lg) auto;
+  max-width: 400px;
 }
 
 .qr-title {
   font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--primary, #1ecb6b);
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
 }
 
 .qr-image {
-  width: 200px;
-  height: 200px;
-  margin: 0 auto 1rem auto;
-  display: block;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(30,203,107,0.12);
-  background: #fff;
+  max-width: 200px;
+  height: auto;
+  margin: 0 auto var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--box-shadow);
 }
 
 .qr-caption {

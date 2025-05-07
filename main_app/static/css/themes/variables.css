@@ -72,7 +72,7 @@
   --btn-hover-transform: translateY(-2px);
   
   /* Input styles */
-  --input-bg: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(255, 255, 255, 0.485);
   --input-border: 1px solid rgba(76, 255, 139, 0.2);
   --input-focus-shadow: 0 0 0 3px rgba(76, 255, 139, 0.2);
   

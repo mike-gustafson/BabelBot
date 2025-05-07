@@ -109,24 +109,25 @@ nav {
     z-index: 1;
 }
 
-.nav-content:hover .nav-link {
-    transform: scale(1.2);
-    opacity: 0.2;
-    filter: blur(4px);
-    transition: 0.5s;
-    z-index: 1;
-}
+/* Desktop hover effects */
+@media (min-width: 769px) {
+    .nav-content:hover .nav-link,
+    .nav-content:hover .nav-link:hover {
+        transform: scale(1.2);
+        opacity: 0.2;
+        filter: blur(4px);
+        z-index: 1;
+    }
 
-.nav-content:hover .nav-link:hover {
-    transform: scale(1.6);
-    opacity: 1;
-    filter: blur(0);
-    z-index: 2000;
-    transition: 0.5s;
+    .nav-content:hover .nav-link:hover {
+        transform: scale(1.6);
+        opacity: 1;
+        filter: blur(0);
+        z-index: 2000;
+    }
 }
 
 .nav-link:hover {
-    position: relative;
     z-index: 2000;
 }
 
@@ -147,7 +148,6 @@ nav {
 
 .nav-link:hover::before,
 .nav-content:hover .nav-link:hover::before {
-    transition: transform 0.5s;
     transform-origin: left;
     transform: scaleX(1);
 }
@@ -247,20 +247,26 @@ nav {
 
 @media (max-width: 768px) {
     .menu-button {
-        display: block;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: var(--spacing-sm);
-        margin-right: var(--spacing-md);
-        z-index: 3000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+        left: 50%;
+        top: 2rem;
+        transform: translateX(-50%);
+        z-index: 4100;
     }
+    .close-menu-button {
+        display: none !important;
+    }
+    /* Hamburger to X animation */
     .menu-icon {
         display: block;
         width: 28px;
         height: 3px;
         background: var(--text-primary);
         position: relative;
+        transition: background 0.3s;
     }
     .menu-icon::before,
     .menu-icon::after {
@@ -271,13 +277,24 @@ nav {
         background: var(--text-primary);
         position: absolute;
         left: 0;
-        transition: 0.3s;
+        transition: transform 0.3s, top 0.3s;
     }
     .menu-icon::before {
         top: -8px;
     }
     .menu-icon::after {
         top: 8px;
+    }
+    .nav--active .menu-icon {
+        background: transparent;
+    }
+    .nav--active .menu-icon::before {
+        top: 0;
+        transform: rotate(45deg);
+    }
+    .nav--active .menu-icon::after {
+        top: 0;
+        transform: rotate(-45deg);
     }
     .nav-content {
         flex-direction: row;
@@ -366,11 +383,7 @@ nav {
         width: auto;
     }
     .close-menu-button {
-        display: block;
-        position: absolute;
-        top: 2rem;
-        right: 2rem;
-        z-index: 4100;
+        display: none;
     }
     .nav-overlay.active {
         display: block;
