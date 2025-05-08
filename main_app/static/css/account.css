@@ -633,26 +633,80 @@ select[name="other_languages"] {
 
 .edit-translation-btn,
 .delete-translation-btn {
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 8px 16px;
+  border-radius: var(--border-radius-md);
   border: none;
   cursor: pointer;
   font-size: 0.9rem;
+  font-weight: 500;
+  transition: var(--transition-normal);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .edit-translation-btn {
-  background-color: var(--primary-color);
-  color: white;
+  background-color: var(--primary);
+  color: var(--text-light);
+  border: 1px solid var(--primary);
+}
+
+.edit-translation-btn:hover {
+  background-color: var(--secondary);
+  transform: var(--btn-hover-transform);
+  box-shadow: var(--box-shadow-hover);
 }
 
 .delete-translation-btn {
-  background-color: var(--danger-color);
-  color: white;
+  background-color: var(--error-color);
+  color: var(--text-light);
+  border: 1px solid var(--error-color);
 }
 
-.edit-translation-btn:hover,
 .delete-translation-btn:hover {
-  opacity: 0.9;
+  background-color: var(--error);
+  transform: var(--btn-hover-transform);
+  box-shadow: var(--box-shadow-hover);
+}
+
+/* Mobile specific styles */
+@media (max-width: 768px) {
+  .translations-table {
+    display: none;
+  }
+  
+  .translations-table-mobile {
+    display: block;
+  }
+  
+  .translation-row {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: var(--border-radius-md);
+    margin-bottom: 1rem;
+    box-shadow: var(--box-shadow);
+    border: var(--container-border);
+  }
+  
+  .translation-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    justify-content: flex-end;
+  }
+  
+  .edit-translation-btn,
+  .delete-translation-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .edit-translation-btn i,
+  .delete-translation-btn i {
+    font-size: 1rem;
+  }
 }
 
 .profile-actions {
