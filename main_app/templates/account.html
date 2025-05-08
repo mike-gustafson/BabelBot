@@ -247,20 +247,26 @@
     <div id="translationsTable" class="translations-table-container">
       <div class="translations-table-mobile">
         {% for translation in translations %}
-        <h4>{{ translation.original_text|truncatechars:50 }}</h4>
-        </h4>{{ translation.translated_text|truncatechars:50 }}</h4>
-        <h4>{{ translation.target_language }} <div class="action-buttons">
-          <button class="edit-translation-btn" data-translation-id="{{ translation.id }}" data-original-text="{{ translation.original_text }}" data-translated-text="{{ translation.translated_text }}" data-target-lang="{{ translation.target_language }}">
-            Edit
-          </button>
-          <button class="delete-translation-btn" data-translation-id="{{ translation.id }}">
-            Delete
-          </button>
-        </div></h4>
+        <div class="translation-row">
+          <div class="translation-content">
+            <p><strong>Original:</strong> {{ translation.original_text|truncatechars:50 }}</p>
+            <p><strong>Translated:</strong> {{ translation.translated_text|truncatechars:50 }}</p>
+            <p><strong>Language:</strong> {{ translation.target_language }}</p>
+            <p><strong>Date:</strong> {{ translation.created_at|date:"M j, Y" }}</p>
+          </div>
+          <div class="translation-actions">
+            <button class="edit-translation-btn" data-translation-id="{{ translation.id }}" data-original-text="{{ translation.original_text }}" data-translated-text="{{ translation.translated_text }}" data-target-lang="{{ translation.target_language }}">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="delete-translation-btn" data-translation-id="{{ translation.id }}">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
         {% empty %}
-        <tr>
-          <td colspan="5" style="text-align: center; padding: 2rem;">No translations yet</td>
-        </tr>
+        <div class="translation-row">
+          <p style="text-align: center;">No translations yet</p>
+        </div>
         {% endfor %}
       </div> 
       <table class="translations-table">
