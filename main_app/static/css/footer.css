@@ -8,8 +8,8 @@ footer {
     z-index: 1000;
     height: var(--footer-height);
     width: 100%;
-    backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
     margin: auto 0;
     padding: none;
     text-align: center;
@@ -19,20 +19,26 @@ footer {
     align-items: center;
     justify-content: center;
     transition: background-color 0.3s ease;
+    padding-top: 20px;
 }
 
-.footer-bot {
+.footer-bot-wrapper {
     position: absolute;
     bottom: 5px;
     left: -50px;
     height: 30px;
     width: 30px;
     animation: moveBot 15s linear infinite;
-    transform: translateY(0);
     z-index: 2;
     will-change: transform;
+}
+
+.footer-bot {
+    height: 30px;
+    width: 30px;
     background: url('../images/logo2.png') no-repeat center center;
     background-size: contain;
+    cursor: pointer;
 }
 
 /* Bot animation */
@@ -54,6 +60,19 @@ footer {
         left: calc(100% + 50px);
         transform: translateY(0) scaleX(-1);
     }
+}
+
+@keyframes bounceBot {
+    0%   { transform: translateY(0) scaleX(1); }
+    20%  { transform: translateY(-30px) scaleX(1.1); }
+    40%  { transform: translateY(0) scaleX(0.95); }
+    60%  { transform: translateY(-15px) scaleX(1.05); }
+    80%  { transform: translateY(0) scaleX(1); }
+    100% { transform: translateY(0) scaleX(1); }
+}
+
+.footer-bot.bounce {
+    animation: bounceBot 1s linear !important;
 }
 
 /* Responsive adjustments */

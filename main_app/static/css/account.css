@@ -665,6 +665,7 @@ select[name="other_languages"] {
   border: none;
   cursor: pointer;
   font-size: 0.9rem;
+  
 }
 
 .edit-translation-btn {

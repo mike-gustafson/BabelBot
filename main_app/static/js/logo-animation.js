@@ -36,4 +36,17 @@ document.addEventListener('DOMContentLoaded', function() {
       }, Math.random() * 30000 + 30000); // Random time between 30-60 seconds
     }, 2000); // Initial delay of 2 seconds after page load
   }
+
+  // Footer bot bounce on click
+  const footerBot = document.querySelector('.footer-bot');
+  if (footerBot) {
+    footerBot.addEventListener('click', function() {
+      footerBot.classList.remove('bounce'); // reset if already bouncing
+      void footerBot.offsetWidth; // force reflow
+      footerBot.classList.add('bounce');
+    });
+    footerBot.addEventListener('animationend', function() {
+      footerBot.classList.remove('bounce');
+    });
+  }
 }); 
