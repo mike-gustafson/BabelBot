@@ -9,7 +9,7 @@ import requests
 # Django imports
 from django.contrib import messages
 from django.contrib.auth import (
-    login, authenticate, logout, get_user
+    login, authenticate, logout, get_user, update_session_auth_hash
 )
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -22,6 +22,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_http_methods, require_POST
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.forms import PasswordResetForm
 
 # Local application imports
 from translator.services import get_available_languages, translate_text
@@ -64,20 +65,11 @@ def home(request):
     try:
         login_form = LoginForm()
         signup_form = CustomUserCreationForm()
-        show_signup = False
+        # Default to login form
+        displayed_form = request.GET.get('form', 'login')
 
         if request.method == 'POST':
-            """
-            function: Handle home page requests and login/signup form submissions
-            parameters: request - the request object
-            returns: render the home page template with appropriate forms
-            """
             if 'login-submit' in request.POST:
-                """
-                function: Handle login form submissions
-                parameters: request - the request object
-                returns: redirect to the home page or error message
-                """
                 login_form = LoginForm(request.POST)
                 if login_form.is_valid():
                     username = login_form.cleaned_data.get('username')
@@ -96,13 +88,8 @@ def home(request):
                     messages.error(request, 'Please correct the errors below.')
             
             elif 'signup-submit' in request.POST:
-                """
-                function: Handle signup form submissions
-                parameters: request - the request object
-                returns: redirect to the home page or error message
-                """
                 signup_form = CustomUserCreationForm(request.POST)
-                show_signup = True
+                displayed_form = 'signup'
                 if signup_form.is_valid():
                     user = signup_form.save()
                     login(request, user)
@@ -113,24 +100,36 @@ def home(request):
                     signup_form = CustomUserCreationForm(data=form_data)
                     signup_form.is_valid()
             
+            elif 'email' in request.POST:  # Password reset form submission
+                email = request.POST.get('email')
+                displayed_form = 'reset'
+                if User.objects.filter(email__iexact=email).exists():
+                    # Send password reset email
+                    form = PasswordResetForm({'email': email})
+                    if form.is_valid():
+                        form.save(
+                            request=request,
+                            use_https=request.is_secure(),
+                            from_email=None,
+                            email_template_name='registration/password_reset_email.html',
+                            subject_template_name='registration/password_reset_subject.txt',
+                        )
+                        messages.success(request, 'Password reset email has been sent. Please check your inbox.')
+                else:
+                    messages.error(request, 'No account found with that email address.')
+            
             # Return the home page with the current form state for POST requests
             return render(request, 'home.html', {
                 'login_form': login_form,
                 'signup_form': signup_form,
-                'show_signup': show_signup
+                'displayed_form': displayed_form
             })
         else:
-            """
-            function: Serve the home page template
-            parameters: request - the request object
-            returns: render the home page template with appropriate forms
-            """
             context = {
                 'login_form': login_form,
                 'signup_form': signup_form,
-                'show_signup': show_signup
+                'displayed_form': displayed_form
             }
-        
             return render(request, 'home.html', context)
     except Exception as e:
         logger.error(f"Error in home view: {str(e)}")
@@ -138,7 +137,7 @@ def home(request):
         return render(request, 'home.html', {
             'login_form': LoginForm(),
             'signup_form': CustomUserCreationForm(),
-            'show_signup': False
+            'displayed_form': 'login'
         })
 
 @require_http_methods(["GET"])
@@ -446,20 +445,82 @@ def account_delete_confirm(request):
         return render(request, 'home.html')
 
 class CustomPasswordResetView(PasswordResetView):
-    template_name = 'password_reset.html'
+    template_name = 'forms/password_reset_form.html'
     email_template_name = 'registration/password_reset_email.html'
     success_url = reverse_lazy('password_reset_done')
+
+    def form_valid(self, form):
+        email = form.cleaned_data['email']
+        # Case-insensitive email search
+        if User.objects.filter(email__iexact=email).exists():
+            # Send the reset email directly
+            opts = {
+                'use_https': self.request.is_secure(),
+                'token_generator': self.token_generator,
+                'from_email': self.from_email,
+                'email_template_name': self.email_template_name,
+                'subject_template_name': self.subject_template_name,
+                'request': self.request,
+                'html_email_template_name': self.html_email_template_name,
+                'extra_email_context': self.extra_email_context,
+            }
+            form.save(**opts)
+            messages.success(self.request, 'Password reset email has been sent. Please check your inbox.')
+        else:
+            messages.error(self.request, 'No account found with that email address.')
+        
+        # Always return to the same form
+        return self.render_to_response(self.get_context_data(form=form))
 
 class CustomPasswordResetDoneView(PasswordResetDoneView):
     template_name = 'password_reset_done.html'
 
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
-    template_name = 'password_reset_confirm.html'
-    success_url = reverse_lazy('password_reset_complete')
+    template_name = 'forms/password_reset_confirm.html'
+    success_url = reverse_lazy('home')
     
     def form_valid(self, form):
-        form.save()
-        return super().form_valid(form)
+        try:
+            # Get the user from the form
+            user = form.user
+            logger.info(f"Resetting password for user: {user.username}")
+            
+            # Save the new password
+            form.save()
+            logger.info(f"Password saved for user: {user.username}")
+            
+            # Update the session to reflect the new password
+            update_session_auth_hash(self.request, user)
+            logger.info(f"Session updated for user: {user.username}")
+            
+            # Log the user in
+            login(self.request, user)
+            logger.info(f"User logged in: {user.username}")
+            
+            messages.success(self.request, 'Your password has been successfully reset and you are now logged in.')
+            return super().form_valid(form)
+        except Exception as e:
+            logger.error(f"Error in password reset: {str(e)}")
+            messages.error(self.request, 'An error occurred while resetting your password. Please try again.')
+            return self.form_invalid(form)
 
-class CustomPasswordResetCompleteView(PasswordResetCompleteView):
-    template_name = 'password_reset_complete.html'
+    def form_invalid(self, form):
+        logger.error(f"Form validation failed: {form.errors}")
+        messages.error(self.request, 'Please correct the errors below.')
+        return super().form_invalid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Add the uid and token to the context
+        context['uid'] = self.kwargs.get('uidb64')
+        context['token'] = self.kwargs.get('token')
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            logger.info("Password reset form is valid")
+            return self.form_valid(form)
+        else:
+            logger.error(f"Form validation failed: {form.errors}")
+            return self.form_invalid(form)
