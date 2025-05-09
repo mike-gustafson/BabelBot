@@ -414,4 +414,38 @@
 }
 
 /* Animation utility class */
-.animate-float { animation: floatCard 3s ease-in-out infinite; } 
+.animate-float { animation: floatCard 3s ease-in-out infinite; }
+
+.auth-form {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.auth-form.hidden {
+    display: none;
+}
+
+.btn-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+}
+
+.forgot-password-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: var(--transition-normal);
+    white-space: nowrap;
+}
+
+.forgot-password-link:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.forgot-password-link i {
+    margin-right: 0.25rem;
+} 
