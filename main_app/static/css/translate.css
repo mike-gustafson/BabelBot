@@ -1,3 +1,4 @@
+/* Common styles that can be moved to base.css */
 .translate-section {
   width: 100%;
   display: flex;
@@ -5,10 +6,9 @@
   justify-content: center;
   align-items: center;
   min-height: 70vh;
-  margin-top: var(--spacing-xl);
+  margin: var(--spacing-xl) auto;
   gap: var(--spacing-xl);
   max-width: 1200px;
-  margin: 0 auto;
   padding: var(--spacing-xl);
 }
 
@@ -16,8 +16,12 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-xl);
-  width: 100%;
   max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  justify-items: stretch;
+  align-items: stretch;
 }
 
 .translate-grid {
@@ -40,6 +44,7 @@
   box-shadow: var(--box-shadow);
   padding: var(--spacing-lg);
   min-height: 400px;
+  height: 100%;
 }
 
 .translate-column h3 {
@@ -50,9 +55,10 @@
   letter-spacing: 0.5px;
 }
 
+/* Form elements */
 #original_text, .translate-textarea {
   width: 100%;
-  min-height: 200px;
+  min-height: 350px;
   padding: var(--spacing-lg);
   background: var(--input-bg);
   border: var(--input-border);
@@ -106,6 +112,7 @@
   background-color: var(--input-focus-bg);
 }
 
+/* Buttons */
 .translate-btn {
   display: flex;
   align-items: center;
@@ -150,7 +157,7 @@
   margin-bottom: var(--spacing-md);
 }
 
-/* OCR Section Styles */
+/* OCR Section */
 .ocr-section {
   width: 100%;
   max-width: 1200px;
@@ -297,6 +304,7 @@
   text-align: center;
 }
 
+/* Responsive Design */
 @media (max-width: 900px) {
   #translate-content {
     grid-template-columns: 1fr;
@@ -370,13 +378,11 @@
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="dark"] .translate-box {
-  background: var(--translate-column-bg-dark);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
 /* Translation Form Section */
 .translation-form-section {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 800px;
   margin: 0 auto var(--spacing-lg);
@@ -444,33 +450,32 @@
   background: var(--input-hover-bg);
 }
 
-.translation-form, .ocr-container {
-  width: 100%;
+.translation-form {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  background: var(--container-bg);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-lg);
-  border: var(--container-border);
-  box-shadow: var(--box-shadow);
+  justify-content: stretch;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto var(--spacing-lg);
 }
 
 .translation-form textarea {
+  flex: 1 1 auto;
+  min-height: 80px;
+  resize: vertical;
   width: 100%;
-  min-height: 120px;
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   border: var(--input-border);
   border-radius: var(--border-radius-md);
   background: var(--input-bg);
   color: var(--text-primary);
   font-size: var(--font-size-base);
-  resize: vertical;
 }
 
 .translation-form .form-actions {
   display: flex;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   align-items: center;
 }
 
@@ -690,4 +695,23 @@
 .translate-button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+/* Reduce negative space at the bottom for the translate page only */
+section.section#translate-content,
+#translate-content {
+  min-height: 60vh;
+  padding-bottom: var(--spacing-lg);
+}
+
+/* Optionally, reduce the section min-height only on the translate page */
+section.section {
+  margin-left: 0;
+  margin-right: 0;
+  max-width: 100vw;
+  width: 100%;
+  box-sizing: border-box;
+  padding-left: var(--spacing-lg);
+  padding-right: var(--spacing-lg);
+  
 }
