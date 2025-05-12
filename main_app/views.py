@@ -213,8 +213,10 @@ async def translate(request):
                 'target_language': target_language
             })
         except Exception as e:
+            import traceback
+            print(traceback.format_exc())  # Print the full traceback to the terminal
             return JsonResponse({
-                'error': 'An error occurred during translation'
+                'error': f'An error occurred during translation: {str(e)}'
             }, status=500)
             
     else:
