@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (logo) {
     // Click animation - wave and bounce
     logo.addEventListener('click', function(e) {
-      // Don't prevent navigation, just add animation
       this.classList.remove('wave-animation', 'bounce-animation');
       this.offsetWidth; // Trigger reflow to restart animation
       this.classList.add('bounce-animation');
@@ -40,11 +39,26 @@ document.addEventListener('DOMContentLoaded', function() {
   // Footer bot bounce on click
   const footerBot = document.querySelector('.footer-bot');
   if (footerBot) {
+    let clickCount = 0; // Track number of clicks
+    
     footerBot.addEventListener('click', function() {
+      // Add bounce animation
       footerBot.classList.remove('bounce'); // reset if already bouncing
       void footerBot.offsetWidth; // force reflow
       footerBot.classList.add('bounce');
+      
+      // Alternate between audio files
+      const audioFile = clickCount % 2 === 0 ? 'hello.mp3' : 'classcified.mp3';
+      const audio = new Audio(`/static/audio/${audioFile}`);
+      audio.volume = 0.3;
+      audio.play().catch(e => {
+        // Silent error if autoplay is blocked
+        console.log('Audio play prevented by browser policy');
+      });
+      
+      clickCount++; // Increment click counter
     });
+    
     footerBot.addEventListener('animationend', function() {
       footerBot.classList.remove('bounce');
     });
