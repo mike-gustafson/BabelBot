@@ -19,7 +19,7 @@
 
 ## 🚀 About BabelBot
 
-BabelBot is your AI-powered language companion, breaking down language barriers with cutting-edge technology. Whether you're traveling abroad, learning a new language, or just need quick translations, BabelBot has you covered.
+BabelBot is your API-powered language companion, breaking down language barriers with cutting-edge technology. Whether you're traveling abroad, learning a new language, or just need quick translations, BabelBot has you covered.
 
 ### ✨ Key Features
 
