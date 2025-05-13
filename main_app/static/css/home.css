@@ -414,4 +414,57 @@
 }
 
 /* Animation utility class */
-.animate-float { animation: floatCard 3s ease-in-out infinite; } 
+.animate-float { animation: floatCard 3s ease-in-out infinite; }
+
+.auth-form {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.auth-form.hidden {
+    display: none;
+}
+
+.btn-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+}
+
+.forgot-password-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: var(--transition-normal);
+    white-space: nowrap;
+}
+
+.forgot-password-link:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.forgot-password-link i {
+    margin-right: 0.25rem;
+}
+
+.alert {
+    padding: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.9rem;
+}
+
+.alert-success {
+    background-color: rgba(var(--success-rgb), 0.1);
+    color: var(--success);
+    border: 1px solid rgba(var(--success-rgb), 0.2);
+}
+
+.alert-danger {
+    background-color: rgba(var(--error-rgb), 0.1);
+    color: var(--error);
+    border: 1px solid rgba(var(--error-rgb), 0.2);
+} 
